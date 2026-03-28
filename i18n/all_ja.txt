@@ -1,0 +1,219 @@
+# All string translations: en → ja
+# Generated on 2026-03-28
+# Review carefully. Preserve format specifiers (%d, %.2f, etc.)
+# Preserve keyboard shortcuts (F1, R, V, F, U, Tab, Space, etc.)
+# Preserve physics symbols (v, B, F, κ, μ, α)
+
+## UI: Model / Particle
+[STR_MODEL_PARTICLE] = "モデル/パーティクル"
+[STR_FIELD_MODEL] = "フィールドモデル"
+[STR_CONFIG] = "構成:"
+[STR_PARTICLE] = "粒子"
+[STR_SPECIES_ELECTRON] = "電子"
+[STR_SPECIES_POSITRON] = "陽電子"
+[STR_SPECIES_PROTON] = "プロトン"
+[STR_SPECIES_ALPHA] = "アルファ"
+[STR_SPECIES_OPLUS] = "O+"  # KEEP
+[STR_SPECIES_CUSTOM] = "カスタム"
+[STR_CHARGE] = "充電"
+[STR_MASS] = "質量"
+[STR_SPEED] = "スピード"
+[STR_ENERGY] = "エネルギー"
+[STR_PITCH] = "ピッチ"
+
+## UI: Playback / Record
+[STR_PLAYBACK_RECORD] = "再生・録音"
+[STR_TRIGGER_REC] = "トリガーレック(R)"
+[STR_TRIGGER_REC_ACTIVE] = "トリガーREC (録音中...)"
+[STR_PAUSE] = "一時停止"
+[STR_RESUME] = "再開する"
+[STR_RESET] = "リセット"
+
+## UI: Display
+[STR_DISPLAY] = "画面"
+[STR_TRAIL] = "トレイル"
+[STR_FIELD_LINES] = "フィールドライン"
+[STR_GC_FL] = "GC fl"  # KEEP
+[STR_FL_POS] = "FL pos"  # KEEP
+[STR_GC_LEN] = "GC len"  # KEEP
+[STR_SCALED] = "スケーリング済み"
+[STR_V_SCALE] = "v scale"  # KEEP
+[STR_B_SCALE] = "B scale"  # KEEP
+[STR_F_SCALE] = "F scale"  # KEEP
+[STR_GIJ] = "G_ij (G)"  # KEEP
+[STR_SCALE_BAR] = "スケールバー"
+[STR_AXES] = "軸"
+[STR_PLOTS] = "プロット"
+[STR_BOTTOM] = "底"
+[STR_TOP] = "トップ"
+[STR_AUTOSCALE] = "自動スケール"
+[STR_RADIATION] = "放射線"
+[STR_RAD_X] = "Rad x"  # KEEP
+[STR_RELATIVISTIC] = "相対論的"
+[STR_FOLLOW] = "フォロー(F)"
+[STR_CAM_FREE] = "フリー(V)"
+[STR_CAM_PB] = "+b (V)"  # KEEP
+[STR_CAM_MB] = "-b (V)"  # KEEP
+
+## UI: Readouts
+[STR_READOUTS] = "読み出し"
+[STR_FMT_PARTICLE_N] = "パーティクル %d / %d (タブ)"
+[STR_FMT_TIME] = "t = %.4g s"
+[STR_FMT_ENERGY_ERR] = "|ビッグ E|/E = %.2"
+[STR_FMT_PITCH] = "ピッチ = %.1f 度"
+[STR_FMT_MU] = "μ = %.3e J/T"
+[STR_FMT_BMAG] = "|B| = %.3e T"
+[STR_FMT_ENERGY_MEV] = "E = %.3f MeV"
+[STR_FMT_ENERGY_KEV] = "E = %.3f keV"
+[STR_FMT_PRAD] = "P_rad = %.3e W"
+[STR_FMT_DEDT] = "de/dt = %.ze kev/s"
+[STR_FMT_DEDT_MULT] = "de/dt = %.ze kev/s (s%.zg)"
+
+## UI: Settings
+[STR_SETTINGS] = "設定"
+[STR_DARK_MODE] = "ダークモード"
+[STR_PANEL] = "パネル"
+[STR_LEFT] = "左"
+[STR_RIGHT] = "右"
+[STR_STEREO_3D] = "ステレオ3D"
+[STR_SEPARATION] = "分離"
+[STR_GAP] = "ギャップ"
+[STR_ARROWHEAD] = "アローヘッド"
+[STR_LINE_WIDTHS] = "線幅"
+[STR_COLORS] = "色"
+[STR_PARTICLES] = "粒子"
+[STR_LW_TRAIL] = "トレイル"
+[STR_LW_B_LINES] = "B lines"  # KEEP
+[STR_LW_FL_GC] = "FL GC"  # KEEP
+[STR_LW_FL_POS] = "FL pos"  # KEEP
+[STR_LW_ARROWS] = "矢"
+[STR_LW_KAPPA] = "κ / e₂"  # KEEP
+[STR_LW_AXES] = "軸"
+[STR_COLOR_V_ARROW] = "v arrow"  # KEEP
+[STR_COLOR_B_ARROW] = "B arrow"  # KEEP
+[STR_COLOR_F_ARROW] = "F arrow"  # KEEP
+[STR_COLOR_FIELD_LINES] = "フィールドライン"
+[STR_COLOR_FL_GC] = "FL GC"  # KEEP
+[STR_COLOR_FL_POS] = "FL pos"  # KEEP
+[STR_COLOR_KAPPA] = "κ-hat"  # KEEP
+[STR_COLOR_BINORMAL] = "Binormal"  # KEEP
+[STR_COLOR_AXES] = "軸"
+[STR_LANGUAGE] = "言語"
+
+## Color picker
+[STR_OK] = "OK"  # KEEP
+[STR_CANCEL] = "キャンセル"
+
+## HUD
+[STR_SHOW_UI] = "U: UIを表示"
+[STR_ARMED] = "武装した"
+
+## Splash
+[STR_TAP_CONTINUE] = "タップして続行します"
+
+## Plots
+[STR_PLOT_PITCH_ANGLE] = "ピッチ角"
+[STR_PLOT_MAG_MOMENT] = "磁気モーメント"
+[STR_PLOT_TIME] = "時間(秒)"
+
+## Playback picker
+[STR_OPEN_RECORDING] = "オープンレコーディング"
+[STR_NO_RECORDINGS] = "録音が見つかりませんでした。"
+[STR_OPEN] = "開ける"
+[STR_PICKER_HELP] = "クリックして選択、ダブルクリック、または開いて再生 |  キャンセルするには Esc |  入力して開きます"
+
+## Field model names
+[STR_MODEL_CIRCULAR] = "円形 B (定数 |B|)"
+[STR_MODEL_GRAD_B] = "線形 grad-B"
+[STR_MODEL_QUAD_GRAD] = "二次B級"
+[STR_MODEL_SINUSOIDAL] = "正弦波 grad-B"
+[STR_MODEL_NONPHYSICAL] = "非物理的 (div B != 0)"
+[STR_MODEL_DIPOLE] = "磁気双極子"
+[STR_MODEL_BOTTLE] = "磁気ボトル"
+[STR_MODEL_TOKAMAK] = "Tokamak"  # KEEP
+[STR_MODEL_STELLARATOR] = "Stellarator (NAX)"  # KEEP
+[STR_MODEL_TORUS] = "Torus"  # KEEP
+
+## Field parameters
+[STR_PARAM_B0] = "B0 (T)"  # KEEP
+[STR_PARAM_LAMBDA_1M] = "lambda (1/m)"  # KEEP
+[STR_PARAM_LAMBDA_1M2] = "lambda (1/m²)"  # KEEP
+[STR_PARAM_AMPLITUDE] = "振幅a"
+[STR_PARAM_WAVENUMBER] = "Wavenumber k (1/m)"  # KEEP
+[STR_PARAM_LAMBDA_TM] = "lambda (T/m)"  # KEEP
+[STR_PARAM_M_DIPOLE] = "M (T·m³)"  # KEEP
+[STR_PARAM_B0_BOTTLE] = "B0 (T)"  # KEEP
+[STR_PARAM_LM] = "Lm (m)"  # KEEP
+[STR_PARAM_R0] = "R0 (m)"  # KEEP
+[STR_PARAM_Q_SAFETY] = "安全率q"
+[STR_PARAM_A_MINOR] = "a (m)"  # KEEP
+[STR_PARAM_CONFIG] = "構成"
+[STR_PARAM_R0_PHYS] = "R0_phys (m)"  # KEEP
+[STR_PARAM_B0_PHYS] = "B0_phys (T)"  # KEEP
+[STR_STEL_CFG_R2] = "r2 s5.1 (QA)"  # KEEP
+[STR_STEL_CFG_LP22] = "Precise QA (LP22)"  # KEEP
+
+## Tutorial prompts
+[STR_TUT_PROMPT] = "チュートリアルを見たいですか?"
+[STR_TUT_PROMPT_SUB] = "インターフェイスとコントロールの簡単なチュートリアル。"
+[STR_TUT_MODE_Q] = "どの程度の詳細をご希望ですか？"
+[STR_TUT_BRIEF] = "簡単な概要"
+[STR_TUT_DETAILED] = "詳細なウォークスルー"
+[STR_TUT_NO_THANKS] = "結構です"
+[STR_TUT_YES] = "はい"
+[STR_TUT_STOP] = "停止"
+[STR_TUT_CONTINUE] = "続く"
+[STR_TUT_DONE_HINT] = "終わり！準備ができたら「続行」を押します。"
+
+## Tutorial steps (brief)
+[STR_TUT_S0_BRIEF] = "シミュレーションは一時停止されます。スペースバーを押して再生または一時停止します。"
+[STR_TUT_S1_BRIEF] = "右クリックしてドラッグし、カメラを回転させます。スクロールしてズームします。色付きの軸は、x (赤)、y (緑)、z (青) を示します。"
+[STR_TUT_S2_BRIEF] = "シーン内の曲線は磁力線です。それらは磁場の方向と形状を示します。"
+[STR_TUT_S3_BRIEF] = "F を押して、カメラでパーティクルを追跡します。スクロールして軌道の近くまでズームインします。"
+[STR_TUT_S4_BRIEF] = "粒子の矢印は速度 (v) と磁場の方向 (B) を示します。"
+[STR_TUT_S5_BRIEF] = "ローレンツ力 F = q(v × B) は、v と B の両方に垂直です。その単位ベクトルが矢印として示されています。"
+[STR_TUT_S6_BRIEF] = "V を押すと磁場の方向に沿って見ることができます。矢印キーでビューの方向を回転します。"
+[STR_TUT_S7_BRIEF] = "サイド パネル (U に切り替え) には、モデル/パーティクル、再生、表示、および読み出しという折りたたみ可能なセクションがあります。"
+[STR_TUT_S8_BRIEF] = "エネルギー(カスタムの場合は速度)やピッチ角などのパーティクル設定は、リセット(R)するか、Shift+クリックで新しいパーティクルを配置するときに有効になります。"
+[STR_TUT_S9_BRIEF] = "ドロップダウンからダイポールフィールドモデルを選択してみてください。機種を切り替えるとビューが自動的にリセットされます。"
+[STR_TUT_S10_BRIEF] = "テレメトリ プロットは、ピッチ角と磁気モーメント対時間を示します。"
+[STR_TUT_S11_BRIEF] = "0 を押すとカメラ ビューがリセットされます。次に、左 Shift キーを押したままシーン内をクリックして追加のパーティクルを配置します。タブサイクルの選択。"
+[STR_TUT_S12_BRIEF] = "R を押すと、シミュレーションが単一のパーティクルにリセットされます。"
+[STR_TUT_S13_BRIEF] = "再生でトリガー録画を有効にし、R を押してビデオ録画を開始および停止します。 Shift+P はイベント ログを再生します。"
+[STR_TUT_S14_BRIEF] = "これで要点は網羅されています。 F1 キーを押すと、いつでもヘルプ リファレンスが開きます。"
+
+## Tutorial steps (detailed)
+[STR_TUT_S0_DETAIL] = "シミュレーションは一時停止されます。スペースバーを押して再生または一時停止します。一時停止中に、N を押して 1 タイムステップ進むか、P を押して後戻りします。いずれかのキーを押し続けると、現在の再生速度で連続的に進みます。"
+[STR_TUT_S1_DETAIL] = "右クリックしてドラッグし、ターゲット ポイントを中心にカメラを回転させます。スクロールして拡大または縮小します。原点の色付きの軸は、x (赤)、y (緑)、z (青) を示します。 Shift キーを押しながら右ドラッグして、原点の周りを周回します。ビューを中央に戻すには、0 を押します。ベクトル矢印は今のところ非表示になっているので、軌道とフィールドのジオメトリをはっきりと見ることができます。"
+[STR_TUT_S2_DETAIL] = "磁力線は領域全体にわたって B の方向をたどります。粒子はこれらの線に沿って旋回して漂います。 [表示] セクションでは、平均軌道中心に従う誘導中心フィールド ライン (GC fl) と、粒子の現在位置を通る位置フィールド ライン (FL pos) を有効にすることもできます。"
+[STR_TUT_S3_DETAIL] = "F を押してフォローモードを切り替えます。カメラはパーティクルの位置を追跡しながら、オービットやズームを行うことができます。追跡したら、スクロールして粒子の近くにズームインします。次の手順では、パーティクルの位置でベクトル矢印がオンになるため、近づくと見やすくなります。"
+[STR_TUT_S4_DETAIL] = "ベロシティと B フィールドの矢印がオンになりました。速度ベクトル (v) は、粒子の瞬間的な動きの方向を示します。磁場ベクトル (B) は、局所的な磁場の方向を示します。デフォルトではどちらも単位ベクトルとして描画されます。表示セクションのスケール モードを有効にして、代わりに大きさを表示します。"
+[STR_TUT_S5_DETAIL] = "ローレンツ力 F = q(v × B) は、速度と磁場の両方に対して常に垂直です。これは、粒子の経路をらせん状に湾曲させるものです。その単位ベクトルが矢印として表示されます。サイド パネルの [表示] セクションで、v、B、および F ベクトルを個別に切り替えることができます。"
+[STR_TUT_S6_DETAIL] = "V を押すと、フリー カメラ、+B に沿った視点、および -B に沿った視点の間で切り替わります。フィールド位置合わせビューでは、曲率ベクトル (κ) と従法線が矢印として表示されます。矢印キーは、画面上で κ が指す方向を回転します。このビューでは、B に垂直なドリフト運動が明らかになります。"
+[STR_TUT_S7_DETAIL] = "U を押してサイド パネルを表示または非表示にします。 4つの折りたたみ可能なセクションがあります。モデル/粒子では、磁場の形状と粒子種、エネルギー、ピッチ角を選択します。再生はシミュレーション速度と記録を制御します。表示は視覚要素を切り替えます。読み出しにはライブ診断が表示されます。歯車ボタンをクリックすると、色と線幅の設定が開きます。"
+[STR_TUT_S8_DETAIL] = "[モデル/パーティクル] セクションでは、種、エネルギー (またはカスタム種の場合は速度)、およびピッチ角を変更できます。これらはテンプレートです。次に R を押してリセットするか、左 Shift キーを押しながらクリックして新しいパーティクルを配置したときに有効になります。既存のパーティクルは元のパラメータを保持します。"
+[STR_TUT_S9_DETAIL] = "[フィールド モデル] ドロップダウンには、円形、grad-B、双極子、磁気ボトル、トカマクなどの 10 個の磁場ジオメトリがリストされます。各モデルには調整可能なパラメータがあります。新しいモデルを選択すると、パーティクルとカメラがデフォルトにリセットされます。捕捉された粒子の動きを確認するには、双極子モデルを選択してみてください。"
+[STR_TUT_S10_DETAIL] = "下のプロットは、ピッチ角と磁気モーメント (μ) を時間の関数として示しています。純粋な磁場では、μ は断熱不変量であり、ほぼ一定のままであるはずです。プロット範囲ボタン (x1/x10/x100) は、表示される履歴の量を制御します。オートスケールはピッチ軸範囲を自動的に調整します。"
+[STR_TUT_S11_DETAIL] = "0 を押すと、カメラがデフォルトのビューにリセットされます。次に、左 Shift キーを押しながら 3D シーン内をクリックして、現在の種、エネルギー、ピッチ設定で新しいパーティクルを配置します。最大 16 個の粒子を同時に追跡できます。 Tab キーを押すと、カメラがどのパーティクルを追跡し、その診断が表示されるかを切り替えます。"
+[STR_TUT_S12_DETAIL] = "R を押してシミュレーションをリセットします。これにより、配置されたすべてのパーティクルがクリアされ、現在の設定を持つ単一のパーティクルに戻ります。パネル内の種、エネルギー、速度、ピッチ角に加えた変更はリセット時に適用されます。"
+[STR_TUT_S13_DETAIL] = "「再生」セクションで、「トリガー記録」を有効にします。次に、R を押してシミュレーションをリセットし、H.264 ビデオの録画を開始します。もう一度Rを押すと停止します。イベント ログはビデオと一緒に保存されます。 Shift+P を押して以前の記録を開いて再生し、正確なシミュレーションを再現します。"
+[STR_TUT_S14_DETAIL] = "これで要点は網羅されています。 F1 キーを押すと、いつでもヘルプ リファレンスが開きます。このヘルプ リファレンスには、キーボード ショートカット、物理学、フィールド モデル、インターフェイスに関する詳細なドキュメントが含まれています。設定パネル (歯車アイコン) では、色と線幅をカスタマイズできます。探索をお楽しみください。"
+
+## Help structural
+[STR_HELP_TITLE] = "ローレンツトレーサーのヘルプ"
+[STR_HELP_TAB_KEYS] = "キー"
+[STR_HELP_TAB_PHYSICS] = "物理"
+[STR_HELP_TAB_FIELDS] = "フィールド"
+[STR_HELP_TAB_INTERFACE] = "インタフェース"
+[STR_HELP_TAB_ABOUT] = "について"
+[STR_HELP_FOOTER] = "Esc または F1 を押して閉じる |  矢印キーまたは Tab でタブを切り替えます。  スクロールして移動します"
+[STR_HELP_RUN_TUTORIAL] = "チュートリアルを実行する"
+[STR_HELP_RUN_TUTORIAL_DESC] = "インターフェイスとコントロールを段階的に説明します。"
+[STR_HELP_FONT_SIZE] = "フォントサイズ"
+[STR_HELP_FONT_SIZE_DESC] = "Cmd+Plus / Cmd+Minus は、マウスが置かれている領域に応じて、UI パネル、ヘルプ オーバーレイ、テレメトリ プロットのフォント サイズを個別に調整します。 Cmd+0 を押すとデフォルトにリセットされます。すべてのフォント サイズはセッション間で保存されます。"
+[STR_HELP_FACTORY_RESET] = "工場出荷時設定にリセットする"
+[STR_HELP_FACTORY_RESET_DESC] = "保存された設定を削除し、すべてのデフォルトを復元します。"
+
+## Language selection
+[STR_LANG_TITLE] = "Language / Langue / Sprache"  # KEEP
+[STR_LANG_CONTINUE] = "続く"

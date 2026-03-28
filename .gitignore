@@ -1,0 +1,16 @@
+build/
+build-*/
+dist/
+.cache/
+.vscode/
+.idea/
+*.o
+*.a
+*.dylib
+*.so
+*.dll
+*.exe
+lorentz_tracer
+compile_commands.json
+.DS_Store
+*.mp4

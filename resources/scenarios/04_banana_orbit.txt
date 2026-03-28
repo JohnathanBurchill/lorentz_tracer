@@ -1,0 +1,68 @@
+# Lorentz Tracer scenario
+title Banana Orbit in a Tokamak
+description
+Trapped particles in a tokamak trace banana-shaped
+orbits due to the interplay of grad-B drift and the
+toroidal geometry.
+end_description
+
+# Initial state: proton in tokamak at large pitch angle
+model 7
+param 0 5.0  # B0 (T)
+param 1 6.0  # R0 (m)
+param 2 2.0  # Safety factor q
+param 3 2.0  # a (m)
+species 2  # Proton
+E_keV 100
+pitch_deg 80
+init_pos 7 0 0
+playback_speed 0.5
+speed_range 1
+show_field_lines 1
+show_velocity_vec 0
+show_B_vec 0
+follow_particle 0
+cam_field_aligned 0
+camera_pos 0 18 10
+camera_target 6 0 0
+camera_fovy 45
+
+fps 60
+
+# Events: frame real_time sim_time key value
+
+0 0.0 0.0 dialog
+This is a tokamak: a donut-shaped magnetic confinement
+device. The field has both toroidal (around the donut)
+and poloidal (around the cross-section) components.
+The field is stronger on the inner side (smaller R)
+than the outer side.
+end_dialog
+
+0 0.0 0.0 paused 0
+
+0 0.0 0.0 wait_seconds 4.0
+
+240 4.0 0.0 dialog
+This proton has a large pitch angle (80 degrees),
+meaning most of its velocity is perpendicular to B.
+As it moves along the field to the inner side where
+B is stronger, the mirror force reflects it back.
+The result is a trapped orbit that traces a banana
+shape in the poloidal cross-section.
+end_dialog
+
+240 4.0 0.0 wait_seconds 4.0
+
+480 8.0 0.0 dialog
+The banana orbit width depends on the particle energy,
+charge, and the tokamak geometry. These orbits are
+important in fusion physics because they determine
+particle transport and energy confinement.
+
+Try reducing the pitch angle to see the particle
+transition from trapped (banana) to passing (circling
+the full torus).
+end_dialog
+
+540 9.0 0.0 end

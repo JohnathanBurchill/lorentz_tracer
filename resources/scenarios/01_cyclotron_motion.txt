@@ -1,0 +1,100 @@
+# Lorentz Tracer scenario
+title Cyclotron Motion
+description
+A charged particle gyrates around magnetic field lines.
+The orbit radius (gyroradius) depends on the particle's
+perpendicular velocity and the field strength.
+end_description
+
+# Initial state: electron at 90-degree pitch in uniform circular field
+model 0
+param 0 1.0  # B0 (T)
+species 0  # Electron
+E_keV 10
+pitch_deg 90
+init_pos 5 0 0
+playback_speed 0.05
+speed_range 1
+show_field_lines 0
+show_velocity_vec 0
+show_B_vec 0
+follow_particle 0
+cam_field_aligned 0
+camera_pos 5 0 12
+camera_target 5 0 0
+camera_fovy 45
+
+fps 60
+
+# Events: frame real_time sim_time key value
+
+0 0.0 0.0 dialog
+This is an electron in a uniform magnetic field
+(the Circular model, where |B| is constant everywhere).
+The pitch angle is 90 degrees: all of the electron's
+velocity is perpendicular to B.
+end_dialog
+
+0 0.0 0.0 paused 0
+
+0 0.0 0.0 wait_seconds 2.0
+
+120 2.0 0.0 dialog
+The electron traces a perfect circle. This is cyclotron
+motion, the most basic orbit in a magnetic field.
+The radius of this circle is the gyroradius:
+r_g = mv_perp / (|q|B).
+end_dialog
+
+120 2.0 0.0 show_velocity_vec 1
+
+120 2.0 0.0 wait_seconds 2.0
+
+240 4.0 0.0 dialog
+The green arrow is the velocity vector. Notice it is
+always perpendicular to the orbit, and its magnitude
+stays constant: the magnetic force does no work.
+end_dialog
+
+240 4.0 0.0 show_B_vec 1
+
+240 4.0 0.0 wait_seconds 2.0
+
+360 6.0 0.0 dialog
+The blue arrow is the magnetic field B. It points
+straight along the z-axis everywhere in this model.
+The velocity is always perpendicular to B.
+
+Try pressing V to see the orbit from the field-aligned
+view (looking along B).
+end_dialog
+
+360 6.0 0.0 wait_action field_aligned
+
+420 7.0 0.0 dialog
+From this angle the circular orbit is clearly visible.
+The Lorentz force qv x B always points toward the
+center of the circle, providing the centripetal
+acceleration.
+
+Press V again to return to the free camera.
+end_dialog
+
+420 7.0 0.0 wait_action field_aligned
+
+480 8.0 0.0 dialog
+Now try changing the pitch angle in the UI panel to
+something less than 90 degrees and watch what happens
+to the orbit shape.
+end_dialog
+
+480 8.0 0.0 wait_action change_pitch
+
+540 9.0 0.0 dialog
+With a pitch angle less than 90 degrees, the particle
+has a velocity component parallel to B and traces a
+helix instead of a circle. The parallel motion is
+unaffected by the magnetic force.
+end_dialog
+
+600 10.0 0.0 end

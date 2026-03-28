@@ -1,0 +1,220 @@
+# All string translations: en → zh-CN
+# Generated on 2026-03-28
+# Review carefully. Preserve format specifiers (%d, %.2f, etc.)
+# Preserve keyboard shortcuts (F1, R, V, F, U, Tab, Space, etc.)
+# Preserve physics symbols (v, B, F, κ, μ, α)
+
+## UI: Model / Particle
+[STR_MODEL_PARTICLE] = "模型/粒子"
+[STR_FIELD_MODEL] = "现场模型"
+[STR_CONFIG] = "配置："
+[STR_PARTICLE] = "粒子"
+[STR_SPECIES_ELECTRON] = "电子"
+[STR_SPECIES_POSITRON] = "正电子"
+[STR_SPECIES_PROTON] = "质子"
+[STR_SPECIES_ALPHA] = "阿尔法"
+[STR_SPECIES_OPLUS] = "O+"  # KEEP
+[STR_SPECIES_CUSTOM] = "风俗"
+[STR_CHARGE] = "收费"
+[STR_MASS] = "大量的"
+[STR_SPEED] = "速度"
+[STR_ENERGY] = "活力"
+[STR_PITCH] = "沥青"
+
+## UI: Playback / Record
+[STR_PLAYBACK_RECORD] = "回放/录音"
+[STR_TRIGGER_REC] = "触发记录 (R)"
+[STR_TRIGGER_REC_ACTIVE] = "触发录制（录音...）"
+[STR_PAUSE] = "暂停"
+[STR_RESUME] = "恢复"
+[STR_RESET] = "重置"
+
+## UI: Display
+[STR_DISPLAY] = "展示"
+[STR_TRAIL] = "踪迹"
+[STR_FIELD_LINES] = "场线"
+[STR_GC_FL] = "GC fl"  # KEEP
+[STR_FL_POS] = "FL pos"  # KEEP
+[STR_GC_LEN] = "GC len"  # KEEP
+[STR_SCALED] = "缩放"
+[STR_V_SCALE] = "v scale"  # KEEP
+[STR_B_SCALE] = "B scale"  # KEEP
+[STR_F_SCALE] = "F scale"  # KEEP
+[STR_GIJ] = "G_ij (G)"  # KEEP
+[STR_SCALE_BAR] = "比例尺"
+[STR_AXES] = "轴"
+[STR_PLOTS] = "地块"
+[STR_BOTTOM] = "底部"
+[STR_TOP] = "顶部"
+[STR_AUTOSCALE] = "自动缩放"
+[STR_RADIATION] = "辐射"
+[STR_RAD_X] = "Rad x"  # KEEP
+[STR_RELATIVISTIC] = "相对论性"
+[STR_FOLLOW] = "跟随 (F)"
+[STR_CAM_FREE] = "自由（五）"
+[STR_CAM_PB] = "+b (V)"  # KEEP
+[STR_CAM_MB] = "-b (V)"  # KEEP
+
+## UI: Readouts
+[STR_READOUTS] = "读数"
+[STR_FMT_PARTICLE_N] = "粒子 %d / %d（选项卡）"
+[STR_FMT_TIME] = "t = %.4g·s"
+[STR_FMT_ENERGY_ERR] = "|dE|/E = %.2e"
+[STR_FMT_PITCH] = "螺距 = %.1f 度"
+[STR_FMT_MU] = "mu = %.3e J/T"
+[STR_FMT_BMAG] = "|B| = %.3e T"
+[STR_FMT_ENERGY_MEV] = "E = %.3f MeV"
+[STR_FMT_ENERGY_KEV] = "E = %.3f keV"
+[STR_FMT_PRAD] = "P_rad = %.3e W"
+[STR_FMT_DEDT] = "de/dt = %.ze kev/s"
+[STR_FMT_DEDT_MULT] = "de/dt = %.ze kev/s (s%.zg)"
+
+## UI: Settings
+[STR_SETTINGS] = "设置"
+[STR_DARK_MODE] = "深色模式"
+[STR_PANEL] = "控制板"
+[STR_LEFT] = "左边"
+[STR_RIGHT] = "正确的"
+[STR_STEREO_3D] = "立体3D"
+[STR_SEPARATION] = "分离"
+[STR_GAP] = "差距"
+[STR_ARROWHEAD] = "箭头"
+[STR_LINE_WIDTHS] = "线宽"
+[STR_COLORS] = "颜色"
+[STR_PARTICLES] = "颗粒"
+[STR_LW_TRAIL] = "踪迹"
+[STR_LW_B_LINES] = "B lines"  # KEEP
+[STR_LW_FL_GC] = "FL GC"  # KEEP
+[STR_LW_FL_POS] = "FL pos"  # KEEP
+[STR_LW_ARROWS] = "箭头"
+[STR_LW_KAPPA] = "κ / e₂"  # KEEP
+[STR_LW_AXES] = "轴"
+[STR_COLOR_V_ARROW] = "v arrow"  # KEEP
+[STR_COLOR_B_ARROW] = "B arrow"  # KEEP
+[STR_COLOR_F_ARROW] = "F arrow"  # KEEP
+[STR_COLOR_FIELD_LINES] = "场线"
+[STR_COLOR_FL_GC] = "FL GC"  # KEEP
+[STR_COLOR_FL_POS] = "FL pos"  # KEEP
+[STR_COLOR_KAPPA] = "κ-hat"  # KEEP
+[STR_COLOR_BINORMAL] = "Binormal"  # KEEP
+[STR_COLOR_AXES] = "轴"
+[STR_LANGUAGE] = "语言"
+
+## Color picker
+[STR_OK] = "OK"  # KEEP
+[STR_CANCEL] = "取消"
+
+## HUD
+[STR_SHOW_UI] = "U：显示用户界面"
+[STR_ARMED] = "武装"
+
+## Splash
+[STR_TAP_CONTINUE] = "点击继续"
+
+## Plots
+[STR_PLOT_PITCH_ANGLE] = "俯仰角"
+[STR_PLOT_MAG_MOMENT] = "磁矩"
+[STR_PLOT_TIME] = "时间（秒）"
+
+## Playback picker
+[STR_OPEN_RECORDING] = "打开录音"
+[STR_NO_RECORDINGS] = "未找到任何录音。"
+[STR_OPEN] = "打开"
+[STR_PICKER_HELP] = "点击选择、双击或打开即可播放|  Esc 取消 |  输入打开"
+
+## Field model names
+[STR_MODEL_CIRCULAR] = "循环 B (const |B|)"
+[STR_MODEL_GRAD_B] = "线性等级-B"
+[STR_MODEL_QUAD_GRAD] = "二次梯度-B"
+[STR_MODEL_SINUSOIDAL] = "正弦梯度-B"
+[STR_MODEL_NONPHYSICAL] = "非物理 (div B != 0)"
+[STR_MODEL_DIPOLE] = "磁偶极子"
+[STR_MODEL_BOTTLE] = "磁力瓶"
+[STR_MODEL_TOKAMAK] = "Tokamak"  # KEEP
+[STR_MODEL_STELLARATOR] = "Stellarator (NAX)"  # KEEP
+[STR_MODEL_TORUS] = "Torus"  # KEEP
+
+## Field parameters
+[STR_PARAM_B0] = "B0 (T)"  # KEEP
+[STR_PARAM_LAMBDA_1M] = "lambda (1/m)"  # KEEP
+[STR_PARAM_LAMBDA_1M2] = "lambda (1/m²)"  # KEEP
+[STR_PARAM_AMPLITUDE] = "幅度a"
+[STR_PARAM_WAVENUMBER] = "Wavenumber k (1/m)"  # KEEP
+[STR_PARAM_LAMBDA_TM] = "lambda (T/m)"  # KEEP
+[STR_PARAM_M_DIPOLE] = "M (T·m³)"  # KEEP
+[STR_PARAM_B0_BOTTLE] = "B0 (T)"  # KEEP
+[STR_PARAM_LM] = "Lm (m)"  # KEEP
+[STR_PARAM_R0] = "R0 (m)"  # KEEP
+[STR_PARAM_Q_SAFETY] = "安全系数q"
+[STR_PARAM_A_MINOR] = "a (m)"  # KEEP
+[STR_PARAM_CONFIG] = "配置"
+[STR_PARAM_R0_PHYS] = "R0_phys (m)"  # KEEP
+[STR_PARAM_B0_PHYS] = "B0_phys (T)"  # KEEP
+[STR_STEL_CFG_R2] = "r2 s5.1 (QA)"  # KEEP
+[STR_STEL_CFG_LP22] = "Precise QA (LP22)"  # KEEP
+
+## Tutorial prompts
+[STR_TUT_PROMPT] = "您想看教程吗？"
+[STR_TUT_PROMPT_SUB] = "界面和控件的简短演练。"
+[STR_TUT_MODE_Q] = "您想要多少细节？"
+[STR_TUT_BRIEF] = "简要概述"
+[STR_TUT_DETAILED] = "详细演练"
+[STR_TUT_NO_THANKS] = "不，谢谢"
+[STR_TUT_YES] = "是的"
+[STR_TUT_STOP] = "停止"
+[STR_TUT_CONTINUE] = "继续"
+[STR_TUT_DONE_HINT] = "完毕！准备好后按继续。"
+
+## Tutorial steps (brief)
+[STR_TUT_S0_BRIEF] = "模拟暂停。按空格键播放或暂停。"
+[STR_TUT_S1_BRIEF] = "右键单击并拖动以绕相机旋转。滚动至缩放。彩色轴显示 x（红色）、y（绿色）、z（蓝色）。"
+[STR_TUT_S2_BRIEF] = "场景中的曲线是磁场线。它们显示了磁场的方向和几何形状。"
+[STR_TUT_S3_BRIEF] = "按 F 键用相机跟踪粒子。滚动以放大靠近轨道的位置。"
+[STR_TUT_S4_BRIEF] = "粒子处的箭头显示速度 (v) 和磁场方向 (B)。"
+[STR_TUT_S5_BRIEF] = "洛伦兹力 F = q(v × B) 垂直于 v 和 B。其单位矢量现在显示为箭头。"
+[STR_TUT_S6_BRIEF] = "按 V 沿磁场方向观察。箭头键旋转视图方向。"
+[STR_TUT_S7_BRIEF] = "侧面板（U 切换）具有可折叠部分：模型/粒子、播放、显示和读数。"
+[STR_TUT_S8_BRIEF] = "能量（或自定义速度）和俯仰角等粒子设置在重置 (R) 或使用 Shift+单击放置新粒子时生效。"
+[STR_TUT_S9_BRIEF] = "尝试从下拉列表中选择偶极场模型。切换模型时视图会自动重置。"
+[STR_TUT_S10_BRIEF] = "遥测图显示了桨距角和磁矩随时间的变化。"
+[STR_TUT_S11_BRIEF] = "按 0 重置摄像机视图。然后按住左 Shift 键并在场景中单击以放置其他粒子。选项卡循环选择。"
+[STR_TUT_S12_BRIEF] = "按 R 将模拟重置回单个粒子。"
+[STR_TUT_S13_BRIEF] = "在播放中启用触发录制，然后按 R 开始和停止视频录制。 Shift-P 重播事件日志。"
+[STR_TUT_S14_BRIEF] = "这涵盖了要点。随时按 F1 可打开帮助参考。"
+
+## Tutorial steps (detailed)
+[STR_TUT_S0_DETAIL] = "模拟暂停。按空格键播放或暂停。暂停时，按 N 前进一时间步，或按 P 后退一步。按住任一键以当前播放速度连续前进。"
+[STR_TUT_S1_DETAIL] = "右键单击并拖动以使相机围绕目标点旋转。滚动以放大和缩小。原点处的彩色轴显示 x（红色）、y（绿色）、z（蓝色）。按住 Shift 键并右键拖动，绕原点旋转。按 0 重新居中视图。矢量箭头暂时隐藏，因此您可以清楚地看到轨道和场几何形状。"
+[STR_TUT_S2_DETAIL] = "场线在整个域中追踪 B 的方向。粒子沿着这些线旋转并漂移。在“显示”部分中，您还可以启用跟随平均轨道中心的引导中心场线 (GC fl)，以及穿过粒子当前位置的位置场线 (FL pos)。"
+[STR_TUT_S3_DETAIL] = "按 F 切换跟随模式。相机会跟踪粒子的位置，而您仍然可以绕轨道运行和缩放。跟随后，滚动以放大靠近粒子。下一步将在粒子位置打开矢量箭头，因此靠近可以更容易看到它们。"
+[STR_TUT_S4_DETAIL] = "速度和 B 场箭头现已打开。速度矢量 (v) 显示粒子的瞬时运动方向。磁场矢量 (B) 显示局部磁场方向。默认情况下，两者都绘制为单位向量；在“显示”部分中启用“缩放”模式以显示其大小。"
+[STR_TUT_S5_DETAIL] = "洛伦兹力 F = q(v × B) 始终垂直于速度和磁场。这就是将粒子的路径弯曲成螺旋的原因。它的单位向量现在显示为箭头。您可以在侧面板的“显示”部分中单独切换 v、B 和 F 向量中的任何一个。"
+[STR_TUT_S6_DETAIL] = "按 V 键可在空闲摄像机、沿 +B 观看和沿 -B 观看之间循环。在场对齐视图中，曲率矢量 (κ) 和副法线显示为箭头。箭头键旋转 κ 在屏幕上指向的方向。该视图揭示了垂直于 B 的漂移运动。"
+[STR_TUT_S7_DETAIL] = "按 U 显示或隐藏侧面板。它有四个可折叠部分。模型/粒子选择磁场几何形状和粒子种类、能量和俯仰角。播放控制模拟速度和录制。显示切换视觉元素。读数显示实时诊断。齿轮按钮可打开颜色和线宽的设置。"
+[STR_TUT_S8_DETAIL] = "在“模型/粒子”部分中，您可以更改物种、能量（或自定义物种的速度）和俯仰角。这些是模板：它们会在您下次按 R 重置时生效，或者在您使用 Left Shift + 单击放置新粒子时生效。现有粒子保持其原始参数。"
+[STR_TUT_S9_DETAIL] = "场模型下拉列表列出了 10 种磁场几何形状：圆形、B 级、偶极子、磁瓶、托卡马克等。每个模型都有可调节的参数。选择新模型会将粒子和相机重置为默认值。尝试选择偶极子模型来查看捕获的粒子运动。"
+[STR_TUT_S10_DETAIL] = "下图显示了桨距角和磁矩 (μ) 作为时间的函数。在纯磁场中，μ 是绝热不变量，应该保持几乎恒定。绘图范围按钮 (x1/x10/x100) 控制显示的历史记录量。自动缩放自动调整俯仰轴范围。"
+[STR_TUT_S11_DETAIL] = "按 0 将相机重置为默认视图。然后按住 Left Shift 键并在 3D 场景中单击以放置具有当前物种、能量和音高设置的新粒子。最多可同时追踪 16 个粒子。按 Tab 循环相机跟踪哪个粒子并显示其诊断。"
+[STR_TUT_S12_DETAIL] = "按 R 重置模拟。这将清除所有放置的粒子并返回到具有当前设置的单个粒子。您对面板中的物种、能量、速度或俯仰角度所做的任何更改都会在重置时应用。"
+[STR_TUT_S13_DETAIL] = "在“播放”部分中，启用“触发录制”。然后按 R 重置模拟并开始录制 H.264 视频。再次按 R 停止。事件日志与视频一起保存。按 Shift-P 打开并重播之前的录音，再现精确的模拟。"
+[STR_TUT_S14_DETAIL] = "这涵盖了要点。随时按 F1 可打开帮助参考，其中包含有关键盘快捷键、物理场、场模型和界面的详细文档。设置面板（齿轮图标）具有颜色和线宽自定义功能。享受探索的乐趣。"
+
+## Help structural
+[STR_HELP_TITLE] = "洛伦兹追踪器帮助"
+[STR_HELP_TAB_KEYS] = "按键"
+[STR_HELP_TAB_PHYSICS] = "
+???"
+[STR_HELP_TAB_FIELDS] = "领域"
+[STR_HELP_TAB_INTERFACE] = "界面"
+[STR_HELP_TAB_ABOUT] = "关于"
+[STR_HELP_FOOTER] = "Esc 或 F1 关闭 |  箭头键或 Tab 切换选项卡 |  滚动导航"
+[STR_HELP_RUN_TUTORIAL] = "运行教程"
+[STR_HELP_RUN_TUTORIAL_DESC] = "逐步浏览界面和控件。"
+[STR_HELP_FONT_SIZE] = "字体大小"
+[STR_HELP_FONT_SIZE_DESC] = "Cmd+Plus / Cmd+Minus 根据鼠标所在区域独立调整 UI 面板的字体大小、帮助叠加和遥测图。 Cmd+0 重置为默认值。所有字体大小都会在会话之间保存。"
+[STR_HELP_FACTORY_RESET] = "恢复出厂设置"
+[STR_HELP_FACTORY_RESET_DESC] = "删除保存的设置并恢复所有默认设置。"
+
+## Language selection
+[STR_LANG_TITLE] = "Language / Langue / Sprache"  # KEEP
+[STR_LANG_CONTINUE] = "继续"

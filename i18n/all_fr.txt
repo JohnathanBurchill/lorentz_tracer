@@ -1,0 +1,185 @@
+# All string translations: en → fr
+# Generated on 2026-03-28
+# Review carefully. Preserve format specifiers (%d, %.2f, etc.)
+# Preserve keyboard shortcuts (F1, R, V, F, U, Tab, Space, etc.)
+# Preserve physics symbols (v, B, F, κ, μ, α)
+[STR_MODEL_PARTICLE] = "Modèle / Particule"
+[STR_FIELD_MODEL] = "Modèle de terrain"
+[STR_CONFIG] = "Configuration :"
+[STR_PARTICLE] = "Particule"
+[STR_SPECIES_ELECTRON] = "Électron"
+[STR_SPECIES_POSITRON] = "Positron"
+[STR_SPECIES_PROTON] = "Proton"
+[STR_SPECIES_ALPHA] = "Alpha"
+[STR_SPECIES_OPLUS] = "O+"  # KEEP
+[STR_SPECIES_CUSTOM] = "Coutume"
+[STR_CHARGE] = "Charge"
+[STR_MASS] = "Masse"
+[STR_SPEED] = "Vitesse"
+[STR_ENERGY] = "Énergie"
+[STR_PITCH] = "Pas"
+[STR_PLAYBACK_RECORD] = "Lecture/Enregistrement"
+[STR_TRIGGER_REC] = "Déclencher l'enregistrement (R)"
+[STR_TRIGGER_REC_ACTIVE] = "Déclencher l'enregistrement (enregistrement...)"
+[STR_PAUSE] = "Pause"
+[STR_RESUME] = "CV"
+[STR_RESET] = "Réinitialiser"
+[STR_DISPLAY] = "Afficher"
+[STR_TRAIL] = "Piste"
+[STR_FIELD_LINES] = "Lignes de champ"
+[STR_GC_FL] = "GC fl"  # KEEP
+[STR_FL_POS] = "FL pos"  # KEEP
+[STR_GC_LEN] = "GC len"  # KEEP
+[STR_SCALED] = "Escaladé"
+[STR_V_SCALE] = "v scale"  # KEEP
+[STR_B_SCALE] = "B scale"  # KEEP
+[STR_F_SCALE] = "F scale"  # KEEP
+[STR_GIJ] = "G_ij (G)"  # KEEP
+[STR_SCALE_BAR] = "Barre d'échelle"
+[STR_AXES] = "Haches"
+[STR_PLOTS] = "Parcelles"
+[STR_BOTTOM] = "Bas"
+[STR_TOP] = "Haut"
+[STR_AUTOSCALE] = "Mise à l'échelle automatique"
+[STR_RADIATION] = "Radiation"
+[STR_RAD_X] = "Rad x"  # KEEP
+[STR_RELATIVISTIC] = "Relativiste"
+[STR_FOLLOW] = "Suivre (F)"
+[STR_CAM_FREE] = "Gratuit (V)"
+[STR_CAM_PB] = "+b (V)"  # KEEP
+[STR_CAM_MB] = "-b (V)"  # KEEP
+[STR_READOUTS] = "Lectures"
+[STR_FMT_PARTICLE_N] = "particule %d / %d (Tabulation)"
+[STR_FMT_TIME] = "t = %.4g s"
+[STR_FMT_ENERGY_ERR] = "|Grand E|/E = %.2"
+[STR_FMT_PITCH] = "pas = %.1f degré"
+[STR_FMT_MU] = "mu = %.3e J/T"
+[STR_FMT_BMAG] = "|B| = %.3eT"
+[STR_FMT_ENERGY_MEV] = "E = %.3f MeV"
+[STR_FMT_ENERGY_KEV] = "E = %.3f keV"
+[STR_FMT_PRAD] = "P_rad = %.3e W"
+[STR_FMT_DEDT] = "de/dt = %.ze kev/s"
+[STR_FMT_DEDT_MULT] = "de/dt = %.ze kev/s (s%.zg)"
+[STR_SETTINGS] = "Paramètres"
+[STR_DARK_MODE] = "Mode sombre"
+[STR_PANEL] = "Panneau"
+[STR_LEFT] = "Gauche"
+[STR_RIGHT] = "Droite"
+[STR_STEREO_3D] = "Stéréo 3D"
+[STR_SEPARATION] = "Séparation"
+[STR_GAP] = "Écart"
+[STR_ARROWHEAD] = "Pointe de flèche"
+[STR_LINE_WIDTHS] = "Largeurs de ligne"
+[STR_COLORS] = "Couleurs"
+[STR_PARTICLES] = "Particules"
+[STR_LW_TRAIL] = "Piste"
+[STR_LW_B_LINES] = "B lines"  # KEEP
+[STR_LW_FL_GC] = "FL GC"  # KEEP
+[STR_LW_FL_POS] = "FL pos"  # KEEP
+[STR_LW_ARROWS] = "Flèches"
+[STR_LW_KAPPA] = "κ / e₂"  # KEEP
+[STR_LW_AXES] = "Haches"
+[STR_COLOR_V_ARROW] = "v arrow"  # KEEP
+[STR_COLOR_B_ARROW] = "B arrow"  # KEEP
+[STR_COLOR_F_ARROW] = "F arrow"  # KEEP
+[STR_COLOR_FIELD_LINES] = "Lignes de champ"
+[STR_COLOR_FL_GC] = "FL GC"  # KEEP
+[STR_COLOR_FL_POS] = "FL pos"  # KEEP
+[STR_COLOR_KAPPA] = "κ-hat"  # KEEP
+[STR_COLOR_BINORMAL] = "Binormal"  # KEEP
+[STR_COLOR_AXES] = "Haches"
+[STR_LANGUAGE] = "Langue"
+[STR_OK] = "OK"  # KEEP
+[STR_CANCEL] = "Annuler"
+[STR_SHOW_UI] = "U : afficher l'interface utilisateur"
+[STR_ARMED] = "ARMÉ"
+[STR_TAP_CONTINUE] = "appuyez pour continuer"
+[STR_PLOT_PITCH_ANGLE] = "Angle d'inclinaison"
+[STR_PLOT_MAG_MOMENT] = "Moment magnétique"
+[STR_PLOT_TIME] = "Temps (s)"
+[STR_OPEN_RECORDING] = "Ouvrir l'enregistrement"
+[STR_NO_RECORDINGS] = "Aucun enregistrement trouvé."
+[STR_OPEN] = "Ouvrir"
+[STR_PICKER_HELP] = "Entrez pour ouvrirCliquez pour sélectionner, double-cliquez ou Ouvrir pour jouer |  Echap pour annuler |  "
+[STR_MODEL_CIRCULAR] = "Circulaire B (const |B|)"
+[STR_MODEL_GRAD_B] = "Grade linéaire-B"
+[STR_MODEL_QUAD_GRAD] = "Diplôme quadratique-B"
+[STR_MODEL_SINUSOIDAL] = "Grade sinusoïdal-B"
+[STR_MODEL_NONPHYSICAL] = "Non physique (div B != 0)"
+[STR_MODEL_DIPOLE] = "Dipôle magnétique"
+[STR_MODEL_BOTTLE] = "Bouteille magnétique"
+[STR_MODEL_TOKAMAK] = "Tokamak"  # KEEP
+[STR_MODEL_STELLARATOR] = "Stellarator (NAX)"  # KEEP
+[STR_MODEL_TORUS] = "Torus"  # KEEP
+[STR_PARAM_B0] = "B0 (T)"  # KEEP
+[STR_PARAM_LAMBDA_1M] = "lambda (1/m)"  # KEEP
+[STR_PARAM_LAMBDA_1M2] = "lambda (1/m²)"  # KEEP
+[STR_PARAM_AMPLITUDE] = "Amplitude une"
+[STR_PARAM_WAVENUMBER] = "Wavenumber k (1/m)"  # KEEP
+[STR_PARAM_LAMBDA_TM] = "lambda (T/m)"  # KEEP
+[STR_PARAM_M_DIPOLE] = "M (T·m³)"  # KEEP
+[STR_PARAM_B0_BOTTLE] = "B0 (T)"  # KEEP
+[STR_PARAM_LM] = "Lm (m)"  # KEEP
+[STR_PARAM_R0] = "R0 (m)"  # KEEP
+[STR_PARAM_Q_SAFETY] = "Facteur de sécurité q"
+[STR_PARAM_A_MINOR] = "a (m)"  # KEEP
+[STR_PARAM_CONFIG] = "Configuration"
+[STR_PARAM_R0_PHYS] = "R0_phys (m)"  # KEEP
+[STR_PARAM_B0_PHYS] = "B0_phys (T)"  # KEEP
+[STR_STEL_CFG_R2] = "r2 s5.1 (QA)"  # KEEP
+[STR_STEL_CFG_LP22] = "Precise QA (LP22)"  # KEEP
+[STR_TUT_PROMPT] = "Souhaitez-vous voir le tutoriel ?"
+[STR_TUT_PROMPT_SUB] = "Une brève présentation de l'interface et des commandes."
+[STR_TUT_MODE_Q] = "Combien de détails souhaiteriez-vous ?"
+[STR_TUT_BRIEF] = "Bref aperçu"
+[STR_TUT_DETAILED] = "Procédure pas à pas détaillée"
+[STR_TUT_NO_THANKS] = "Non merci"
+[STR_TUT_YES] = "Oui"
+[STR_TUT_STOP] = "Arrêt"
+[STR_TUT_CONTINUE] = "Continuer"
+[STR_TUT_DONE_HINT] = "Fait! Appuyez sur Continuer lorsque vous êtes prêt."
+[STR_TUT_S0_BRIEF] = "La simulation est interrompue. Appuyez sur la barre d'espace pour lire ou mettre en pause."
+[STR_TUT_S1_BRIEF] = "Cliquez avec le bouton droit et faites glisser pour mettre la caméra en orbite. Faites défiler pour zoomer. Les axes colorés montrent x (rouge), y (vert), z (bleu)."
+[STR_TUT_S2_BRIEF] = "Les courbes de la scène sont des lignes de champ magnétique. Ils montrent la direction et la géométrie du champ magnétique."
+[STR_TUT_S3_BRIEF] = "Appuyez sur F pour suivre la particule avec la caméra. Faites défiler pour zoomer près de l’orbite."
+[STR_TUT_S4_BRIEF] = "Les flèches sur la particule montrent la vitesse (v) et la direction du champ magnétique (B)."
+[STR_TUT_S5_BRIEF] = "La force de Lorentz F = q(v × B) est perpendiculaire à la fois à v et à B. Son vecteur unitaire est maintenant représenté par une flèche."
+[STR_TUT_S6_BRIEF] = "Appuyez sur V pour regarder dans la direction du champ magnétique. Les touches fléchées font pivoter l'orientation de la vue."
+[STR_TUT_S7_BRIEF] = "Le panneau latéral (U pour basculer) comporte des sections pliables : Modèle/Particule, Lecture, Affichage et Lectures."
+[STR_TUT_S8_BRIEF] = "Les paramètres des particules tels que l'énergie (ou la vitesse pour Custom) et l'angle de tangage prennent effet lors de la réinitialisation (R) ou lors du placement d'une nouvelle particule avec Maj+clic."
+[STR_TUT_S9_BRIEF] = "Essayez de sélectionner le modèle de champ dipolaire dans la liste déroulante. La vue se réinitialise automatiquement lors du changement de modèle."
+[STR_TUT_S10_BRIEF] = "Les tracés de télémétrie montrent l'angle de tangage et le moment magnétique en fonction du temps."
+[STR_TUT_S11_BRIEF] = "Appuyez sur 0 pour réinitialiser la vue de la caméra. Maintenez ensuite la touche Maj gauche et cliquez dans la scène pour placer des particules supplémentaires. Sélection des cycles d'onglets."
+[STR_TUT_S12_BRIEF] = "Appuyez sur R pour réinitialiser la simulation à une seule particule."
+[STR_TUT_S13_BRIEF] = "Activez Trigger rec dans Lecture, puis appuyez sur R pour démarrer et arrêter l’enregistrement vidéo. Shift-P relit les journaux d'événements."
+[STR_TUT_S14_BRIEF] = "Cela couvre l’essentiel. Appuyez sur F1 à tout moment pour ouvrir la référence d'aide."
+[STR_TUT_S0_DETAIL] = "La simulation est interrompue. Appuyez sur la barre d'espace pour lire ou mettre en pause. Pendant la pause, appuyez sur N pour avancer d'un pas de temps ou sur P pour reculer. Maintenez l’une ou l’autre touche pour avancer continuellement à la vitesse de lecture actuelle."
+[STR_TUT_S1_DETAIL] = "Cliquez avec le bouton droit et faites glisser pour faire orbiter la caméra autour du point cible. Faites défiler pour zoomer et dézoomer. Les axes colorés à l'origine montrent x (rouge), y (vert), z (bleu). Maj + faites glisser les orbites autour de l'origine. Appuyez sur 0 pour recentrer la vue. Les flèches vectorielles sont masquées pour l'instant afin que vous puissiez voir clairement la géométrie de l'orbite et du champ."
+[STR_TUT_S2_DETAIL] = "Les lignes de champ tracent la direction de B dans tout le domaine. La particule tourne et dérive le long de ces lignes. Dans la section Affichage, vous pouvez également activer la ligne de champ du centre de guidage (GC fl), qui suit le centre de l'orbite moyen, et la ligne de champ de position (FL pos) passant par l'emplacement actuel de la particule."
+[STR_TUT_S3_DETAIL] = "Appuyez sur F pour basculer en mode suivi. La caméra suit la position de la particule pendant que vous pouvez toujours orbiter et zoomer. Une fois suivi, faites défiler pour zoomer près de la particule. Les prochaines étapes activeront les flèches vectorielles à la position des particules, donc se rapprocher les rendra plus faciles à voir."
+[STR_TUT_S4_DETAIL] = "Les flèches de vitesse et de champ B sont maintenant activées. Le vecteur vitesse (v) montre la direction instantanée du mouvement de la particule. Le vecteur champ magnétique (B) montre la direction du champ local. Les deux sont dessinés par défaut sous forme de vecteurs unitaires ; activez le mode Échelle dans la section Affichage pour afficher leurs magnitudes à la place."
+[STR_TUT_S5_DETAIL] = "La force de Lorentz F = q(v × B) est toujours perpendiculaire à la fois à la vitesse et au champ magnétique. C'est ce qui courbe le chemin de la particule en une hélice. Son vecteur unitaire est désormais représenté par une flèche. Vous pouvez basculer individuellement n’importe lequel des vecteurs v, B et F dans la section Affichage du panneau latéral."
+[STR_TUT_S6_DETAIL] = "Appuyez sur V pour basculer entre la caméra libre, en regardant +B et en regardant -B. Dans les vues alignées sur le champ, le vecteur de courbure (κ) et la binormale sont représentés sous forme de flèches. Les touches fléchées font pivoter la direction vers laquelle κ pointe à l'écran. Cette vue révèle le mouvement de dérive perpendiculaire à B."
+[STR_TUT_S7_DETAIL] = "Appuyez sur U pour afficher ou masquer le panneau latéral. Il comporte quatre sections pliables. Modèle/Particule sélectionne la géométrie du champ magnétique, les espèces de particules, l'énergie et l'angle de tangage. La lecture contrôle la vitesse de simulation et l’enregistrement. L’affichage fait basculer les éléments visuels. Les lectures affichent des diagnostics en direct. Le bouton d'engrenage ouvre les paramètres de couleurs et de largeurs de ligne."
+[STR_TUT_S8_DETAIL] = "Dans la section Modèle/Particule, vous pouvez modifier l'espèce, l'énergie (ou la vitesse pour l'espèce personnalisée) et l'angle de tangage. Ce sont des modèles : ils prennent effet la prochaine fois que vous appuyez sur R pour réinitialiser, ou lorsque vous placez une nouvelle particule avec Maj gauche + clic. Les particules existantes conservent leurs paramètres d'origine."
+[STR_TUT_S9_DETAIL] = "La liste déroulante Modèle de champ répertorie 10 géométries de champ magnétique : circulaire, grad-B, dipôle, bouteille magnétique, tokamak, etc. Chaque modèle a des paramètres réglables. La sélection d'un nouveau modèle réinitialise la particule et la caméra aux valeurs par défaut. Essayez de sélectionner le modèle dipolaire pour voir le mouvement des particules piégées."
+[STR_TUT_S10_DETAIL] = "Les tracés du bas montrent l'angle de tangage et le moment magnétique (μ) en fonction du temps. Dans un champ magnétique pur, μ est un invariant adiabatique et devrait rester presque constant. Les boutons de plage de tracé (x1/x10/x100) contrôlent la quantité d’historique affichée. Autoscale ajuste automatiquement la plage de l’axe de pitch."
+[STR_TUT_S11_DETAIL] = "Appuyez sur 0 pour réinitialiser la caméra à la vue par défaut. Maintenez ensuite la touche Maj gauche et cliquez dans la scène 3D pour placer une nouvelle particule avec les paramètres actuels d'espèce, d'énergie et de hauteur. Jusqu'à 16 particules peuvent être tracées simultanément. Appuyez sur Tab pour sélectionner les particules suivies par la caméra et les diagnostics affichés."
+[STR_TUT_S12_DETAIL] = "Appuyez sur R pour réinitialiser la simulation. Cela efface toutes les particules placées et revient à une seule particule avec les paramètres actuels. Toutes les modifications que vous avez apportées à l'espèce, à l'énergie, à la vitesse ou à l'angle de tangage dans le panneau sont appliquées lors de la réinitialisation."
+[STR_TUT_S13_DETAIL] = "Dans la section Lecture, activez Trigger rec. Appuyez ensuite sur R pour réinitialiser la simulation et commencer à enregistrer une vidéo H.264. Appuyez à nouveau sur R pour arrêter. Un journal des événements est enregistré à côté de la vidéo. Appuyez sur Shift-P pour ouvrir et rejouer un enregistrement précédent, reproduisant la simulation exacte."
+[STR_TUT_S14_DETAIL] = "Cela couvre l’essentiel. Appuyez sur F1 à tout moment pour ouvrir la référence d'aide, qui contient une documentation détaillée sur les raccourcis clavier, la physique, les modèles de terrain et l'interface. Le panneau Paramètres (icône d’engrenage) permet de personnaliser la couleur et la largeur de ligne. Profitez de l'exploration."
+[STR_HELP_TITLE] = "Lorentz Tracer Aide"
+[STR_HELP_TAB_KEYS] = "Clés"
+[STR_HELP_TAB_PHYSICS] = "Physique"
+[STR_HELP_TAB_FIELDS] = "Champs"
+[STR_HELP_TAB_INTERFACE] = "Interface"
+[STR_HELP_TAB_ABOUT] = "À propos"
+[STR_HELP_FOOTER] = "Faites défiler pour naviguerEsc ou F1 pour fermer |  Touches fléchées ou Tab pour changer d'onglet |  "
+[STR_HELP_RUN_TUTORIAL] = "Exécuter le didacticiel"
+[STR_HELP_RUN_TUTORIAL_DESC] = "Parcourez l’interface et les commandes étape par étape."
+[STR_HELP_FONT_SIZE] = "TAILLE DE LA POLICE"
+[STR_HELP_FONT_SIZE_DESC] = "Cmd+Plus / Cmd+Minus ajuste la taille de la police du panneau de l'interface utilisateur, de la superposition d'aide et des tracés de télémétrie indépendamment en fonction de la zone sur laquelle se trouve la souris. Cmd+0 réinitialise la valeur par défaut. Toutes les tailles de police sont enregistrées entre les sessions."
+[STR_HELP_FACTORY_RESET] = "Réinitialisation d'usine"
+[STR_HELP_FACTORY_RESET_DESC] = "Supprime les paramètres enregistrés et restaure tous les paramètres par défaut."
+[STR_LANG_TITLE] = "Language / Langue / Sprache"  # KEEP
+[STR_LANG_CONTINUE] = "Continuer"

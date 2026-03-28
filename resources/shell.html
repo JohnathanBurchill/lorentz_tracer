@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lorentz Tracer</title>
+<style>
+  * { margin: 0; padding: 0; }
+  body { background: #000; overflow: hidden; }
+  canvas.emscripten {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+  }
+  #status {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #888;
+    font-family: monospace;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+<div id="status">Loading...</div>
+<script>
+  // Scale canvas backing store to device pixel ratio for sharp rendering on HiDPI
+  (function() {
+    var canvas = document.getElementById('canvas');
+    var dpr = window.devicePixelRatio || 1;
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    window.addEventListener('resize', function() {
+      var dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(window.innerWidth * dpr);
+      canvas.height = Math.round(window.innerHeight * dpr);
+    });
+  })();
+  var Module = {
+    canvas: document.getElementById('canvas'),
+    onRuntimeInitialized: function() {
+      document.getElementById('status').style.display = 'none';
+    }
+  };
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>

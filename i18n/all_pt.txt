@@ -1,0 +1,219 @@
+# All string translations: en → pt
+# Generated on 2026-03-28
+# Review carefully. Preserve format specifiers (%d, %.2f, etc.)
+# Preserve keyboard shortcuts (F1, R, V, F, U, Tab, Space, etc.)
+# Preserve physics symbols (v, B, F, κ, μ, α)
+
+## UI: Model / Particle
+[STR_MODEL_PARTICLE] = "Modelo / Partícula"
+[STR_FIELD_MODEL] = "Modelo de campo"
+[STR_CONFIG] = "Configuração:"
+[STR_PARTICLE] = "Partícula"
+[STR_SPECIES_ELECTRON] = "Elétron"
+[STR_SPECIES_POSITRON] = "Pósitron"
+[STR_SPECIES_PROTON] = "Próton"
+[STR_SPECIES_ALPHA] = "Alfa"
+[STR_SPECIES_OPLUS] = "O+"  # KEEP
+[STR_SPECIES_CUSTOM] = "Personalizado"
+[STR_CHARGE] = "Cobrar"
+[STR_MASS] = "Massa"
+[STR_SPEED] = "Velocidade"
+[STR_ENERGY] = "Energia"
+[STR_PITCH] = "Tom"
+
+## UI: Playback / Record
+[STR_PLAYBACK_RECORD] = "Reprodução/Gravação"
+[STR_TRIGGER_REC] = "Gravação de gatilho (R)"
+[STR_TRIGGER_REC_ACTIVE] = "Gravação de gatilho (gravação...)"
+[STR_PAUSE] = "Pausa"
+[STR_RESUME] = "Retomar"
+[STR_RESET] = "Reiniciar"
+
+## UI: Display
+[STR_DISPLAY] = "Mostrar"
+[STR_TRAIL] = "Trilha"
+[STR_FIELD_LINES] = "Linhas de campo"
+[STR_GC_FL] = "GC fl"  # KEEP
+[STR_FL_POS] = "FL pos"  # KEEP
+[STR_GC_LEN] = "GC len"  # KEEP
+[STR_SCALED] = "Escalado"
+[STR_V_SCALE] = "v scale"  # KEEP
+[STR_B_SCALE] = "B scale"  # KEEP
+[STR_F_SCALE] = "F scale"  # KEEP
+[STR_GIJ] = "G_ij (G)"  # KEEP
+[STR_SCALE_BAR] = "Barra de escala"
+[STR_AXES] = "Eixos"
+[STR_PLOTS] = "Parcelas"
+[STR_BOTTOM] = "Fundo"
+[STR_TOP] = "Principal"
+[STR_AUTOSCALE] = "Escala automática"
+[STR_RADIATION] = "Radiação"
+[STR_RAD_X] = "Rad x"  # KEEP
+[STR_RELATIVISTIC] = "Relativista"
+[STR_FOLLOW] = "Siga (F)"
+[STR_CAM_FREE] = "Grátis (V)"
+[STR_CAM_PB] = "+b (V)"  # KEEP
+[STR_CAM_MB] = "-b (V)"  # KEEP
+
+## UI: Readouts
+[STR_READOUTS] = "Leituras"
+[STR_FMT_PARTICLE_N] = "partícula %d / %d (Tab)"
+[STR_FMT_TIME] = "t = %,4g·s"
+[STR_FMT_ENERGY_ERR] = "|Grande E|/E =%.2"
+[STR_FMT_PITCH] = "passo =% 0,1f graus"
+[STR_FMT_MU] = "mu = %,3e J/T"
+[STR_FMT_BMAG] = "|B| = %,3e T"
+[STR_FMT_ENERGY_MEV] = "E = %,3fMeV"
+[STR_FMT_ENERGY_KEV] = "E = %,3f keV"
+[STR_FMT_PRAD] = "P_rad = %.3e W"
+[STR_FMT_DEDT] = "de/dt = %.ze kev/s"
+[STR_FMT_DEDT_MULT] = "de/dt = %.ze kev/s (s%.zg)"
+
+## UI: Settings
+[STR_SETTINGS] = "Configurações"
+[STR_DARK_MODE] = "Modo escuro"
+[STR_PANEL] = "Painel"
+[STR_LEFT] = "Esquerda"
+[STR_RIGHT] = "Certo"
+[STR_STEREO_3D] = "3D estéreo"
+[STR_SEPARATION] = "Separação"
+[STR_GAP] = "Brecha"
+[STR_ARROWHEAD] = "Ponta de flecha"
+[STR_LINE_WIDTHS] = "Larguras de linha"
+[STR_COLORS] = "Cores"
+[STR_PARTICLES] = "Partículas"
+[STR_LW_TRAIL] = "Trilha"
+[STR_LW_B_LINES] = "B lines"  # KEEP
+[STR_LW_FL_GC] = "FL GC"  # KEEP
+[STR_LW_FL_POS] = "FL pos"  # KEEP
+[STR_LW_ARROWS] = "Setas"
+[STR_LW_KAPPA] = "κ / e₂"  # KEEP
+[STR_LW_AXES] = "Eixos"
+[STR_COLOR_V_ARROW] = "v arrow"  # KEEP
+[STR_COLOR_B_ARROW] = "B arrow"  # KEEP
+[STR_COLOR_F_ARROW] = "F arrow"  # KEEP
+[STR_COLOR_FIELD_LINES] = "Linhas de campo"
+[STR_COLOR_FL_GC] = "FL GC"  # KEEP
+[STR_COLOR_FL_POS] = "FL pos"  # KEEP
+[STR_COLOR_KAPPA] = "κ-hat"  # KEEP
+[STR_COLOR_BINORMAL] = "Binormal"  # KEEP
+[STR_COLOR_AXES] = "Eixos"
+[STR_LANGUAGE] = "Linguagem"
+
+## Color picker
+[STR_OK] = "OK"  # KEEP
+[STR_CANCEL] = "Cancelar"
+
+## HUD
+[STR_SHOW_UI] = "U: mostrar IU"
+[STR_ARMED] = "ARMADO"
+
+## Splash
+[STR_TAP_CONTINUE] = "toque para continuar"
+
+## Plots
+[STR_PLOT_PITCH_ANGLE] = "Ângulo de inclinação"
+[STR_PLOT_MAG_MOMENT] = "Momento magnético"
+[STR_PLOT_TIME] = "Tempo(s)"
+
+## Playback picker
+[STR_OPEN_RECORDING] = "Gravação aberta"
+[STR_NO_RECORDINGS] = "Nenhuma gravação encontrada."
+[STR_OPEN] = "Abrir"
+[STR_PICKER_HELP] = "Entre para abrirClique para selecionar, clique duas vezes ou Abra para jogar |  Esc para cancelar |  "
+
+## Field model names
+[STR_MODEL_CIRCULAR] = "Circular B (const |B|)"
+[STR_MODEL_GRAD_B] = "Graduação linear-B"
+[STR_MODEL_QUAD_GRAD] = "Graduação quadrática-B"
+[STR_MODEL_SINUSOIDAL] = "Grau sinusoidal-B"
+[STR_MODEL_NONPHYSICAL] = "Não físico (div B! = 0)"
+[STR_MODEL_DIPOLE] = "Dipolo magnético"
+[STR_MODEL_BOTTLE] = "Garrafa magnética"
+[STR_MODEL_TOKAMAK] = "Tokamak"  # KEEP
+[STR_MODEL_STELLARATOR] = "Stellarator (NAX)"  # KEEP
+[STR_MODEL_TORUS] = "Torus"  # KEEP
+
+## Field parameters
+[STR_PARAM_B0] = "B0 (T)"  # KEEP
+[STR_PARAM_LAMBDA_1M] = "lambda (1/m)"  # KEEP
+[STR_PARAM_LAMBDA_1M2] = "lambda (1/m²)"  # KEEP
+[STR_PARAM_AMPLITUDE] = "Amplitude a"
+[STR_PARAM_WAVENUMBER] = "Wavenumber k (1/m)"  # KEEP
+[STR_PARAM_LAMBDA_TM] = "lambda (T/m)"  # KEEP
+[STR_PARAM_M_DIPOLE] = "M (T·m³)"  # KEEP
+[STR_PARAM_B0_BOTTLE] = "B0 (T)"  # KEEP
+[STR_PARAM_LM] = "Lm (m)"  # KEEP
+[STR_PARAM_R0] = "R0 (m)"  # KEEP
+[STR_PARAM_Q_SAFETY] = "Fator de segurança q"
+[STR_PARAM_A_MINOR] = "a (m)"  # KEEP
+[STR_PARAM_CONFIG] = "Configuração"
+[STR_PARAM_R0_PHYS] = "R0_phys (m)"  # KEEP
+[STR_PARAM_B0_PHYS] = "B0_phys (T)"  # KEEP
+[STR_STEL_CFG_R2] = "r2 s5.1 (QA)"  # KEEP
+[STR_STEL_CFG_LP22] = "Precise QA (LP22)"  # KEEP
+
+## Tutorial prompts
+[STR_TUT_PROMPT] = "Gostaria de ver o tutorial?"
+[STR_TUT_PROMPT_SUB] = "Um breve passo a passo da interface e dos controles."
+[STR_TUT_MODE_Q] = "Quantos detalhes você gostaria?"
+[STR_TUT_BRIEF] = "Breve visão geral"
+[STR_TUT_DETAILED] = "Passo a passo detalhado"
+[STR_TUT_NO_THANKS] = "Não, obrigado"
+[STR_TUT_YES] = "Sim"
+[STR_TUT_STOP] = "Parar"
+[STR_TUT_CONTINUE] = "Continuar"
+[STR_TUT_DONE_HINT] = "Feito! Pressione Continuar quando estiver pronto."
+
+## Tutorial steps (brief)
+[STR_TUT_S0_BRIEF] = "A simulação está pausada. Pressione a barra de espaço para reproduzir ou pausar."
+[STR_TUT_S1_BRIEF] = "Clique com o botão direito e arraste para orbitar a câmera. Role para ampliar. Os eixos coloridos mostram x (vermelho), y (verde), z (azul)."
+[STR_TUT_S2_BRIEF] = "As curvas na cena são linhas de campo magnético. Eles mostram a direção e a geometria do campo magnético."
+[STR_TUT_S3_BRIEF] = "Pressione F para seguir a partícula com a câmera. Role para ampliar perto da órbita."
+[STR_TUT_S4_BRIEF] = "As setas na partícula mostram a velocidade (v) e a direção do campo magnético (B)."
+[STR_TUT_S5_BRIEF] = "A força de Lorentz F = q(v × B) é perpendicular a v e B. Seu vetor unitário agora é mostrado como uma seta."
+[STR_TUT_S6_BRIEF] = "Pressione V para observar a direção do campo magnético. As teclas de seta giram a orientação da vista."
+[STR_TUT_S7_BRIEF] = "O painel lateral (U para alternar) possui seções recolhíveis: Modelo/Partícula, Reprodução, Exibição e Leituras."
+[STR_TUT_S8_BRIEF] = "Configurações de partículas como energia (ou velocidade para Personalizado) e ângulo de inclinação entram em vigor na reinicialização (R) ou ao colocar uma nova partícula com Shift+clique."
+[STR_TUT_S9_BRIEF] = "Tente selecionar o modelo de campo Dipolo no menu suspenso. A visualização é redefinida automaticamente ao trocar de modelo."
+[STR_TUT_S10_BRIEF] = "Os gráficos de telemetria mostram o ângulo de inclinação e o momento magnético versus o tempo."
+[STR_TUT_S11_BRIEF] = "Pressione 0 para redefinir a visualização da câmera. Em seguida, segure Left Shift e clique na cena para colocar partículas adicionais. Seleção de ciclos de guias."
+[STR_TUT_S12_BRIEF] = "Pressione R para redefinir a simulação para uma única partícula."
+[STR_TUT_S13_BRIEF] = "Habilite Trigger rec em Playback e pressione R para iniciar e parar a gravação de vídeo. Shift-P reproduz logs de eventos."
+[STR_TUT_S14_BRIEF] = "Isso cobre o essencial. Pressione F1 a qualquer momento para abrir a referência de ajuda."
+
+## Tutorial steps (detailed)
+[STR_TUT_S0_DETAIL] = "A simulação está pausada. Pressione a barra de espaço para reproduzir ou pausar. Durante a pausa, pressione N para avançar um passo de tempo ou P para retroceder. Mantenha pressionada qualquer tecla para avançar continuamente na velocidade de reprodução atual."
+[STR_TUT_S1_DETAIL] = "Clique com o botão direito e arraste para orbitar a câmera ao redor do ponto alvo. Role para aumentar e diminuir o zoom. Os eixos coloridos na origem mostram x (vermelho), y (verde), z (azul). Shift+arrastar com o botão direito as órbitas ao redor da origem. Pressione 0 para centralizar novamente a visualização. As setas vetoriais estão ocultas por enquanto para que você possa ver claramente a órbita e a geometria do campo."
+[STR_TUT_S2_DETAIL] = "As linhas de campo traçam a direção de B em todo o domínio. A partícula gira e flutua ao longo dessas linhas. Na seção Display você também pode ativar a linha de campo do centro-guia (GC fl), que segue o centro médio da órbita, e a linha de campo de posição (FL pos) através da localização atual da partícula."
+[STR_TUT_S3_DETAIL] = "Pressione F para alternar o modo de acompanhamento. A câmera rastreia a posição da partícula enquanto você ainda pode orbitar e aplicar zoom. Depois de seguir, role para aproximar a partícula. As próximas etapas ativarão as setas vetoriais na posição das partículas, portanto, aproximar-se torna-as mais fáceis de ver."
+[STR_TUT_S4_DETAIL] = "As setas de velocidade e campo B agora estão ativadas. O vetor velocidade (v) mostra a direção instantânea do movimento da partícula. O vetor do campo magnético (B) mostra a direção do campo local. Ambos são desenhados como vetores unitários por padrão; ative o modo Escalado na seção Exibir para mostrar suas magnitudes."
+[STR_TUT_S5_DETAIL] = "A força de Lorentz F = q(v × B) é sempre perpendicular à velocidade e ao campo magnético. Isto é o que curva o caminho da partícula em uma hélice. Seu vetor unitário agora é mostrado como uma seta. Você pode alternar qualquer um dos vetores v, B e F individualmente na seção Exibir do painel lateral."
+[STR_TUT_S6_DETAIL] = "Pressione V para alternar entre câmera livre, olhando ao longo de +B e olhando ao longo de -B. Nas visualizações alinhadas ao campo, o vetor de curvatura (κ) e binormal são mostrados como setas. As teclas de seta giram na direção que κ aponta na tela. Esta visão revela o movimento de deriva perpendicular a B."
+[STR_TUT_S7_DETAIL] = "Pressione U para mostrar ou ocultar o painel lateral. Possui quatro seções dobráveis. Modelo/Partícula seleciona a geometria do campo magnético e as espécies de partículas, energia e ângulo de inclinação. A reprodução controla a velocidade e a gravação da simulação. A exibição alterna os elementos visuais. As leituras mostram diagnósticos ao vivo. O botão de engrenagem abre Configurações de cores e larguras de linha."
+[STR_TUT_S8_DETAIL] = "Na seção Modelo/Partícula, você pode alterar a espécie, a energia (ou a velocidade para as espécies personalizadas) e o ângulo de inclinação. Estes são modelos: eles entram em vigor na próxima vez que você pressiona R para redefinir ou quando você coloca uma nova partícula com Shift esquerdo + clique. As partículas existentes mantêm seus parâmetros originais."
+[STR_TUT_S9_DETAIL] = "O menu suspenso Modelo de campo lista 10 geometrias de campo magnético: circular, grad-B, dipolo, garrafa magnética, tokamak e muito mais. Cada modelo possui parâmetros ajustáveis. A seleção de um novo modelo redefine a partícula e a câmera para os padrões. Tente selecionar o modelo Dipolo para ver o movimento das partículas presas."
+[STR_TUT_S10_DETAIL] = "Os gráficos inferiores mostram o ângulo de inclinação e o momento magnético (μ) em função do tempo. Num campo magnético puro, μ é um invariante adiabático e deve permanecer quase constante. Os botões de intervalo de plotagem (x1/x10/x100) controlam quanto histórico é mostrado. A escala automática ajusta automaticamente a faixa do eixo de inclinação."
+[STR_TUT_S11_DETAIL] = "Pressione 0 para redefinir a câmera para a visualização padrão. Em seguida, segure Left Shift e clique na cena 3D para colocar uma nova partícula com as configurações atuais de espécie, energia e pitch. Até 16 partículas podem ser rastreadas simultaneamente. Pressione Tab para alternar qual partícula a câmera segue e cujos diagnósticos são mostrados."
+[STR_TUT_S12_DETAIL] = "Pressione R para reiniciar a simulação. Isso limpa todas as partículas colocadas e retorna para uma única partícula com as configurações atuais. Quaisquer alterações feitas em espécie, energia, velocidade ou ângulo de inclinação no painel serão aplicadas na reinicialização."
+[STR_TUT_S13_DETAIL] = "Na seção Reprodução, habilite Trigger rec. Em seguida, pressione R para reiniciar a simulação e começar a gravar um vídeo H.264. Pressione R novamente para parar. Um log de eventos é salvo junto com o vídeo. Pressione Shift-P para abrir e reproduzir uma gravação anterior, reproduzindo a simulação exata."
+[STR_TUT_S14_DETAIL] = "Isso cobre o essencial. Pressione F1 a qualquer momento para abrir a referência de ajuda, que contém documentação detalhada sobre atalhos de teclado, física, modelos de campo e interface. O painel Configurações (ícone de engrenagem) possui personalização de cor e largura de linha. Aproveite para explorar."
+
+## Help structural
+[STR_HELP_TITLE] = "Ajuda do Lorentz Tracer"
+[STR_HELP_TAB_KEYS] = "Chaves"
+[STR_HELP_TAB_PHYSICS] = "Física"
+[STR_HELP_TAB_FIELDS] = "Campos"
+[STR_HELP_TAB_INTERFACE] = "Interface"
+[STR_HELP_TAB_ABOUT] = "Sobre"
+[STR_HELP_FOOTER] = "Esc ou F1 para fechar |  Teclas de seta ou Tab para alternar entre guias |  Role para navegar"
+[STR_HELP_RUN_TUTORIAL] = "Executar tutorial"
+[STR_HELP_RUN_TUTORIAL_DESC] = "Percorra a interface e os controles passo a passo."
+[STR_HELP_FONT_SIZE] = "TAMANHO DA FONTE"
+[STR_HELP_FONT_SIZE_DESC] = "Cmd+Plus / Cmd+Minus ajusta o tamanho da fonte do painel da interface do usuário, sobreposição de ajuda e plotagens de telemetria independentemente, dependendo da área em que o mouse está. Cmd+0 redefine o padrão. Todos os tamanhos de fonte são salvos entre sessões."
+[STR_HELP_FACTORY_RESET] = "Redefinição de fábrica"
+[STR_HELP_FACTORY_RESET_DESC] = "Remove configurações salvas e restaura todos os padrões."
+
+## Language selection
+[STR_LANG_TITLE] = "Language / Langue / Sprache"  # KEEP
+[STR_LANG_CONTINUE] = "Continuar"

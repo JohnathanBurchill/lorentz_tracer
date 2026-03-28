@@ -1,0 +1,219 @@
+# All string translations: en → eo
+# Generated on 2026-03-28
+# Review carefully. Preserve format specifiers (%d, %.2f, etc.)
+# Preserve keyboard shortcuts (F1, R, V, F, U, Tab, Space, etc.)
+# Preserve physics symbols (v, B, F, κ, μ, α)
+
+## UI: Model / Particle
+[STR_MODEL_PARTICLE] = "Modelo / Partiklo"
+[STR_FIELD_MODEL] = "Kampa Modelo"
+[STR_CONFIG] = "Agordo:"
+[STR_PARTICLE] = "Partiklo"
+[STR_SPECIES_ELECTRON] = "Elektrono"
+[STR_SPECIES_POSITRON] = "Pozitrono"
+[STR_SPECIES_PROTON] = "Protono"
+[STR_SPECIES_ALPHA] = "Alfa"
+[STR_SPECIES_OPLUS] = "O+"  # KEEP
+[STR_SPECIES_CUSTOM] = "Kutimo"
+[STR_CHARGE] = "Ŝarĝo"
+[STR_MASS] = "Meso"
+[STR_SPEED] = "Rapido"
+[STR_ENERGY] = "Energio"
+[STR_PITCH] = "Tonalto"
+
+## UI: Playback / Record
+[STR_PLAYBACK_RECORD] = "Reproduktado / Registrado"
+[STR_TRIGGER_REC] = "Ellasilo REC (R)"
+[STR_TRIGGER_REC_ACTIVE] = "Ekfunkciigi registradon (registrado...)"
+[STR_PAUSE] = "Paŭzo"
+[STR_RESUME] = "Rekomenci"
+[STR_RESET] = "Restarigi"
+
+## UI: Display
+[STR_DISPLAY] = "Montru"
+[STR_TRAIL] = "Vojo"
+[STR_FIELD_LINES] = "Kampaj linioj"
+[STR_GC_FL] = "GC fl"  # KEEP
+[STR_FL_POS] = "FL pos"  # KEEP
+[STR_GC_LEN] = "GC len"  # KEEP
+[STR_SCALED] = "Skvamita"
+[STR_V_SCALE] = "v scale"  # KEEP
+[STR_B_SCALE] = "B scale"  # KEEP
+[STR_F_SCALE] = "F scale"  # KEEP
+[STR_GIJ] = "G_ij (G)"  # KEEP
+[STR_SCALE_BAR] = "Skalstango"
+[STR_AXES] = "Aksoj"
+[STR_PLOTS] = "Intrigoj"
+[STR_BOTTOM] = "Fundo"
+[STR_TOP] = "Supre"
+[STR_AUTOSCALE] = "Aŭtoskalo"
+[STR_RADIATION] = "Radiado"
+[STR_RAD_X] = "Rad x"  # KEEP
+[STR_RELATIVISTIC] = "Relativisma"
+[STR_FOLLOW] = "Sekvu (F)"
+[STR_CAM_FREE] = "Senpaga (V)"
+[STR_CAM_PB] = "+b (V)"  # KEEP
+[STR_CAM_MB] = "-b (V)"  # KEEP
+
+## UI: Readouts
+[STR_READOUTS] = "Legoj"
+[STR_FMT_PARTICLE_N] = "partiklo %d/%d (Tab)"
+[STR_FMT_TIME] = "t = %.4g s"
+[STR_FMT_ENERGY_ERR] = "|Granda E|/E = %.2"
+[STR_FMT_PITCH] = "tonalto = %.1f deg"
+[STR_FMT_MU] = "mu = %.3e J/T"
+[STR_FMT_BMAG] = "|B| = %.3e T"
+[STR_FMT_ENERGY_MEV] = "E = %.3f MeV"
+[STR_FMT_ENERGY_KEV] = "E = %.3f keV"
+[STR_FMT_PRAD] = "P_rad = %.3e W"
+[STR_FMT_DEDT] = "de/dt = %.ze kev/s"
+[STR_FMT_DEDT_MULT] = "de/dt = %.ze kev/s (s%.zg)"
+
+## UI: Settings
+[STR_SETTINGS] = "Agordoj"
+[STR_DARK_MODE] = "Malhela reĝimo"
+[STR_PANEL] = "Panelo"
+[STR_LEFT] = "Maldekstre"
+[STR_RIGHT] = "Ĝuste"
+[STR_STEREO_3D] = "Stereo 3D"
+[STR_SEPARATION] = "Apartigo"
+[STR_GAP] = "Gap"
+[STR_ARROWHEAD] = "Sagpinto"
+[STR_LINE_WIDTHS] = "Liniolarĝoj"
+[STR_COLORS] = "Koloroj"
+[STR_PARTICLES] = "Partikloj"
+[STR_LW_TRAIL] = "Vojo"
+[STR_LW_B_LINES] = "B lines"  # KEEP
+[STR_LW_FL_GC] = "FL GC"  # KEEP
+[STR_LW_FL_POS] = "FL pos"  # KEEP
+[STR_LW_ARROWS] = "Sagoj"
+[STR_LW_KAPPA] = "κ / e₂"  # KEEP
+[STR_LW_AXES] = "Aksoj"
+[STR_COLOR_V_ARROW] = "v arrow"  # KEEP
+[STR_COLOR_B_ARROW] = "B arrow"  # KEEP
+[STR_COLOR_F_ARROW] = "F arrow"  # KEEP
+[STR_COLOR_FIELD_LINES] = "Kampaj linioj"
+[STR_COLOR_FL_GC] = "FL GC"  # KEEP
+[STR_COLOR_FL_POS] = "FL pos"  # KEEP
+[STR_COLOR_KAPPA] = "κ-hat"  # KEEP
+[STR_COLOR_BINORMAL] = "Binormal"  # KEEP
+[STR_COLOR_AXES] = "Aksoj"
+[STR_LANGUAGE] = "Lingvo"
+
+## Color picker
+[STR_OK] = "OK"  # KEEP
+[STR_CANCEL] = "Nuligi"
+
+## HUD
+[STR_SHOW_UI] = "U: montru UI"
+[STR_ARMED] = "ARMATITA"
+
+## Splash
+[STR_TAP_CONTINUE] = "frapeti por daŭrigi"
+
+## Plots
+[STR_PLOT_PITCH_ANGLE] = "Tonalto angulo"
+[STR_PLOT_MAG_MOMENT] = "Magneta momento"
+[STR_PLOT_TIME] = "Tempo(j)"
+
+## Playback picker
+[STR_OPEN_RECORDING] = "Malfermu Registradon"
+[STR_NO_RECORDINGS] = "Neniuj registradoj trovitaj."
+[STR_OPEN] = "Malfermu"
+[STR_PICKER_HELP] = "Eniru por malfermiKlaku por elekti, duoble alklaku aŭ Malfermu por ludi |  Esc por nuligi |  "
+
+## Field model names
+[STR_MODEL_CIRCULAR] = "Cirkulero B (konst |B|)"
+[STR_MODEL_GRAD_B] = "Lineara grad-B"
+[STR_MODEL_QUAD_GRAD] = "Kvadratika grad-B"
+[STR_MODEL_SINUSOIDAL] = "Sinusoida grad-B"
+[STR_MODEL_NONPHYSICAL] = "Nefizika (div B != 0)"
+[STR_MODEL_DIPOLE] = "Magneta dipolo"
+[STR_MODEL_BOTTLE] = "Magneta botelo"
+[STR_MODEL_TOKAMAK] = "Tokamak"  # KEEP
+[STR_MODEL_STELLARATOR] = "Stellarator (NAX)"  # KEEP
+[STR_MODEL_TORUS] = "Torus"  # KEEP
+
+## Field parameters
+[STR_PARAM_B0] = "B0 (T)"  # KEEP
+[STR_PARAM_LAMBDA_1M] = "lambda (1/m)"  # KEEP
+[STR_PARAM_LAMBDA_1M2] = "lambda (1/m²)"  # KEEP
+[STR_PARAM_AMPLITUDE] = "Amplekso a"
+[STR_PARAM_WAVENUMBER] = "Wavenumber k (1/m)"  # KEEP
+[STR_PARAM_LAMBDA_TM] = "lambda (T/m)"  # KEEP
+[STR_PARAM_M_DIPOLE] = "M (T·m³)"  # KEEP
+[STR_PARAM_B0_BOTTLE] = "B0 (T)"  # KEEP
+[STR_PARAM_LM] = "Lm (m)"  # KEEP
+[STR_PARAM_R0] = "R0 (m)"  # KEEP
+[STR_PARAM_Q_SAFETY] = "Sekureca faktoro q"
+[STR_PARAM_A_MINOR] = "a (m)"  # KEEP
+[STR_PARAM_CONFIG] = "Agordo"
+[STR_PARAM_R0_PHYS] = "R0_phys (m)"  # KEEP
+[STR_PARAM_B0_PHYS] = "B0_phys (T)"  # KEEP
+[STR_STEL_CFG_R2] = "r2 s5.1 (QA)"  # KEEP
+[STR_STEL_CFG_LP22] = "Precise QA (LP22)"  # KEEP
+
+## Tutorial prompts
+[STR_TUT_PROMPT] = "Ĉu vi ŝatus vidi la lernilon?"
+[STR_TUT_PROMPT_SUB] = "Mallonga promenado de la interfaco kaj kontroloj."
+[STR_TUT_MODE_Q] = "Kiom da detaloj vi ŝatus?"
+[STR_TUT_BRIEF] = "Mallonga superrigardo"
+[STR_TUT_DETAILED] = "Detala promenado"
+[STR_TUT_NO_THANKS] = "Ne dankon"
+[STR_TUT_YES] = "Jes"
+[STR_TUT_STOP] = "Haltu"
+[STR_TUT_CONTINUE] = "Daŭrigu"
+[STR_TUT_DONE_HINT] = "Farita! Premu Daŭrigi kiam preta."
+
+## Tutorial steps (brief)
+[STR_TUT_S0_BRIEF] = "La simulado estas paŭzita. Premu Spacbreton por ludi aŭ paŭzi."
+[STR_TUT_S1_BRIEF] = "Dekstre alklaku kaj trenu por orbiti la fotilon. Rulumu por zomi. La koloraj aksoj montras x (ruĝa), y (verda), z (blua)."
+[STR_TUT_S2_BRIEF] = "La kurboj en la sceno estas magnetkampaj linioj. Ili montras la direkton kaj geometrion de la magneta kampo."
+[STR_TUT_S3_BRIEF] = "Premu F por sekvi la partiklon per la fotilo. Rulumu por zomi proksime al la orbito."
+[STR_TUT_S4_BRIEF] = "La sagoj ĉe la partiklo montras la rapidecon (v) kaj la magnetkampan direkton (B)."
+[STR_TUT_S5_BRIEF] = "La Lorentz-forto F = q(v × B) estas perpendikulara al kaj v kaj B. Ĝia unuvektoro nun estas montrita kiel sago."
+[STR_TUT_S6_BRIEF] = "Premu V por rigardi laŭ la direkto de la magneta kampo. Sagoklavoj turnas la vidorientiĝon."
+[STR_TUT_S7_BRIEF] = "La flanka panelo (U por ŝanĝi) havas faldeblajn sekciojn: Modelo/Partiklo, Reproduktado, Montriĝo kaj Legoj."
+[STR_TUT_S8_BRIEF] = "Partiklaj agordoj kiel energio (aŭ rapideco por Propra) kaj tonalto angulo efektiviĝas ĉe rekomencigita (R) aŭ kiam oni metas novan partiklon per Shift+klako."
+[STR_TUT_S9_BRIEF] = "Provu elekti la Dipolan kampomodelon el la menuo. La vido rekomenciĝas aŭtomate dum ŝanĝado de modeloj."
+[STR_TUT_S10_BRIEF] = "La telemetriaj intrigoj montras tonaltperspektivon kaj magnetan momenton kontraŭ tempo."
+[STR_TUT_S11_BRIEF] = "Premu 0 por restarigi la fotilon. Tiam tenu Maldekstren Shift kaj klaku en la sceno por meti pliajn partiklojn. Tab cikloj elekto."
+[STR_TUT_S12_BRIEF] = "Premu R por restarigi la simuladon reen al ununura partiklo."
+[STR_TUT_S13_BRIEF] = "Ebligu Trigger rec en Playback, tiam premu R por komenci kaj ĉesigi videoregistradon. Shift-P ripetas evento-protokolojn."
+[STR_TUT_S14_BRIEF] = "Tio kovras la esencajn. Premu F1 iam ajn por malfermi la helpreferencon."
+
+## Tutorial steps (detailed)
+[STR_TUT_S0_DETAIL] = "La simulado estas paŭzita. Premu Spacbreton por ludi aŭ paŭzi. Dum paŭzo, premu N por antaŭenpaŝi unu fojon, aŭ P por malantaŭen. Tenu ambaŭ klavojn por antaŭeniri senĉese kun la nuna reprodukta rapideco."
+[STR_TUT_S1_DETAIL] = "Dekstre alklaku kaj trenu por orbiti la fotilon ĉirkaŭ la celpunkto. Rulumu por zomi en kaj malproksimigi. La koloraj aksoj ĉe la origino montras x (ruĝa), y (verda), z (blua). Shift+dekstre-trenu orbitojn ĉirkaŭ la origino. Premu 0 por recentri la vidon. La vektoraj sagoj estas kaŝitaj nuntempe, por ke vi povu klare vidi la orbiton kaj kampan geometrion."
+[STR_TUT_S2_DETAIL] = "Kamplinioj spuras la direkton de B ĉie en la domajno. La partiklo turniĝas ĉirkaŭe kaj drivas laŭ ĉi tiuj linioj. En la sekcio Vidigo vi ankaŭ povas ebligi la gvid-centran kampan linion (GC fl), kiu sekvas la averaĝan orbitcentron, kaj la pozicion kampan linion (FL pos) tra la nuna loko de la partiklo."
+[STR_TUT_S3_DETAIL] = "Premu F por ŝanĝi sekvan reĝimon. La fotilo spuras la pozicion de la partiklo dum vi ankoraŭ povas orbiti kaj zomi. Post kiam sekvante, rulumu por zomi proksime al la partiklo. La sekvaj paŝoj ŝaltos vektorajn sagojn ĉe la partiklopozicio, do proksimiĝi faciligas ilin vidi."
+[STR_TUT_S4_DETAIL] = "La rapideco kaj B-kampaj sagoj nun estas ŝaltitaj. La rapidecvektoro (v) montras la tujan direkton de moviĝo de la partiklo. La magnetkampa vektoro (B) montras la lokan kampan direkton. Ambaŭ estas desegnitaj kiel unuopaj vektoroj defaŭlte; ebligu Skalitan reĝimon en la sekcio Montrado por montri iliajn grandojn anstataŭe."
+[STR_TUT_S5_DETAIL] = "La Lorentz-forto F = q(v × B) estas ĉiam perpendikulara al kaj la rapideco kaj la kampo. Jen kio kurbigas la vojon de la partiklo en helicon. Ĝia unuecvektoro nun estas montrita kiel sago. Vi povas ŝanĝi iun ajn el la v, B kaj F-vektoroj individue en la sekcio Montru de la flanka panelo."
+[STR_TUT_S6_DETAIL] = "Premu V por bicikli inter libera fotilo, rigardante laŭ +B, kaj rigardante laŭ -B. En kamp-vicigitaj vidoj, la kurbvektoro (κ) kaj dunormala estas montritaj kiel sagoj. Sagoklavoj rotacias kiun direkton κ montras sur la ekrano. Tiu vido rivelas la drivmoviĝon perpendikulara al B."
+[STR_TUT_S7_DETAIL] = "Premu U por montri aŭ kaŝi la flankan panelon. Ĝi havas kvar faldeblajn sekciojn. Modelo/Partiklo elektas la magnetan kampan geometrion kaj partiklospecojn, energion, kaj tonaltperspektivon. Reludado kontrolas simulan rapidon kaj registradon. Montriĝo ŝanĝas vidajn elementojn. Legoj montras vivajn diagnozojn. La ilara butono malfermas Agordojn por koloroj kaj liniolarĝoj."
+[STR_TUT_S8_DETAIL] = "En la sekcio Modelo/Partiklo, vi povas ŝanĝi la specon, energion (aŭ rapidecon por la Propra specio), kaj tonalto angulo. Ĉi tiuj estas ŝablonoj: ili efektiviĝas la venontan fojon kiam vi premas R por restarigi, aŭ kiam vi metas novan partiklon per Maldekstra Shift + klako. Ekzistantaj partikloj konservas siajn originajn parametrojn."
+[STR_TUT_S9_DETAIL] = "La kampa modelo listigas 10 magnetajn geometriojn: cirkla, grad-B, dipolo, magneta botelo, tokamak kaj pli. Ĉiu modelo havas alĝustigeblajn parametrojn. Elektante novan modelon restarigas la partiklon kaj fotilon al defaŭltoj. Provu elekti la Dipolmodelon por vidi kaptitan partiklan moviĝon."
+[STR_TUT_S10_DETAIL] = "La malsupraj intrigoj montras tonaltperspektivon kaj magnetan momenton (μ) kiel funkciojn de tempo. En pura magneta kampo, μ estas adiabata invarianto kaj devus resti preskaŭ konstanta. La butonoj de intriga gamo (x1/x10/x100) kontrolas kiom da historio estas montrita. Aŭtoskalo aŭtomate ĝustigas la tonaltaksan gamon."
+[STR_TUT_S11_DETAIL] = "Premu 0 por restarigi la fotilon al la defaŭlta vido. Poste tenu Maldekstren Shift kaj klaku en la 3D-sceno por meti novan partiklon kun la nunaj specoj, energio kaj tonalto-agordoj. Ĝis 16 partikloj povas esti spuritaj samtempe. Premu Tab por bicikli kiun partiklon sekvas la fotilo kaj kies diagnozoj estas montritaj."
+[STR_TUT_S12_DETAIL] = "Premu R por restarigi la simuladon. Ĉi tio forigas ĉiujn metitajn partiklojn kaj revenas al ununura partiklo kun la nunaj agordoj. Ĉiuj ŝanĝoj, kiujn vi faris al specioj, energio, rapideco aŭ tonalto en la panelo, estas aplikataj dum rekomenciĝo."
+[STR_TUT_S13_DETAIL] = "En la sekcio Playback, ebligu Trigger rec. Tiam premu R por restarigi la simuladon kaj komenci registri H.264-videon. Premu R denove por ĉesi. Eventprotokolo estas konservita kune kun la video. Premu Shift-P por malfermi kaj reludi antaŭan registradon, reproduktante la ĝustan simuladon."
+[STR_TUT_S14_DETAIL] = "Tio kovras la esencajn. Premu F1 iam ajn por malfermi la helpreferencon, kiu havas detalan dokumentaron pri klavaraj ŝparvojoj, fiziko, kampomodeloj kaj la interfaco. La Agorda panelo (ilara ikono) havas personigon de koloro kaj linilarĝo. Ĝuu esplori."
+
+## Help structural
+[STR_HELP_TITLE] = "Helpo de Lorentz Tracer"
+[STR_HELP_TAB_KEYS] = "Ŝlosiloj"
+[STR_HELP_TAB_PHYSICS] = "Fiziko"
+[STR_HELP_TAB_FIELDS] = "Kampoj"
+[STR_HELP_TAB_INTERFACE] = "Interfaco"
+[STR_HELP_TAB_ABOUT] = "Pri"
+[STR_HELP_FOOTER] = "Rulumu por navigiEsc aŭ F1 por fermi |  Sagoklavoj aŭ Tab por ŝanĝi langetojn |  "
+[STR_HELP_RUN_TUTORIAL] = "Ruli Lernion"
+[STR_HELP_RUN_TUTORIAL_DESC] = "Promenu tra la interfaco kaj kontroloj paŝo post paŝo."
+[STR_HELP_FONT_SIZE] = "TIPARO"
+[STR_HELP_FONT_SIZE_DESC] = "Cmd+Plus / Cmd+Minus ĝustigas la tiparon por la UI-panelo, helpas supermetadon kaj telemetriajn intrigojn sendepende depende de kiu areo estas super la muso. Cmd+0 rekomenciĝas al defaŭlta. Ĉiuj tipargrandoj estas konservitaj inter sesioj."
+[STR_HELP_FACTORY_RESET] = "Fabriko Restarigi"
+[STR_HELP_FACTORY_RESET_DESC] = "Forigas konservitajn agordojn kaj restarigas ĉiujn defaŭltajn."
+
+## Language selection
+[STR_LANG_TITLE] = "Language / Langue / Sprache"  # KEEP
+[STR_LANG_CONTINUE] = "Daŭrigu"

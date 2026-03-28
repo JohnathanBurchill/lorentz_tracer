@@ -1,0 +1,73 @@
+# Lorentz Tracer scenario
+title Grad-B Drift
+description
+In a non-uniform magnetic field, charged particles
+drift perpendicular to both B and its gradient.
+Electrons and ions drift in opposite directions.
+end_description
+
+# Initial state: electron in linear grad-B field
+model 1
+param 0 1.0  # B0 (T)
+param 1 0.1  # lambda (1/m)
+species 0  # Electron
+E_keV 10
+pitch_deg 60
+init_pos 0 0 0
+playback_speed 0.05
+speed_range 1
+show_field_lines 1
+show_velocity_vec 0
+show_B_vec 0
+follow_particle 0
+cam_field_aligned 0
+camera_pos 0 0 15
+camera_target 0 0 0
+camera_fovy 45
+
+fps 60
+
+# Events: frame real_time sim_time key value
+
+0 0.0 0.0 dialog
+This is the Linear Grad-B model. The field points
+along z everywhere, but its strength increases in
+the +y direction (lambda = 0.1 per meter).
+The field lines are shown: notice they are all parallel.
+end_dialog
+
+0 0.0 0.0 paused 0
+
+0 0.0 0.0 wait_seconds 3.0
+
+180 3.0 0.0 dialog
+Watch the electron's orbit carefully. Besides the usual
+gyration, the particle drifts sideways. This is the
+grad-B drift: the gyroradius is smaller where B is
+stronger and larger where B is weaker, causing a net
+displacement per orbit.
+end_dialog
+
+180 3.0 0.0 show_velocity_vec 1
+
+180 3.0 0.0 wait_seconds 3.0
+
+360 6.0 0.0 dialog
+The grad-B drift velocity is:
+v_D = (mv_perp^2 / 2qB^2) * (B x grad B) / B
+
+Key features: it is perpendicular to both B and
+grad(B), and it depends on the sign of the charge.
+Electrons and protons drift in opposite directions.
+end_dialog
+
+360 6.0 0.0 show_velocity_vec 0
+
+360 6.0 0.0 wait_seconds 1.0
+
+420 7.0 0.0 dialog
+Now try switching the species to Proton in the UI
+panel and see how the drift direction reverses.
+end_dialog
+
+480 8.0 0.0 end

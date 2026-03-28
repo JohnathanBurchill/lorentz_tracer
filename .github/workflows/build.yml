@@ -1,0 +1,77 @@
+name: Build
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            name: macOS
+          - os: ubuntu-latest
+            name: Linux
+          - os: windows-latest
+            name: Windows
+
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxrandr-dev libxinerama-dev libxcursor-dev \
+            libxi-dev libxext-dev libwayland-dev libxkbcommon-dev \
+            libgl1-mesa-dev
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lorentz_tracer-${{ matrix.name }}
+          path: |
+            build/lorentz_tracer
+            build/lorentz_tracer.exe
+            build/Release/lorentz_tracer.exe
+            build/lorentz_tracer.app
+            build/resources
+            build/Release/resources
+
+  wasm:
+    runs-on: ubuntu-latest
+    name: WASM
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+
+      - name: Configure
+        run: emcmake cmake -B build-wasm -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build-wasm
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lorentz_tracer-WASM
+          path: |
+            build-wasm/lorentz_tracer.html
+            build-wasm/lorentz_tracer.js
+            build-wasm/lorentz_tracer.wasm
+            build-wasm/lorentz_tracer.data

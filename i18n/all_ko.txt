@@ -1,0 +1,219 @@
+# All string translations: en → ko
+# Generated on 2026-03-28
+# Review carefully. Preserve format specifiers (%d, %.2f, etc.)
+# Preserve keyboard shortcuts (F1, R, V, F, U, Tab, Space, etc.)
+# Preserve physics symbols (v, B, F, κ, μ, α)
+
+## UI: Model / Particle
+[STR_MODEL_PARTICLE] = "모델 / 입자"
+[STR_FIELD_MODEL] = "현장 모델"
+[STR_CONFIG] = "구성:"
+[STR_PARTICLE] = "입자"
+[STR_SPECIES_ELECTRON] = "전자"
+[STR_SPECIES_POSITRON] = "양전자"
+[STR_SPECIES_PROTON] = "양성자"
+[STR_SPECIES_ALPHA] = "알파"
+[STR_SPECIES_OPLUS] = "O+"  # KEEP
+[STR_SPECIES_CUSTOM] = "관습"
+[STR_CHARGE] = "요금"
+[STR_MASS] = "대량의"
+[STR_SPEED] = "속도"
+[STR_ENERGY] = "에너지"
+[STR_PITCH] = "정점"
+
+## UI: Playback / Record
+[STR_PLAYBACK_RECORD] = "재생/녹화"
+[STR_TRIGGER_REC] = "트리거 녹음(R)"
+[STR_TRIGGER_REC_ACTIVE] = "트리거 녹음(녹음...)"
+[STR_PAUSE] = "정지시키다"
+[STR_RESUME] = "재개하다"
+[STR_RESET] = "다시 놓기"
+
+## UI: Display
+[STR_DISPLAY] = "표시하다"
+[STR_TRAIL] = "자취"
+[STR_FIELD_LINES] = "필드 라인"
+[STR_GC_FL] = "GC fl"  # KEEP
+[STR_FL_POS] = "FL pos"  # KEEP
+[STR_GC_LEN] = "GC len"  # KEEP
+[STR_SCALED] = "확장됨"
+[STR_V_SCALE] = "v scale"  # KEEP
+[STR_B_SCALE] = "B scale"  # KEEP
+[STR_F_SCALE] = "F scale"  # KEEP
+[STR_GIJ] = "G_ij (G)"  # KEEP
+[STR_SCALE_BAR] = "스케일 바"
+[STR_AXES] = "축"
+[STR_PLOTS] = "플롯"
+[STR_BOTTOM] = "맨 아래"
+[STR_TOP] = "맨 위"
+[STR_AUTOSCALE] = "자동 크기 조정"
+[STR_RADIATION] = "방사"
+[STR_RAD_X] = "Rad x"  # KEEP
+[STR_RELATIVISTIC] = "상대론적"
+[STR_FOLLOW] = "팔로우(F)"
+[STR_CAM_FREE] = "무료 (V)"
+[STR_CAM_PB] = "+b (V)"  # KEEP
+[STR_CAM_MB] = "-b (V)"  # KEEP
+
+## UI: Readouts
+[STR_READOUTS] = "판독값"
+[STR_FMT_PARTICLE_N] = "입자 %d / %d(탭)"
+[STR_FMT_TIME] = "t = %.4g초"
+[STR_FMT_ENERGY_ERR] = "|빅 E|/E = %.2"
+[STR_FMT_PITCH] = "피치 = %.1f 도"
+[STR_FMT_MU] = "뮤 = %.3e J/T"
+[STR_FMT_BMAG] = "|비| = %.3eT"
+[STR_FMT_ENERGY_MEV] = "E = %.3f MeV"
+[STR_FMT_ENERGY_KEV] = "E = %.3fkeV"
+[STR_FMT_PRAD] = "P_rad = %.3e W"
+[STR_FMT_DEDT] = "de/dt = %.ze kev/s"
+[STR_FMT_DEDT_MULT] = "de/dt = %.ze kev/s (s%.zg)"
+
+## UI: Settings
+[STR_SETTINGS] = "설정"
+[STR_DARK_MODE] = "다크 모드"
+[STR_PANEL] = "패널"
+[STR_LEFT] = "왼쪽"
+[STR_RIGHT] = "오른쪽"
+[STR_STEREO_3D] = "스테레오 3D"
+[STR_SEPARATION] = "분리"
+[STR_GAP] = "갭"
+[STR_ARROWHEAD] = "화살촉"
+[STR_LINE_WIDTHS] = "선 너비"
+[STR_COLORS] = "그림 물감"
+[STR_PARTICLES] = "입자"
+[STR_LW_TRAIL] = "자취"
+[STR_LW_B_LINES] = "B lines"  # KEEP
+[STR_LW_FL_GC] = "FL GC"  # KEEP
+[STR_LW_FL_POS] = "FL pos"  # KEEP
+[STR_LW_ARROWS] = "화살"
+[STR_LW_KAPPA] = "κ / e₂"  # KEEP
+[STR_LW_AXES] = "축"
+[STR_COLOR_V_ARROW] = "v arrow"  # KEEP
+[STR_COLOR_B_ARROW] = "B arrow"  # KEEP
+[STR_COLOR_F_ARROW] = "F arrow"  # KEEP
+[STR_COLOR_FIELD_LINES] = "필드 라인"
+[STR_COLOR_FL_GC] = "FL GC"  # KEEP
+[STR_COLOR_FL_POS] = "FL pos"  # KEEP
+[STR_COLOR_KAPPA] = "κ-hat"  # KEEP
+[STR_COLOR_BINORMAL] = "Binormal"  # KEEP
+[STR_COLOR_AXES] = "축"
+[STR_LANGUAGE] = "언어"
+
+## Color picker
+[STR_OK] = "OK"  # KEEP
+[STR_CANCEL] = "취소"
+
+## HUD
+[STR_SHOW_UI] = "U: UI 표시"
+[STR_ARMED] = "무장"
+
+## Splash
+[STR_TAP_CONTINUE] = "계속하려면 탭하세요."
+
+## Plots
+[STR_PLOT_PITCH_ANGLE] = "피치 각도"
+[STR_PLOT_MAG_MOMENT] = "자기 모멘트"
+[STR_PLOT_TIME] = "시간(초)"
+
+## Playback picker
+[STR_OPEN_RECORDING] = "녹화 열기"
+[STR_NO_RECORDINGS] = "녹음 파일을 찾을 수 없습니다."
+[STR_OPEN] = "열려 있는"
+[STR_PICKER_HELP] = "클릭하여 선택, 더블클릭 또는 열기하여 재생 |  취소하려면 Esc |  열려면 입력하세요"
+
+## Field model names
+[STR_MODEL_CIRCULAR] = "원형 B(const |B|)"
+[STR_MODEL_GRAD_B] = "선형 등급-B"
+[STR_MODEL_QUAD_GRAD] = "이차 grad-B"
+[STR_MODEL_SINUSOIDAL] = "정현파 등급-B"
+[STR_MODEL_NONPHYSICAL] = "비물리적(div B != 0)"
+[STR_MODEL_DIPOLE] = "자기 쌍극자"
+[STR_MODEL_BOTTLE] = "자석병"
+[STR_MODEL_TOKAMAK] = "Tokamak"  # KEEP
+[STR_MODEL_STELLARATOR] = "Stellarator (NAX)"  # KEEP
+[STR_MODEL_TORUS] = "Torus"  # KEEP
+
+## Field parameters
+[STR_PARAM_B0] = "B0 (T)"  # KEEP
+[STR_PARAM_LAMBDA_1M] = "lambda (1/m)"  # KEEP
+[STR_PARAM_LAMBDA_1M2] = "lambda (1/m²)"  # KEEP
+[STR_PARAM_AMPLITUDE] = "진폭"
+[STR_PARAM_WAVENUMBER] = "Wavenumber k (1/m)"  # KEEP
+[STR_PARAM_LAMBDA_TM] = "lambda (T/m)"  # KEEP
+[STR_PARAM_M_DIPOLE] = "M (T·m³)"  # KEEP
+[STR_PARAM_B0_BOTTLE] = "B0 (T)"  # KEEP
+[STR_PARAM_LM] = "Lm (m)"  # KEEP
+[STR_PARAM_R0] = "R0 (m)"  # KEEP
+[STR_PARAM_Q_SAFETY] = "안전계수 q"
+[STR_PARAM_A_MINOR] = "a (m)"  # KEEP
+[STR_PARAM_CONFIG] = "구성"
+[STR_PARAM_R0_PHYS] = "R0_phys (m)"  # KEEP
+[STR_PARAM_B0_PHYS] = "B0_phys (T)"  # KEEP
+[STR_STEL_CFG_R2] = "r2 s5.1 (QA)"  # KEEP
+[STR_STEL_CFG_LP22] = "Precise QA (LP22)"  # KEEP
+
+## Tutorial prompts
+[STR_TUT_PROMPT] = "튜토리얼을 보시겠습니까?"
+[STR_TUT_PROMPT_SUB] = "인터페이스와 컨트롤에 대해 간략히 살펴보겠습니다."
+[STR_TUT_MODE_Q] = "얼마나 자세하게 원하시나요?"
+[STR_TUT_BRIEF] = "간략한 개요"
+[STR_TUT_DETAILED] = "자세한 연습"
+[STR_TUT_NO_THANKS] = "아니요"
+[STR_TUT_YES] = "예"
+[STR_TUT_STOP] = "멈추다"
+[STR_TUT_CONTINUE] = "계속하다"
+[STR_TUT_DONE_HINT] = "완료! 준비되면 계속을 누르세요."
+
+## Tutorial steps (brief)
+[STR_TUT_S0_BRIEF] = "시뮬레이션이 일시 중지되었습니다. 재생하거나 일시중지하려면 스페이스바를 누르세요."
+[STR_TUT_S1_BRIEF] = "마우스 오른쪽 버튼을 클릭하고 드래그하여 카메라 궤도를 지정합니다. 확대/축소하려면 스크롤하세요. 색상이 지정된 축은 x(빨간색), y(녹색), z(파란색)를 표시합니다."
+[STR_TUT_S2_BRIEF] = "장면의 곡선은 자기장 선입니다. 자기장의 방향과 기하학을 보여줍니다."
+[STR_TUT_S3_BRIEF] = "카메라로 입자를 따라가려면 F를 누르세요. 스크롤하여 궤도에 가깝게 확대합니다."
+[STR_TUT_S4_BRIEF] = "입자의 화살표는 속도(v)와 자기장 방향(B)을 나타냅니다."
+[STR_TUT_S5_BRIEF] = "로렌츠 힘 F = q(v × B)는 v와 B 모두에 수직입니다. 이제 해당 단위 벡터가 화살표로 표시됩니다."
+[STR_TUT_S6_BRIEF] = "자기장 방향을 따라 보려면 V를 누르세요. 화살표 키는 뷰 방향을 회전합니다."
+[STR_TUT_S7_BRIEF] = "측면 패널(U는 전환)에는 모델/입자, 재생, 디스플레이 및 판독과 같은 축소 가능한 섹션이 있습니다."
+[STR_TUT_S8_BRIEF] = "에너지(또는 사용자 정의의 경우 속도) 및 피치 각도와 같은 입자 설정은 재설정(R) 시 또는 Shift+클릭으로 새 입자를 배치할 때 적용됩니다."
+[STR_TUT_S9_BRIEF] = "드롭다운에서 쌍극자 필드 모델을 선택해 보세요. 모델을 전환하면 보기가 자동으로 재설정됩니다."
+[STR_TUT_S10_BRIEF] = "원격 측정 플롯은 피치 각도와 자기 모멘트 대 시간을 보여줍니다."
+[STR_TUT_S11_BRIEF] = "카메라 보기를 재설정하려면 0을 누르세요. 그런 다음 왼쪽 Shift를 누른 채 장면을 클릭하여 추가 입자를 배치합니다. 탭 사이클 선택."
+[STR_TUT_S12_BRIEF] = "R을 눌러 시뮬레이션을 다시 단일 입자로 재설정합니다."
+[STR_TUT_S13_BRIEF] = "재생에서 녹화 트리거를 활성화한 다음 R을 눌러 비디오 녹화를 시작하고 중지합니다. Shift-P는 이벤트 로그를 재생합니다."
+[STR_TUT_S14_BRIEF] = "그것은 필수 사항을 다룹니다. 도움말 참조를 열려면 언제든지 F1을 누르세요."
+
+## Tutorial steps (detailed)
+[STR_TUT_S0_DETAIL] = "시뮬레이션이 일시 중지되었습니다. 재생하거나 일시중지하려면 스페이스바를 누르세요. 일시 중지된 동안 N을 눌러 한 단계 앞으로 이동하거나 P를 눌러 뒤로 이동합니다. 현재 재생 속도로 계속 진행하려면 두 키 중 하나를 누르고 있습니다."
+[STR_TUT_S1_DETAIL] = "마우스 오른쪽 버튼을 클릭하고 드래그하여 대상 지점을 중심으로 카메라 궤도를 지정합니다. 확대 및 축소하려면 스크롤하세요. 원점의 색상 축은 x(빨간색), y(녹색), z(파란색)를 표시합니다. Shift+오른쪽 드래그를 통해 원점을 중심으로 궤도를 그립니다. 0을 누르면 뷰의 중심이 다시 조정됩니다. 지금은 벡터 화살표가 숨겨져 있으므로 궤도와 필드 형상을 명확하게 볼 수 있습니다."
+[STR_TUT_S2_DETAIL] = "필드 라인은 도메인 전체에서 B 방향을 추적합니다. 입자는 이 선을 따라 회전하고 표류합니다. 디스플레이 섹션에서는 평균 궤도 중심을 따르는 안내 중심 필드 라인(GC fl)과 입자의 현재 위치를 통과하는 위치 필드 라인(FL pos)을 활성화할 수도 있습니다."
+[STR_TUT_S3_DETAIL] = "팔로우 모드를 전환하려면 F를 누르세요. 카메라는 계속해서 궤도를 돌고 확대/축소할 수 있는 동안 입자의 위치를 추적합니다. 따라가면 스크롤하여 입자에 가깝게 확대합니다. 다음 단계에서는 입자 위치에서 벡터 화살표를 켜므로 가까이 다가가면 더 쉽게 볼 수 있습니다."
+[STR_TUT_S4_DETAIL] = "이제 속도 및 B 필드 화살표가 켜집니다. 속도 벡터(v)는 입자의 순간적인 운동 방향을 보여줍니다. 자기장 벡터(B)는 로컬 필드 방향을 보여줍니다. 둘 다 기본적으로 단위 벡터로 그려집니다. 대신 크기를 표시하려면 표시 섹션에서 스케일 모드를 활성화하세요."
+[STR_TUT_S5_DETAIL] = "로렌츠 힘 F = q(v × B)는 항상 속도와 자기장 모두에 수직입니다. 이것이 입자의 경로를 나선으로 곡선으로 만드는 것입니다. 이제 해당 단위 벡터가 화살표로 표시됩니다. 측면 패널의 표시 섹션에서 v, B 및 F 벡터를 개별적으로 전환할 수 있습니다."
+[STR_TUT_S6_DETAIL] = "V를 눌러 프리 카메라, +B 방향 보기, -B 방향 보기 사이를 순환합니다. 필드 정렬 보기에서는 곡률 벡터(κ)와 종법선이 화살표로 표시됩니다. 화살표 키는 화면에서 κ가 가리키는 방향을 회전합니다. 이 보기는 B에 수직인 표류 운동을 보여줍니다."
+[STR_TUT_S7_DETAIL] = "U를 눌러 측면 패널을 표시하거나 숨깁니다. 4개의 접을 수 있는 섹션이 있습니다. 모델/입자는 자기장 형상과 입자 종, 에너지 및 피치 각도를 선택합니다. 재생은 시뮬레이션 속도와 녹음을 제어합니다. 디스플레이는 시각적 요소를 전환합니다. 판독값에는 실시간 진단이 표시됩니다. 기어 버튼을 누르면 색상 및 선 너비 설정이 열립니다."
+[STR_TUT_S8_DETAIL] = "모델/입자 섹션에서는 종, 에너지(또는 사용자 정의 종의 속도) 및 피치 각도를 변경할 수 있습니다. 이는 템플릿입니다. 다음에 R을 눌러 재설정하거나 왼쪽 Shift + 클릭으로 새 입자를 배치할 때 적용됩니다. 기존 입자는 원래 매개변수를 유지합니다."
+[STR_TUT_S9_DETAIL] = "필드 모델(Field Model) 드롭다운에는 원형, Grad-B, 쌍극자, 자기병, 토카막 등 10가지 자기장 기하학이 나열되어 있습니다. 각 모델에는 조정 가능한 매개변수가 있습니다. 새 모델을 선택하면 입자와 카메라가 기본값으로 재설정됩니다. 갇힌 입자의 움직임을 보려면 쌍극자 모델을 선택해 보십시오."
+[STR_TUT_S10_DETAIL] = "하단 플롯은 피치 각도와 자기 모멘트(μ)를 시간 함수로 표시합니다. 순수 자기장에서 μ는 단열 불변이며 거의 일정하게 유지되어야 합니다. 플롯 범위 버튼(x1/x10/x100)은 표시되는 내역의 양을 제어합니다. 자동 크기 조정은 피치 축 범위를 자동으로 조정합니다."
+[STR_TUT_S11_DETAIL] = "0을 눌러 카메라를 기본 보기로 재설정합니다. 그런 다음 왼쪽 Shift 키를 누른 채 3D 장면을 클릭하여 현재 종, 에너지 및 피치 설정으로 새 입자를 배치합니다. 최대 16개의 입자를 동시에 추적할 수 있습니다. 카메라가 따르는 입자와 진단이 표시되는 입자를 순환하려면 Tab 키를 누르세요."
+[STR_TUT_S12_DETAIL] = "시뮬레이션을 재설정하려면 R을 누르세요. 이렇게 하면 배치된 모든 입자가 지워지고 현재 설정을 사용하여 단일 입자로 돌아갑니다. 패널에서 종, 에너지, 속도 또는 피치 각도에 대한 모든 변경 사항은 재설정 시 적용됩니다."
+[STR_TUT_S13_DETAIL] = "재생 섹션에서 Trigger Rec를 활성화합니다. 그런 다음 R을 눌러 시뮬레이션을 재설정하고 H.264 비디오 녹화를 시작합니다. 중지하려면 R을 다시 누르세요. 이벤트 로그가 비디오와 함께 저장됩니다. Shift-P를 눌러 이전 녹음을 열고 재생하여 정확한 시뮬레이션을 재현합니다."
+[STR_TUT_S14_DETAIL] = "그것은 필수 사항을 다룹니다. 키보드 단축키, 물리학, 현장 모델 및 인터페이스에 대한 자세한 문서가 포함된 도움말 참조를 열려면 언제든지 F1을 누르세요. 설정 패널(기어 아이콘)에는 색상 및 선 너비 사용자 정의가 있습니다. 탐험을 즐겨보세요."
+
+## Help structural
+[STR_HELP_TITLE] = "로렌츠 추적기 도움말"
+[STR_HELP_TAB_KEYS] = "열쇠"
+[STR_HELP_TAB_PHYSICS] = "물리학"
+[STR_HELP_TAB_FIELDS] = "전지"
+[STR_HELP_TAB_INTERFACE] = "인터페이스"
+[STR_HELP_TAB_ABOUT] = "에 대한"
+[STR_HELP_FOOTER] = "닫으려면 Esc 또는 F1 |  탭을 전환하려면 화살표 키 또는 Tab |  탐색하려면 스크롤하세요."
+[STR_HELP_RUN_TUTORIAL] = "튜토리얼 실행"
+[STR_HELP_RUN_TUTORIAL_DESC] = "인터페이스를 살펴보고 단계별로 제어하세요."
+[STR_HELP_FONT_SIZE] = "글꼴 크기"
+[STR_HELP_FONT_SIZE_DESC] = "Cmd+Plus / Cmd+Minus는 마우스가 있는 영역에 따라 UI 패널, 도움말 오버레이 및 원격 측정 플롯의 글꼴 크기를 독립적으로 조정합니다. Cmd+0은 기본값으로 재설정됩니다. 모든 글꼴 크기는 세션 간에 저장됩니다."
+[STR_HELP_FACTORY_RESET] = "공장 초기화"
+[STR_HELP_FACTORY_RESET_DESC] = "저장된 설정을 제거하고 모든 기본값을 복원합니다."
+
+## Language selection
+[STR_LANG_TITLE] = "Language / Langue / Sprache"  # KEEP
+[STR_LANG_CONTINUE] = "계속하다"

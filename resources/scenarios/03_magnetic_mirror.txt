@@ -1,0 +1,77 @@
+# Lorentz Tracer scenario
+title Magnetic Mirror
+description
+A particle in a converging magnetic field is reflected
+back by the mirror force. This demonstrates conservation
+of the magnetic moment and the concept of the loss cone.
+end_description
+
+# Initial state: electron in magnetic bottle at moderate pitch
+model 6
+param 0 1.0  # B0 (T)
+param 1 5.0  # Lm (m)
+species 0  # Electron
+E_keV 10
+pitch_deg 60
+init_pos 0 0 0
+playback_speed 0.1
+speed_range 1
+show_field_lines 1
+show_velocity_vec 0
+show_B_vec 0
+follow_particle 0
+cam_field_aligned 0
+camera_pos 0 12 5
+camera_target 0 0 0
+camera_fovy 45
+
+fps 60
+
+# Events: frame real_time sim_time key value
+
+0 0.0 0.0 dialog
+This is a magnetic bottle (mirror machine). The field is
+weakest at z = 0 and grows stronger toward both ends.
+The field lines converge at each end, forming magnetic
+mirrors.
+end_dialog
+
+0 0.0 0.0 paused 0
+
+0 0.0 0.0 wait_seconds 3.0
+
+180 3.0 0.0 dialog
+The electron bounces back and forth between the two
+mirror points. As it moves into stronger field, its
+perpendicular velocity increases (to conserve the
+magnetic moment mu = mv_perp^2 / 2B), and eventually
+all the kinetic energy is in the perpendicular direction.
+At that point, the parallel velocity reaches zero and
+the particle reflects.
+end_dialog
+
+180 3.0 0.0 follow_particle 1
+
+180 3.0 0.0 wait_seconds 3.0
+
+360 6.0 0.0 dialog
+Press F to follow the particle and see the mirror
+reflection up close. Watch how the gyroradius shrinks
+as B increases near the mirror points.
+end_dialog
+
+360 6.0 0.0 follow_particle 0
+
+360 6.0 0.0 wait_seconds 1.0
+
+420 7.0 0.0 dialog
+The mirror ratio R = B_mirror / B_min determines which
+particles are trapped. Particles with pitch angle less
+than arcsin(1/sqrt(R)) escape through the mirror: this
+defines the loss cone.
+
+Try reducing the pitch angle toward 0 to see the
+particle escape through the mirror.
+end_dialog
+
+480 8.0 0.0 end
