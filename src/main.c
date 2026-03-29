@@ -92,11 +92,18 @@ int main(int argc, char **argv)
     ui_sync_from_app(&app);
 
     SetTraceLogLevel(LOG_NONE);
+#ifdef __EMSCRIPTEN__
+    SetConfigFlags(FLAG_MSAA_4X_HINT);
+    InitWindow(1280, 720, "Lorentz Tracer");  /* Emscripten resizes to canvas */
+#else
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
     InitWindow(app.win_w, app.win_h, "Lorentz Tracer");
+#endif
     SetExitKey(0);  /* Esc closes help overlay, not the window */
     SetTargetFPS(60);
+#ifndef __EMSCRIPTEN__
     ToggleBorderlessWindowed();  /* start fullscreen */
+#endif
 #ifdef __APPLE__
     extern void macos_fix_window_switching(void *nswindow);
     macos_fix_window_switching(GetWindowHandle());

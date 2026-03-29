@@ -98,7 +98,7 @@ endif()
 # ---- Platform-specific ----
 if(EMSCRIPTEN)
     # WASM build: raylib detects PLATFORM_WEB automatically
-    set(EM_FLAGS "-s USE_GLFW=3 -s ASYNCIFY -s TOTAL_MEMORY=67108864")
+    set(EM_FLAGS "-s USE_GLFW=3 -s ASYNCIFY -s TOTAL_MEMORY=335544320")
     set(EM_FLAGS "${EM_FLAGS} -s ALLOW_MEMORY_GROWTH=1")
     set(EM_FLAGS "${EM_FLAGS} --preload-file ${CMAKE_SOURCE_DIR}/resources@/resources")
     set(EM_FLAGS "${EM_FLAGS} --shell-file ${CMAKE_SOURCE_DIR}/resources/shell.html")

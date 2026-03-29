@@ -27,19 +27,15 @@
 <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
 <div id="status">Loading...</div>
 <script>
-  // Scale canvas backing store to device pixel ratio for sharp rendering on HiDPI
+  // Size canvas to fill the viewport (CSS pixels = backing pixels; no DPR scaling)
   (function() {
     var canvas = document.getElementById('canvas');
-    var dpr = window.devicePixelRatio || 1;
-    var w = window.innerWidth;
-    var h = window.innerHeight;
-    canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
-    window.addEventListener('resize', function() {
-      var dpr = window.devicePixelRatio || 1;
-      canvas.width = Math.round(window.innerWidth * dpr);
-      canvas.height = Math.round(window.innerHeight * dpr);
-    });
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
   })();
   var Module = {
     canvas: document.getElementById('canvas'),

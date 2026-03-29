@@ -1482,7 +1482,8 @@ static void declare_lang_picker(AppState *app)
     }) {
         CLAY(CLAY_ID("LangPickPanel"), {
             .layout = { .layoutDirection = CLAY_TOP_TO_BOTTOM,
-                         .sizing = { CLAY_SIZING_FIXED(400), CLAY_SIZING_FIT(0) },
+                         .sizing = { CLAY_SIZING_FIXED(400),
+                                     CLAY_SIZING_FIT(.max = (float)GetScreenHeight() - 40) },
                          .padding = {20, 20, 16, 16}, .childGap = 10 },
             .backgroundColor = panel_c,
             .cornerRadius = CLAY_CORNER_RADIUS(8)
@@ -1492,8 +1493,14 @@ static void declare_lang_picker(AppState *app)
                 CLAY_TEXT_CONFIG({ .fontId = FONT_UI, .fontSize = 18,
                     .letterSpacing = 1, .textColor = text_c }));
 
-            /* Language grid */
+            /* Language grid (scrollable if tall) */
             LangId cur = i18n_get_lang();
+            CLAY(CLAY_ID("LangPickScroll"), {
+                .layout = { .layoutDirection = CLAY_TOP_TO_BOTTOM,
+                             .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_GROW(0) },
+                             .childGap = 4 },
+                .clip = { .vertical = true, .childOffset = Clay_GetScrollOffset() }
+            }) {
             for (int i = 0; i < LANG__COUNT; i++) {
                 const LangInfo *li = i18n_lang_info((LangId)i);
                 Clay_ElementId lid = CLAY_IDI("LPItem", i);
@@ -1520,6 +1527,7 @@ static void declare_lang_picker(AppState *app)
                     field_retranslate(app->models);
                 }
             }
+            } /* end LangPickScroll */
 
             /* Continue button */
             Clay_ElementId cid = CLAY_ID("LPContinue");
