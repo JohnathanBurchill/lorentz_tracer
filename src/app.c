@@ -1102,6 +1102,7 @@ void app_update(AppState *app)
                 start_recording(app);
         }
         app->needs_reset = 1;
+        app->drop_mode = 0;
     }
     /* Cmd+/- zoom: route to plot zoom if mouse over plots, else UI zoom.
      * Bare +/- control playback speed. */
@@ -1139,13 +1140,13 @@ void app_update(AppState *app)
             else if (zminus) *z = fmaxf(*z - 0.1f, 0.5f);
             else if (zzero) *z = 1.0f;
         }
-        else if (zplus) {
+        else if (zplus && !app->drop_mode) {
             float max_speed[] = {0.1f, 1.0f, 10.0f, 100.0f};
             app->playback_speed *= 2.0;
             if (app->playback_speed > max_speed[app->speed_range])
                 app->playback_speed = max_speed[app->speed_range];
         }
-        else if (zminus) {
+        else if (zminus && !app->drop_mode) {
             app->playback_speed *= 0.5;
             if (app->playback_speed < 0.01) app->playback_speed = 0.01;
         }
@@ -1315,6 +1316,16 @@ void app_update(AppState *app)
         app->frame_e1_init = 0;
     }
 
+    /* Enter drop-particle mode */
+    if (IsKeyPressed(KEY_D) && !app->drop_mode && app->n_particles < MAX_PARTICLES) {
+        app->drop_mode = 1;
+        /* Reference z from selected particle, or model default */
+        if (app->n_particles > 0)
+            app->drop_height = app->particles[app->selected_particle].pos.z;
+        else
+            app->drop_height = app->models[app->current_model].default_pos.z;
+    }
+
 placement:
     /* Left-shift+click: place particle at max |B| along line of sight.
      * While left-shift is held (without clicking), show a preview field line
@@ -1458,8 +1469,87 @@ placement:
             } else {
                 app->place_preview_valid = 0;
             }
-        } else {
+        } else if (!app->drop_mode) {
             app->place_preview_valid = 0;
+        }
+    }
+
+    /* Drop-particle mode: ray intersects z = drop_height plane.
+     * +/- adjust z height, Esc cancels, left-click places and exits. */
+    if (app->drop_mode) {
+        /* +/- adjust drop height (scale step to camera distance) */
+        {
+            float cam_d = sqrtf(
+                (app->camera.position.x - app->camera.target.x) *
+                (app->camera.position.x - app->camera.target.x) +
+                (app->camera.position.y - app->camera.target.y) *
+                (app->camera.position.y - app->camera.target.y) +
+                (app->camera.position.z - app->camera.target.z) *
+                (app->camera.position.z - app->camera.target.z));
+            double step = cam_d * 0.05;
+            if (IsKeyDown(KEY_EQUAL) || IsKeyDown(KEY_KP_ADD))
+                app->drop_height += step * GetFrameTime() * 5.0;
+            if (IsKeyDown(KEY_MINUS) || IsKeyDown(KEY_KP_SUBTRACT))
+                app->drop_height -= step * GetFrameTime() * 5.0;
+        }
+
+        /* Esc cancels drop mode */
+        if (IsKeyPressed(KEY_ESCAPE)) {
+            app->drop_mode = 0;
+            app->place_preview_valid = 0;
+        }
+
+        /* Ray-plane intersection for preview and placement */
+        if (app->drop_mode) {
+            Vector2 mouse = GetMousePosition();
+            float scene_x, scene_y, scene_w, scene_h;
+            app_scene_rect(app, &scene_x, &scene_y, &scene_w, &scene_h);
+            int in_scene = app_point_in_scene(app, mouse.x, mouse.y);
+
+            if (in_scene) {
+                float ndc_x = (mouse.x - scene_x) / scene_w * 2.0f - 1.0f;
+                float ndc_y = 1.0f - (mouse.y - scene_y) / scene_h * 2.0f;
+                float aspect = scene_w / scene_h;
+                float half_v = tanf(app->camera.fovy * 0.5f * DEG2RAD);
+                float half_h = half_v * aspect;
+                Matrix view = MatrixLookAt(app->camera.position,
+                                           app->camera.target, app->camera.up);
+                Matrix inv_view = MatrixInvert(view);
+                Vector3 ray_dir_view = { ndc_x * half_h, ndc_y * half_v, -1.0f };
+                Vector3 rd = Vector3Transform(ray_dir_view, inv_view);
+                rd = (Vector3){ rd.x - inv_view.m12,
+                                rd.y - inv_view.m13,
+                                rd.z - inv_view.m14 };
+                float len = sqrtf(rd.x*rd.x + rd.y*rd.y + rd.z*rd.z);
+                if (len > 1e-8f) { rd.x /= len; rd.y /= len; rd.z /= len; }
+
+                /* Intersect ray with z = drop_height */
+                Vector3 ro = app->camera.position;
+                if (fabs(rd.z) > 1e-10) {
+                    double t = (app->drop_height - ro.z) / rd.z;
+                    if (t > 0.0) {
+                        Vec3 hit = {
+                            ro.x + t * rd.x,
+                            ro.y + t * rd.y,
+                            ro.z + t * rd.z,
+                        };
+                        app->place_preview_valid = 1;
+                        app->place_preview_pos = hit;
+
+                        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                            app_add_particle(app, hit);
+                            app->drop_mode = 0;
+                            app->place_preview_valid = 0;
+                        }
+                    } else {
+                        app->place_preview_valid = 0;
+                    }
+                } else {
+                    app->place_preview_valid = 0;
+                }
+            } else {
+                app->place_preview_valid = 0;
+            }
         }
     }
 
@@ -2117,6 +2207,14 @@ void app_render_inner(AppState *app)
         if (app->trigger_record) {
             DrawTextEx(app->font_ui, TR(STR_ARMED),
                        (Vector2){app->win_w - 70, 12}, 14, 1, ORANGE);
+        }
+        if (app->drop_mode) {
+            char drop_hud[64];
+            snprintf(drop_hud, sizeof(drop_hud), "DROP  z=%.3g", app->drop_height);
+            Vector2 dsz = MeasureTextEx(app->font_mono, drop_hud, 14, 1);
+            float dx = (app->win_w - dsz.x) * 0.5f;
+            DrawTextEx(app->font_mono, drop_hud,
+                       (Vector2){dx, 12}, 14, 1, ORANGE);
         }
     }
 

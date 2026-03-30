@@ -466,6 +466,7 @@ void render3d_draw(const struct AppState *app)
     /* Placement preview: field line through candidate point */
     if (app->place_preview_valid) {
         static Vec3 prev_pts[FL_MAX_PTS];
+        static Vec3 bwd_pts[FL_MAX_PTS];
         double ds = 0.05;
         double half_len = 2.0;  /* short preview */
         /* Bright version of the species color that would be placed */
@@ -485,9 +486,67 @@ void render3d_draw(const struct AppState *app)
         int n_fwd = trace_field_line_len(fm, app->place_preview_pos,  ds, half_len, prev_pts, FL_MAX_PTS);
         for (int i = 1; i < n_fwd; i++)
             DrawLine3D(v3(prev_pts[i - 1]), v3(prev_pts[i]), prev_col);
-        int n_bwd = trace_field_line_len(fm, app->place_preview_pos, -ds, half_len, prev_pts, FL_MAX_PTS);
+        int n_bwd = trace_field_line_len(fm, app->place_preview_pos, -ds, half_len, bwd_pts, FL_MAX_PTS);
         for (int i = 1; i < n_bwd; i++)
-            DrawLine3D(v3(prev_pts[i - 1]), v3(prev_pts[i]), prev_col);
+            DrawLine3D(v3(bwd_pts[i - 1]), v3(bwd_pts[i]), prev_col);
+
+        /* Drop mode: three origin coordinate planes spanning from
+         * origin to the drop point, with field line projections. */
+        if (app->drop_mode) {
+            Vec3 pp = app->place_preview_pos;
+            float px = (float)pp.x, py = (float)pp.y, pz = (float)pp.z;
+
+            /* Plane colors: YZ=red, XZ=green, XY=blue */
+            Color plane_base[3] = {
+                { 180,  60,  60, 18 },  /* YZ (x=const) */
+                {  60, 180,  60, 18 },  /* XZ (y=const) */
+                {  60,  80, 200, 18 },  /* XY (z=const) */
+            };
+
+            /* Three rectangles from origin to the drop point:
+             * XY plane: (0,0,0)-(px,0,0)-(px,py,0)-(0,py,0)
+             * XZ plane: (0,0,0)-(px,0,0)-(px,0,pz)-(0,0,pz)
+             * YZ plane: (0,0,0)-(0,py,0)-(0,py,pz)-(0,0,pz) */
+            Vector3 quads[3][4] = {
+                { {0,0,0}, {px,0,0}, {px,py,0}, {0,py,0} },   /* XY */
+                { {0,0,0}, {px,0,0}, {px,0,pz}, {0,0,pz} },   /* XZ */
+                { {0,0,0}, {0,py,0}, {0,py,pz}, {0,0,pz} },   /* YZ */
+            };
+
+            for (int ax = 0; ax < 3; ax++) {
+                Color pc = plane_base[ax];
+                unsigned char proj_alpha = 80;
+                Color lc = { pc.r, pc.g, pc.b, proj_alpha };
+
+                /* Double-sided quad */
+                rlBegin(RL_QUADS);
+                    rlColor4ub(pc.r, pc.g, pc.b, pc.a);
+                    for (int v = 0; v < 4; v++)
+                        rlVertex3f(quads[ax][v].x, quads[ax][v].y, quads[ax][v].z);
+                    for (int v = 3; v >= 0; v--)
+                        rlVertex3f(quads[ax][v].x, quads[ax][v].y, quads[ax][v].z);
+                rlEnd();
+
+                /* Project field line (fwd + bwd) onto this origin plane */
+                for (int pass = 0; pass < 2; pass++) {
+                    Vec3 *pts = (pass == 0) ? prev_pts : bwd_pts;
+                    int npts  = (pass == 0) ? n_fwd : n_bwd;
+                    for (int i = 1; i < npts; i++) {
+                        Vec3 pa = pts[i - 1], pb = pts[i];
+                        if (ax == 2)      { pa.z = 0; pb.z = 0; }
+                        else if (ax == 1) { pa.y = 0; pb.y = 0; }
+                        else              { pa.x = 0; pb.x = 0; }
+                        DrawLine3D(v3(pa), v3(pb), lc);
+                    }
+                }
+            }
+
+            /* Drop-line from preview point to the XY origin plane */
+            Vec3 proj_xy = { pp.x, pp.y, 0 };
+            Color dl = { prev_col.r, prev_col.g, prev_col.b, 100 };
+            DrawLine3D(v3(pp), v3(proj_xy), dl);
+            DrawSphere(v3(proj_xy), 0.008f, dl);
+        }
     }
 
     /* Orbit trails and particle spheres for all particles.

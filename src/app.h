@@ -89,6 +89,10 @@ typedef struct AppState {
     Vec3 last_drop_pos;
     int has_last_drop;   /* 1 after any particle placed this session */
 
+    /* Drop-particle mode (D key) */
+    int drop_mode;       /* 0=off, 1=active */
+    double drop_height;  /* z coordinate of the drop plane */
+
     /* Simulation */
     int paused;
     int needs_reset;
