@@ -127,14 +127,11 @@ elseif(APPLE)
         MACOSX_PACKAGE_LOCATION "Resources")
     target_sources(lorentz_tracer PRIVATE ${ICON_FILE})
 
-    # Copy resources (fonts, shaders) into the bundle
+    # Copy resources (fonts, scenarios) into the bundle
     add_custom_command(TARGET lorentz_tracer POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/resources/fonts
             $<TARGET_BUNDLE_CONTENT_DIR:lorentz_tracer>/Resources/resources/fonts
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_SOURCE_DIR}/resources/shaders
-            $<TARGET_BUNDLE_CONTENT_DIR:lorentz_tracer>/Resources/resources/shaders
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/resources/scenarios
             $<TARGET_BUNDLE_CONTENT_DIR:lorentz_tracer>/Resources/resources/scenarios
