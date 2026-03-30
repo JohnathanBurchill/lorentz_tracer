@@ -13,7 +13,6 @@
 #include "i18n.h"
 #include "app.h"
 #include "raylib.h"
-#include "raymath.h"
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -329,20 +328,6 @@ static void do_section_header(AppState *app, int idx, const char *title,
     }
     if (Clay_PointerOver(hid) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
         app->ui_section_open[idx] = !app->ui_section_open[idx];
-}
-
-/* Label + value on one line */
-static void label_value(const char *label, Clay_String val,
-                        Clay_Color dim_c, Clay_Color text_c)
-{
-    CLAY_AUTO_ID({
-        .layout = { .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) } }
-    }) {
-        CLAY_TEXT(S(label), CLAY_TEXT_CONFIG({ .fontId = FONT_UI, .fontSize = UZ(13),
-                  .letterSpacing = 1, .textColor = dim_c }));
-        CLAY_TEXT(val, CLAY_TEXT_CONFIG({ .fontId = FONT_MONO, .fontSize = UZ(13),
-                  .letterSpacing = 1, .textColor = text_c }));
-    }
 }
 
 /* ======== Section declarations ======== */
@@ -1463,8 +1448,6 @@ static void declare_lang_picker(AppState *app)
         ? (Clay_Color){22, 22, 30, 245} : (Clay_Color){242, 242, 248, 245};
     Clay_Color text_c = dark
         ? (Clay_Color){230, 230, 230, 255} : (Clay_Color){30, 30, 30, 255};
-    Clay_Color dim_c = dark
-        ? (Clay_Color){160, 160, 170, 255} : (Clay_Color){100, 100, 110, 255};
     Clay_Color accent = dark
         ? (Clay_Color){60, 100, 180, 255} : (Clay_Color){40, 80, 160, 255};
     Clay_Color accent_hover = dark
