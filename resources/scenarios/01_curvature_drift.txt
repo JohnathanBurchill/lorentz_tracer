@@ -1,0 +1,45 @@
+# Lorentz Tracer 
+# Curvature drift example shown in Figure 1 of Burchill (2026), "What causes the
+magnetic curvature drift?"
+
+title Curvature drift
+description
+A test charge starts out moving parallel to the magnetic field. The field model is
+pure curvature: the field magnitude is uniform. This isolates the curvature drift.
+end_description
+
+# Initial state (captured from current app state)
+model 0  # Circular B (const |B|) (CIR)
+param 0 1  # B0 (T)
+species 5
+custom_q 1
+custom_m 1
+custom_speed 1
+pitch_deg 0
+init_pos 5 0 0
+playback_speed 0.05
+speed_range 0
+show_field_lines 1
+show_velocity_vec 0
+show_B_vec 0
+follow_particle 0
+camera_pos 15.4146957 -13.0548887 14.0755539
+camera_target 0.0679123476 2.29189563 3.11357617
+camera_fovy 45
+
+fps 60
+
+# Events: frame real_time sim_time key value
+# Add dialog, wait_action, wait_seconds, and state events below.
+
+0 0.0 0.0 dialog
+A test charge starts out moving parallel to the magnetic field. The field model is
+pure curvature: the field magnitude is uniform. This isolates the curvature drift.
+end_dialog
+
+0 0.0 0.0 paused 0
+
+# wait_seconds 3.0
+# wait_action toggle_vel
+
+600 10.0 0.0 end
