@@ -301,6 +301,7 @@ void app_init(AppState *app)
     app->stereo_gap = 0.0f;
     app->show_Gij = 0;
     app->Gij_valid = 0;
+    app->gij_zoom = 1.0f;
 
     /* UI sections: all open by default */
     for (int i = 0; i < 5; i++) app->ui_section_open[i] = 1;
@@ -610,6 +611,10 @@ void app_reset_particle(AppState *app)
     if (app->needs_reset == 2) {
         /* Model changed: use model default position */
         app->init_pos = fm->default_pos;
+        app->has_last_drop = 0;
+    } else if (app->has_last_drop) {
+        /* Normal reset: restart from last manually-placed particle position */
+        app->init_pos = app->last_drop_pos;
     }
 
     /* Verify B is nonzero at init_pos; if not, nudge toward model default
@@ -760,6 +765,10 @@ void app_add_particle(AppState *app, Vec3 pos)
         .custom_speed = app->custom_speed
     };
     app->redo_count = 0;  /* new placement clears redo history */
+
+    /* Remember for reset */
+    app->last_drop_pos = pos;
+    app->has_last_drop = 1;
 
     app->selected_particle = idx;
 
@@ -1106,17 +1115,26 @@ void app_update(AppState *app)
         int zminus = IsKeyPressed(KEY_MINUS) || IsKeyPressed(KEY_KP_SUBTRACT);
         int zzero = IsKeyPressed(KEY_ZERO);
         if (zmod && (zplus || zminus || zzero)) {
+            Vector2 m = GetMousePosition();
+            /* Check if mouse is over Gij overlay */
+            int over_gij = 0;
+            if (app->show_Gij && app->Gij_valid && app->gij_rect[2] > 0) {
+                over_gij = (m.x >= app->gij_rect[0] &&
+                            m.x < app->gij_rect[0] + app->gij_rect[2] &&
+                            m.y >= app->gij_rect[1] &&
+                            m.y < app->gij_rect[1] + app->gij_rect[3]);
+            }
             /* Check if mouse is over plots area */
             int over_plots = 0;
-            if (app->show_plots) {
+            if (!over_gij && app->show_plots) {
                 float sx, sy, sw, sh;
                 app_scene_rect(app, &sx, &sy, &sw, &sh);
                 float ph = app->win_h * app->plots_height_frac;
                 float py = (app->plots_edge == 1) ? 0.0f : sy + sh;
-                Vector2 m = GetMousePosition();
                 over_plots = (m.x >= sx && m.x < sx + sw && m.y >= py && m.y < py + ph);
             }
-            float *z = over_plots ? &app->plot_zoom : &app->ui_zoom;
+            float *z = over_gij ? &app->gij_zoom :
+                        over_plots ? &app->plot_zoom : &app->ui_zoom;
             if (zplus) *z = fminf(*z + 0.1f, 2.5f);
             else if (zminus) *z = fmaxf(*z - 0.1f, 0.5f);
             else if (zzero) *z = 1.0f;
@@ -1978,9 +1996,10 @@ void app_render_inner(AppState *app)
 
     /* G_ij tensor overlay (upper left of 3D scene) */
     if (app->show_Gij && app->Gij_valid) {
+        float gz = app->gij_zoom;
         float gx = scene_x + 14, gy = 10;
-        float fsz = 11;
-        float row_sp = 14;
+        float fsz = 11 * gz;
+        float row_sp = 14 * gz;
 
         /* Find max absolute value to determine scale factor */
         double maxval = 0;
@@ -2070,6 +2089,15 @@ void app_render_inner(AppState *app)
                    (Vector2){ux + msz.x, uy - exp_fsz * 0.4f}, exp_fsz, 1, app->theme.text_dim);
 
         gy += 3 * row_sp;
+
+        /* Store bounding rect for mouse-over hit testing */
+        float gij_x0 = scene_x + 14;
+        float gij_y0 = 10;
+        Vector2 m1sz = MeasureTextEx(app->font_mono, "-1", exp_fsz, 1);
+        app->gij_rect[0] = gij_x0;
+        app->gij_rect[1] = gij_y0;
+        app->gij_rect[2] = (ux + msz.x + m1sz.x) - gij_x0;
+        app->gij_rect[3] = gy - gij_y0;
     }
 
     /* 2D telemetry plots (independent of UI panel) */
@@ -2202,6 +2230,7 @@ void app_save_state(const AppState *app)
     fprintf(f, "plots_edge=%d\n", app->plots_edge);
     fprintf(f, "plot_zoom=%.6g\n", app->plot_zoom);
     fprintf(f, "show_Gij=%d\n", app->show_Gij);
+    fprintf(f, "gij_zoom=%.6g\n", app->gij_zoom);
     fprintf(f, "show_gc_field_line=%d\n", app->show_gc_field_line);
     fprintf(f, "show_pos_field_line=%d\n", app->show_pos_field_line);
     fprintf(f, "gc_fl_length=%.6g\n", app->gc_fl_length);
@@ -2359,6 +2388,11 @@ void app_load_state(AppState *app)
         }
         else if (strcmp(key, "show_Gij") == 0)
             app->show_Gij = atoi(val);
+        else if (strcmp(key, "gij_zoom") == 0) {
+            app->gij_zoom = (float)atof(val);
+            if (app->gij_zoom < 0.5f) app->gij_zoom = 0.5f;
+            if (app->gij_zoom > 2.5f) app->gij_zoom = 2.5f;
+        }
         else if (strcmp(key, "show_gc_field_line") == 0)
             app->show_gc_field_line = atoi(val);
         else if (strcmp(key, "show_pos_field_line") == 0)

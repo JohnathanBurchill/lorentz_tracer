@@ -85,6 +85,10 @@ typedef struct AppState {
     int undo_count;     /* placements that can be undone */
     int redo_count;     /* placements that can be redone */
 
+    /* Last manually-placed particle position (for reset) */
+    Vec3 last_drop_pos;
+    int has_last_drop;   /* 1 after any particle placed this session */
+
     /* Simulation */
     int paused;
     int needs_reset;
@@ -212,6 +216,8 @@ typedef struct AppState {
     double Gij[3][3];
     int show_Gij;
     int Gij_valid;
+    float gij_zoom;      /* font scale for Gij overlay: 1.0 = default */
+    float gij_rect[4];  /* bounding box [x, y, w, h] from last render */
 
     /* Window */
     int win_w;
