@@ -721,6 +721,46 @@ void app_reset_particle(AppState *app)
     }
 }
 
+/* Build a picking ray from screen coords, handling both perspective
+ * and orthographic projections. */
+static Ray build_pick_ray(const AppState *a, Vector2 ms,
+                           float sx, float sy, float sw, float sh)
+{
+    float ndc_x = (ms.x - sx) / sw * 2.0f - 1.0f;
+    float ndc_y = 1.0f - (ms.y - sy) / sh * 2.0f;
+    float aspect = sw / sh;
+    float half_v = tanf(a->camera.fovy * 0.5f * DEG2RAD);
+    float half_h = half_v * aspect;
+    Matrix view = MatrixLookAt(a->camera.position, a->camera.target, a->camera.up);
+    Matrix inv_view = MatrixInvert(view);
+
+    if (a->camera.projection == CAMERA_ORTHOGRAPHIC) {
+        /* Ortho: ray origin shifts, direction is constant (camera forward) */
+        Vector3 dv = { a->camera.target.x - a->camera.position.x,
+                       a->camera.target.y - a->camera.position.y,
+                       a->camera.target.z - a->camera.position.z };
+        float dlen = sqrtf(dv.x*dv.x + dv.y*dv.y + dv.z*dv.z);
+        if (dlen > 1e-8f) { dv.x /= dlen; dv.y /= dlen; dv.z /= dlen; }
+        float oh = dlen * half_v;
+        float ow = oh * aspect;
+        /* Offset in view space, then transform to world */
+        Vector3 off_view = { ndc_x * ow, ndc_y * oh, 0.0f };
+        Vector3 wo = Vector3Transform(off_view, inv_view);
+        wo = (Vector3){ wo.x - inv_view.m12, wo.y - inv_view.m13, wo.z - inv_view.m14 };
+        Vector3 ro = { a->camera.position.x + wo.x,
+                       a->camera.position.y + wo.y,
+                       a->camera.position.z + wo.z };
+        return (Ray){ .position = ro, .direction = dv };
+    }
+    /* Perspective */
+    Vector3 rd_view = { ndc_x * half_h, ndc_y * half_v, -1.0f };
+    Vector3 rd = Vector3Transform(rd_view, inv_view);
+    rd = (Vector3){ rd.x - inv_view.m12, rd.y - inv_view.m13, rd.z - inv_view.m14 };
+    float len = sqrtf(rd.x*rd.x + rd.y*rd.y + rd.z*rd.z);
+    if (len > 1e-8f) { rd.x /= len; rd.y /= len; rd.z /= len; }
+    return (Ray){ .position = a->camera.position, .direction = rd };
+}
+
 static void recompute_dt(AppState *app);
 #ifndef __EMSCRIPTEN__
 static void state_file_path(char *buf, int buflen);
@@ -1350,22 +1390,7 @@ placement:
             mouse_dragging = 0;
 
         if (any_shift && in_scene && !mouse_dragging && !IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
-            /* Build ray manually using scene viewport aspect ratio.
-             * GetScreenToWorldRay uses full window dims — wrong when
-             * viewport doesn't cover the whole window. */
-            float ndc_x = (mouse.x - scene_x) / scene_w * 2.0f - 1.0f;
-            float ndc_y = 1.0f - (mouse.y - scene_y) / scene_h * 2.0f;
-            float aspect = scene_w / scene_h;
-            float half_v = tanf(app->camera.fovy * 0.5f * DEG2RAD);
-            float half_h = half_v * aspect;
-            Matrix view = MatrixLookAt(app->camera.position, app->camera.target, app->camera.up);
-            Matrix inv_view = MatrixInvert(view);
-            Vector3 ray_dir_view = { ndc_x * half_h, ndc_y * half_v, -1.0f };
-            Vector3 rd = Vector3Transform(ray_dir_view, inv_view);
-            rd = (Vector3){ rd.x - inv_view.m12, rd.y - inv_view.m13, rd.z - inv_view.m14 };
-            float len = sqrtf(rd.x*rd.x + rd.y*rd.y + rd.z*rd.z);
-            if (len > 1e-8f) { rd.x /= len; rd.y /= len; rd.z /= len; }
-            Ray ray = { .position = app->camera.position, .direction = rd };
+            Ray ray = build_pick_ray(app, mouse, scene_x, scene_y, scene_w, scene_h);
             FieldModel *fm = &app->models[app->current_model];
 
             /* Sample |B| along ray. Two-pass: first find max |B|, then
@@ -1507,31 +1532,16 @@ placement:
             int in_scene = app_point_in_scene(app, mouse.x, mouse.y);
 
             if (in_scene) {
-                float ndc_x = (mouse.x - scene_x) / scene_w * 2.0f - 1.0f;
-                float ndc_y = 1.0f - (mouse.y - scene_y) / scene_h * 2.0f;
-                float aspect = scene_w / scene_h;
-                float half_v = tanf(app->camera.fovy * 0.5f * DEG2RAD);
-                float half_h = half_v * aspect;
-                Matrix view = MatrixLookAt(app->camera.position,
-                                           app->camera.target, app->camera.up);
-                Matrix inv_view = MatrixInvert(view);
-                Vector3 ray_dir_view = { ndc_x * half_h, ndc_y * half_v, -1.0f };
-                Vector3 rd = Vector3Transform(ray_dir_view, inv_view);
-                rd = (Vector3){ rd.x - inv_view.m12,
-                                rd.y - inv_view.m13,
-                                rd.z - inv_view.m14 };
-                float len = sqrtf(rd.x*rd.x + rd.y*rd.y + rd.z*rd.z);
-                if (len > 1e-8f) { rd.x /= len; rd.y /= len; rd.z /= len; }
+                Ray ray = build_pick_ray(app, mouse, scene_x, scene_y, scene_w, scene_h);
 
                 /* Intersect ray with z = drop_height */
-                Vector3 ro = app->camera.position;
-                if (fabs(rd.z) > 1e-10) {
-                    double t = (app->drop_height - ro.z) / rd.z;
+                if (fabs(ray.direction.z) > 1e-10) {
+                    double t = (app->drop_height - ray.position.z) / ray.direction.z;
                     if (t > 0.0) {
                         Vec3 hit = {
-                            ro.x + t * rd.x,
-                            ro.y + t * rd.y,
-                            ro.z + t * rd.z,
+                            ray.position.x + t * ray.direction.x,
+                            ray.position.y + t * ray.direction.y,
+                            ray.position.z + t * ray.direction.z,
                         };
                         app->place_preview_valid = 1;
                         app->place_preview_pos = hit;
@@ -1956,10 +1966,21 @@ void app_render_inner(AppState *app)
             rlMatrixMode(RL_PROJECTION);
             rlPushMatrix();
             rlLoadIdentity();
-            double top = RL_CULL_DISTANCE_NEAR * tan(eye_cam.fovy * 0.5 * DEG2RAD);
-            double rt = top * aspect;
-            rlFrustum(-rt, rt, -top, top,
-                       RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+            if (app->camera.projection == CAMERA_ORTHOGRAPHIC) {
+                Vector3 dv = { eye_cam.position.x - eye_cam.target.x,
+                               eye_cam.position.y - eye_cam.target.y,
+                               eye_cam.position.z - eye_cam.target.z };
+                double cd = sqrt(dv.x*dv.x + dv.y*dv.y + dv.z*dv.z);
+                double otop = cd * tan(eye_cam.fovy * 0.5 * DEG2RAD);
+                double ort = otop * aspect;
+                rlOrtho(-ort, ort, -otop, otop,
+                         RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+            } else {
+                double top = RL_CULL_DISTANCE_NEAR * tan(eye_cam.fovy * 0.5 * DEG2RAD);
+                double rt = top * aspect;
+                rlFrustum(-rt, rt, -top, top,
+                           RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+            }
 
             /* View */
             rlMatrixMode(RL_MODELVIEW);
@@ -1998,9 +2019,21 @@ void app_render_inner(AppState *app)
         rlMatrixMode(RL_PROJECTION);
         rlPushMatrix();
         rlLoadIdentity();
-        double top = RL_CULL_DISTANCE_NEAR * tan(app->camera.fovy * 0.5 * DEG2RAD);
-        double rt = top * aspect;
-        rlFrustum(-rt, rt, -top, top, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+        if (app->camera.projection == CAMERA_ORTHOGRAPHIC) {
+            /* Ortho half-height from camera distance and fovy so zoom feels
+             * consistent when switching between perspective and ortho. */
+            Vector3 dv = { app->camera.position.x - app->camera.target.x,
+                           app->camera.position.y - app->camera.target.y,
+                           app->camera.position.z - app->camera.target.z };
+            double cd = sqrt(dv.x*dv.x + dv.y*dv.y + dv.z*dv.z);
+            double otop = cd * tan(app->camera.fovy * 0.5 * DEG2RAD);
+            double ort = otop * aspect;
+            rlOrtho(-ort, ort, -otop, otop, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+        } else {
+            double top = RL_CULL_DISTANCE_NEAR * tan(app->camera.fovy * 0.5 * DEG2RAD);
+            double rt = top * aspect;
+            rlFrustum(-rt, rt, -top, top, RL_CULL_DISTANCE_NEAR, RL_CULL_DISTANCE_FAR);
+        }
 
         rlMatrixMode(RL_MODELVIEW);
         rlLoadIdentity();
@@ -2343,6 +2376,7 @@ void app_save_state(const AppState *app)
     fprintf(f, "camera_target=%.9g %.9g %.9g\n",
             app->camera.target.x, app->camera.target.y, app->camera.target.z);
     fprintf(f, "camera_fovy=%.9g\n", app->camera.fovy);
+    fprintf(f, "camera_projection=%d\n", app->camera.projection);
     fprintf(f, "cam_field_aligned=%d\n", app->cam_field_aligned);
     fprintf(f, "kappa_screen_dir=%d\n", app->kappa_screen_dir);
     fprintf(f, "tutorial_seen=%d\n", app->tutorial_seen);
@@ -2522,6 +2556,11 @@ void app_load_state(AppState *app)
                    &app->camera.target.x, &app->camera.target.y, &app->camera.target.z);
         else if (strcmp(key, "camera_fovy") == 0)
             app->camera.fovy = (float)atof(val);
+        else if (strcmp(key, "camera_projection") == 0) {
+            int p = atoi(val);
+            app->camera.projection = (p == CAMERA_ORTHOGRAPHIC)
+                ? CAMERA_ORTHOGRAPHIC : CAMERA_PERSPECTIVE;
+        }
         else if (strcmp(key, "cam_field_aligned") == 0)
             app->cam_field_aligned = atoi(val);
         else if (strcmp(key, "kappa_screen_dir") == 0)

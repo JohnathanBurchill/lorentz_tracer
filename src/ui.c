@@ -909,6 +909,17 @@ static void section_display(AppState *app, Clay_Color text_c, Clay_Color dim_c,
             app->frame_e1_init = 0;
         }
     }
+
+    /* Perspective toggle and FoV slider */
+    {
+        int persp = (app->camera.projection == CAMERA_PERSPECTIVE);
+        if (do_toggle(CLAY_ID("TglPersp"), TR(STR_PERSPECTIVE), persp, fill_c, track_c, hov, wcfg))
+            app->camera.projection = persp ? CAMERA_ORTHOGRAPHIC : CAMERA_PERSPECTIVE;
+    }
+    if (app->camera.projection == CAMERA_PERSPECTIVE) {
+        do_slider(CLAY_ID("FovSlider"), TR(STR_FOV), Sf("%.0f\xc2\xb0", app->camera.fovy),
+                  &app->camera.fovy, 10, 120, track_c, fill_c, text_c);
+    }
 }
 
 static void section_readouts(AppState *app, Clay_Color text_c, Clay_Color dim_c)

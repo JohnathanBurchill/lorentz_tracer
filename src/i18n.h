@@ -56,6 +56,8 @@ typedef enum {
     STR_CAM_FREE,               /* "Free (V)" */
     STR_CAM_PB,                 /* "+b (V)" */
     STR_CAM_MB,                 /* "-b (V)" */
+    STR_FOV,                    /* "FoV" */
+    STR_PERSPECTIVE,            /* "Perspective" */
 
     /* UI: Readouts */
     STR_READOUTS,               /* "Readouts" */
