@@ -2,8 +2,6 @@
 
 Interactive charged-particle orbit simulation. Solves the full Lorentz force equation in real time across ten magnetic field models, with 3D visualization and live diagnostics.
 
-Companion to: J. K. Burchill, "What causes the magnetic curvature drift?", submitted to American Journal of Physics (2026).
-
 ## Features
 
 - Boris integrator (energy-conserving to machine precision)
