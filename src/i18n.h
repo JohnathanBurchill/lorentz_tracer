@@ -34,6 +34,8 @@ typedef enum {
     STR_DISPLAY,                /* "Display" */
     STR_TRAIL,                  /* "Trail" */
     STR_TRAIL_FADE,             /* "Fade" */
+    STR_GC_TRAJ,                /* "Alfvén GC" */
+    STR_GC_SYMPLECTIC,          /* "Symplectic" */
     STR_FIELD_LINES,            /* "Field lines" */
     STR_GC_FL,                  /* "GC fl" */
     STR_FL_POS,                 /* "FL pos" */

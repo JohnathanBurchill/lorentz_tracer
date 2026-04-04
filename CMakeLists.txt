@@ -56,6 +56,7 @@ set(SOURCES
     src/nax_axis.c
     src/nax.c
     src/boris.c
+    src/gc.c
     src/trail.c
     src/diagnostics.c
     src/ui.c

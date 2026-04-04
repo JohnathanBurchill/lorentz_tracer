@@ -8,6 +8,8 @@ typedef struct {
     double pitch_angle[DIAG_MAX_SAMPLES];
     double mu[DIAG_MAX_SAMPLES];
     double energy_keV[DIAG_MAX_SAMPLES];
+    double gc_pitch_angle[DIAG_MAX_SAMPLES];  /* GC pitch angle (degrees) */
+    double gc_mu[DIAG_MAX_SAMPLES];           /* GC adiabatic invariant */
     int head;
     int count;
     int capacity;

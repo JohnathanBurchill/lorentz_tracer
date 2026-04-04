@@ -181,6 +181,8 @@ int playback_load(AppState *app, const char *path)
                 app->show_field_lines = atoi(rest);
             } else if (strcmp(key, "show_gc_field_line") == 0) {
                 app->show_gc_field_line = atoi(rest);
+            } else if (strcmp(key, "show_gc_trajectory") == 0) {
+                app->show_gc_trajectory = atoi(rest);
             } else if (strcmp(key, "gc_fl_length") == 0) {
                 app->gc_fl_length = atof(rest);
             } else if (strcmp(key, "show_velocity_vec") == 0) {
@@ -290,6 +292,7 @@ void apply_event(AppState *app, const PlaybackEvent *ev)
     else if (strcmp(key, "dark_mode") == 0)      { int old = app->dark_mode; app->dark_mode = (int)v[0]; if (app->dark_mode != old) app_switch_colors(app, old); app_apply_theme(app); }
     else if (strcmp(key, "show_field_lines") == 0)    app->show_field_lines = (int)v[0];
     else if (strcmp(key, "show_gc_field_line") == 0)   app->show_gc_field_line = (int)v[0];
+    else if (strcmp(key, "show_gc_trajectory") == 0)  app->show_gc_trajectory = (int)v[0];
     else if (strcmp(key, "gc_fl_length") == 0)         app->gc_fl_length = v[0];
     else if (strcmp(key, "show_velocity_vec") == 0)    app->show_velocity_vec = (int)v[0];
     else if (strcmp(key, "show_B_vec") == 0)           app->show_B_vec = (int)v[0];

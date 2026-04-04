@@ -798,10 +798,19 @@ static void section_display(AppState *app, Clay_Color text_c, Clay_Color dim_c,
 
     Clay_Color hov = {60,60,80,255};
 
-    /* Field lines & trail toggles */
+    /* Trail & GC toggles */
     CLAY_AUTO_ID({ .layout = { .childGap = 4, .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) } } }) {
         if (do_toggle(CLAY_ID("TglTrail"), TR(STR_TRAIL), app->show_trail, fill_c, track_c, hov, wcfg))
             app->show_trail = !app->show_trail;
+        if (do_toggle(CLAY_ID("TglGCTraj"), TR(STR_GC_TRAJ), app->show_gc_trajectory, fill_c, track_c, hov, wcfg))
+            app->show_gc_trajectory = !app->show_gc_trajectory;
+        if (app->show_gc_trajectory) {
+            if (do_toggle(CLAY_ID("TglGCSym"), TR(STR_GC_SYMPLECTIC), app->gc_symplectic, fill_c, track_c, hov, wcfg))
+                app->gc_symplectic = !app->gc_symplectic;
+        }
+    }
+    /* Field line toggles (separate row) */
+    CLAY_AUTO_ID({ .layout = { .childGap = 4, .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) } } }) {
         if (do_toggle(CLAY_ID("TglFL"), TR(STR_FIELD_LINES), app->show_field_lines, fill_c, track_c, hov, wcfg))
             app->show_field_lines = !app->show_field_lines;
         if (do_toggle(CLAY_ID("TglGCFL"), TR(STR_GC_FL), app->show_gc_field_line, fill_c, track_c, hov, wcfg))

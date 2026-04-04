@@ -219,6 +219,7 @@ void app_init(AppState *app)
 
     /* Trail and diagnostics */
     trail_init(&app->trails[0], TRAIL_MAX_POINTS);
+    trail_init(&app->gc_trails[0], TRAIL_MAX_POINTS);
     diag_init(&app->diags[0], DIAG_MAX_SAMPLES);
 
     /* 3D view */
@@ -284,6 +285,8 @@ void app_init(AppState *app)
     colors_from_array(app, app->dark_colors);
     memcpy(app->species_colors, app->dark_species, sizeof(app->species_colors));
 
+    app->show_gc_trajectory = 0;
+    app->gc_symplectic = 0;
     app->show_trail = 1;
     app->trail_fade = 0.7f;  /* default: moderate fade */
     app->show_B_vec = 1;
@@ -409,6 +412,8 @@ static void event_log_write_state(AppState *app, const char *txt_path)
     fprintf(f, "dark_mode %d\n", app->dark_mode);
     fprintf(f, "show_field_lines %d\n", app->show_field_lines);
     fprintf(f, "show_gc_field_line %d\n", app->show_gc_field_line);
+    fprintf(f, "show_gc_trajectory %d\n", app->show_gc_trajectory);
+    fprintf(f, "gc_symplectic %d\n", app->gc_symplectic);
     fprintf(f, "gc_fl_length %.15g\n", app->gc_fl_length);
     fprintf(f, "show_velocity_vec %d\n", app->show_velocity_vec);
     fprintf(f, "show_B_vec %d\n", app->show_B_vec);
@@ -696,8 +701,13 @@ void app_reset_particle(AppState *app)
     app->step_counter = 0;
     for (int i = 0; i < MAX_PARTICLES; i++) {
         trail_clear(&app->trails[i]);
+        trail_init(&app->gc_trails[i], TRAIL_MAX_POINTS);
+        trail_clear(&app->gc_trails[i]);
         diag_clear(&app->diags[i]);
     }
+    gc_init_from_particle(&app->gc_particles[0], &app->particles[0],
+                          &app->models[app->current_model], app->relativistic,
+                          app->dt);
     app->needs_reset = 0;
     app->step_hist_head = 0;
     app->step_hist_count = 0;
@@ -795,6 +805,10 @@ void app_add_particle(AppState *app, Vec3 pos)
     trail_clear(&app->trails[idx]);
     diag_init(&app->diags[idx], DIAG_MAX_SAMPLES);
     diag_clear(&app->diags[idx]);
+    gc_init_from_particle(&app->gc_particles[idx], &app->particles[idx], fm,
+                          app->relativistic, app->dt);
+    trail_init(&app->gc_trails[idx], TRAIL_MAX_POINTS);
+    trail_clear(&app->gc_trails[idx]);
     app->E0_keVs[idx] = boris_energy_keV(&app->particles[idx], app->relativistic);
 
     /* Record for undo */
@@ -1081,6 +1095,8 @@ void app_update(AppState *app)
             for (int pi = 0; pi < app->n_particles; pi++) {
                 app->step_hist_pos[hi][pi] = app->particles[pi].pos;
                 app->step_hist_vel[hi][pi] = app->particles[pi].vel;
+                app->step_hist_gc_pos[hi][pi] = app->gc_particles[pi].pos;
+                app->step_hist_gc_ppar[hi][pi] = app->gc_particles[pi].p_par;
             }
             app->step_hist_time[hi] = app->sim_time;
             app->step_hist_head = (hi + 1) % STEP_HISTORY_MAX;
@@ -1088,8 +1104,12 @@ void app_update(AppState *app)
                 app->step_hist_count++;
             boris_step_batch(app->particles, app->n_particles, fm,
                              app->dt, app->relativistic);
-            for (int pi = 0; pi < app->n_particles; pi++)
+            gc_step_batch(app->gc_particles, app->n_particles, fm,
+                          app->dt, app->relativistic, app->gc_symplectic);
+            for (int pi = 0; pi < app->n_particles; pi++) {
                 trail_push(&app->trails[pi], app->particles[pi].pos);
+                trail_push(&app->gc_trails[pi], app->gc_particles[pi].pos);
+            }
             app->sim_time += app->dt;
             app->step_counter++;
         }
@@ -1100,7 +1120,10 @@ void app_update(AppState *app)
             for (int pi = 0; pi < app->n_particles; pi++) {
                 app->particles[pi].pos = app->step_hist_pos[hi][pi];
                 app->particles[pi].vel = app->step_hist_vel[hi][pi];
+                app->gc_particles[pi].pos = app->step_hist_gc_pos[hi][pi];
+                app->gc_particles[pi].p_par = app->step_hist_gc_ppar[hi][pi];
                 trail_pop(&app->trails[pi]);
+                trail_pop(&app->gc_trails[pi]);
             }
             app->sim_time = app->step_hist_time[hi];
             if (app->step_counter > 0) app->step_counter--;
@@ -1326,8 +1349,17 @@ void app_update(AppState *app)
     }
     /* Toggle follow mode (plain F, not Cmd/Ctrl+F) */
     if (IsKeyPressed(KEY_F) && !IsKeyDown(KEY_LEFT_SUPER) && !IsKeyDown(KEY_LEFT_CONTROL)) {
-        app->follow_particle = !app->follow_particle;
-        cam_trans_start(app, CAM_TRANS_FOLLOW, 0.35f);
+        if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) {
+            /* Shift+F: toggle follow GC (only meaningful when following) */
+            if (app->follow_particle) {
+                app->follow_gc = !app->follow_gc;
+                cam_trans_start(app, CAM_TRANS_FOLLOW, 0.35f);
+            }
+        } else {
+            app->follow_particle = !app->follow_particle;
+            if (!app->follow_particle) app->follow_gc = 0;
+            cam_trans_start(app, CAM_TRANS_FOLLOW, 0.35f);
+        }
     }
     if (IsKeyPressed(KEY_G)) app->show_Gij = !app->show_Gij;
     if (IsKeyPressed(KEY_THREE)) app->stereo_3d = !app->stereo_3d;
@@ -1686,6 +1718,22 @@ placement:
     }
 
 physics:
+    /* Reinitialise GC particles when relativistic mode changes
+     * (p_par meaning switches between v_parallel and p_parallel) */
+    {
+        static int gc_prev_rel = -1;
+        if (gc_prev_rel >= 0 && app->relativistic != gc_prev_rel) {
+            FieldModel *rfm = &app->models[app->current_model];
+            for (int pi = 0; pi < app->n_particles; pi++) {
+                gc_init_from_particle(&app->gc_particles[pi],
+                                     &app->particles[pi], rfm, app->relativistic,
+                                     app->dt);
+                trail_clear(&app->gc_trails[pi]);
+            }
+        }
+        gc_prev_rel = app->relativistic;
+    }
+
     /* Physics */
     if (!app->paused) {
         FieldModel *fm = &app->models[app->current_model];
@@ -1707,6 +1755,8 @@ physics:
                 for (int pi = 0; pi < app->n_particles; pi++) {
                     app->step_hist_pos[hi][pi] = app->particles[pi].pos;
                     app->step_hist_vel[hi][pi] = app->particles[pi].vel;
+                    app->step_hist_gc_pos[hi][pi] = app->gc_particles[pi].pos;
+                    app->step_hist_gc_ppar[hi][pi] = app->gc_particles[pi].p_par;
                 }
                 app->step_hist_time[hi] = app->sim_time;
                 app->step_hist_head = (hi + 1) % STEP_HISTORY_MAX;
@@ -1715,6 +1765,8 @@ physics:
             }
             boris_step_batch(app->particles, app->n_particles, fm,
                              app->dt, app->relativistic);
+            gc_step_batch(app->gc_particles, app->n_particles, fm,
+                          app->dt, app->relativistic, app->gc_symplectic);
             for (int pi = 0; pi < app->n_particles; pi++) {
                 if (app->radiation_loss) {
                     double rad_dt = app->dt * pow(10.0, (double)app->radiation_mult);
@@ -1724,8 +1776,10 @@ physics:
                 }
             }
             if (i % trail_interval == 0) {
-                for (int pi = 0; pi < app->n_particles; pi++)
+                for (int pi = 0; pi < app->n_particles; pi++) {
                     trail_push(&app->trails[pi], app->particles[pi].pos);
+                    trail_push(&app->gc_trails[pi], app->gc_particles[pi].pos);
+                }
             }
             app->sim_time += app->dt;
 
@@ -1736,14 +1790,22 @@ physics:
                     double mu = boris_mu(&app->particles[pi], fm);
                     double E = boris_energy_keV(&app->particles[pi], app->relativistic);
                     diag_push(&app->diags[pi], app->sim_time, pitch, mu, E);
+                    /* GC diagnostics at same ring-buffer index */
+                    int di = (app->diags[pi].head - 1 + app->diags[pi].capacity)
+                             % app->diags[pi].capacity;
+                    app->diags[pi].gc_pitch_angle[di] =
+                        gc_pitch_angle(&app->gc_particles[pi], fm, app->relativistic);
+                    app->diags[pi].gc_mu[di] = app->gc_particles[pi].mu;
                 }
             }
         }
     }
 
-    /* Compute field-aligned triad at particle position (for camera and/or G_ij) */
+    /* Compute field-aligned triad (for camera and/or G_ij) */
     {
-        Vec3 p = app->particles[app->selected_particle].pos;
+        Vec3 p = (app->follow_gc)
+                 ? app->gc_particles[app->selected_particle].pos
+                 : app->particles[app->selected_particle].pos;
         FieldModel *fm = &app->models[app->current_model];
         Vec3 B = fm->eval_B(fm->params, p);
         double Bmag = vec3_len(B);
@@ -1820,7 +1882,11 @@ physics:
         int have_want = 0;
 
         if (app->follow_particle) {
-            Vector3 target = {(float)p.x, (float)p.y, (float)p.z};
+            /* Camera follows GC position when follow_gc is active */
+            Vec3 follow_pos = (app->follow_gc)
+                ? app->gc_particles[app->selected_particle].pos : p;
+            Vector3 target = {(float)follow_pos.x, (float)follow_pos.y,
+                              (float)follow_pos.z};
 
             if (app->cam_field_aligned) {
                 float d = app->cam_follow_dist;
@@ -2334,6 +2400,8 @@ void app_save_state(const AppState *app)
     fprintf(f, "speed_range=%d\n", app->speed_range);
     fprintf(f, "dark_mode=%d\n", app->dark_mode);
     fprintf(f, "show_trail=%d\n", app->show_trail);
+    fprintf(f, "show_gc_trajectory=%d\n", app->show_gc_trajectory);
+    fprintf(f, "gc_symplectic=%d\n", app->gc_symplectic);
     fprintf(f, "trail_fade=%.6g\n", app->trail_fade);
     fprintf(f, "show_field_lines=%d\n", app->show_field_lines);
     fprintf(f, "show_velocity_vec=%d\n", app->show_velocity_vec);
@@ -2363,6 +2431,8 @@ void app_save_state(const AppState *app)
     fprintf(f, "show_Gij=%d\n", app->show_Gij);
     fprintf(f, "gij_zoom=%.6g\n", app->gij_zoom);
     fprintf(f, "show_gc_field_line=%d\n", app->show_gc_field_line);
+    fprintf(f, "show_gc_trajectory=%d\n", app->show_gc_trajectory);
+    fprintf(f, "gc_symplectic=%d\n", app->gc_symplectic);
     fprintf(f, "show_pos_field_line=%d\n", app->show_pos_field_line);
     fprintf(f, "gc_fl_length=%.6g\n", app->gc_fl_length);
     fprintf(f, "axis_scale=%.6g\n", app->axis_scale);
@@ -2527,6 +2597,10 @@ void app_load_state(AppState *app)
         }
         else if (strcmp(key, "show_gc_field_line") == 0)
             app->show_gc_field_line = atoi(val);
+        else if (strcmp(key, "show_gc_trajectory") == 0)
+            app->show_gc_trajectory = atoi(val);
+        else if (strcmp(key, "gc_symplectic") == 0)
+            app->gc_symplectic = atoi(val) ? 1 : 0;
         else if (strcmp(key, "show_pos_field_line") == 0)
             app->show_pos_field_line = atoi(val);
         else if (strcmp(key, "gc_fl_length") == 0)

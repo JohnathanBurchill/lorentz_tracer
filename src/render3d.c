@@ -549,6 +549,117 @@ void render3d_draw(const struct AppState *app)
         }
     }
 
+    /* Guiding-centre drift trails (dashed, darker) — drawn first so they
+     * appear behind the orbit trails. */
+    Vector3 cam_pos = app->camera.position;
+    if (app->show_gc_trajectory) {
+        int gc_trail_table[] = {7680, 76800, 768000};
+        int gc_pr = app->plot_range;
+        if (gc_pr < 0) gc_pr = 0;
+        if (gc_pr > 2) gc_pr = 2;
+        int gc_max_trail = gc_trail_table[gc_pr];
+        float gc_fade = app->trail_fade;
+
+        for (int pi = 0; pi < app->n_particles; pi++) {
+            int sp = app->particles[pi].species;
+            if (sp < 0 || sp >= NUM_SPECIES) sp = NUM_SPECIES - 1;
+            int gc_show = app->gc_trails[pi].count < gc_max_trail
+                        ? app->gc_trails[pi].count : gc_max_trail;
+            if (gc_show < 2) continue;
+
+            /* Darker species color */
+            Color gc = sp_colors[sp];
+            gc.r = (unsigned char)(gc.r * 0.55f);
+            gc.g = (unsigned char)(gc.g * 0.55f);
+            gc.b = (unsigned char)(gc.b * 0.55f);
+
+            /* Distance range sampling */
+            float gdmin = 1e30f, gdmax = 0.0f;
+            int gds = gc_show > 1024 ? gc_show / 256 : 1;
+            for (int i = 0; i < gc_show; i += gds) {
+                Vec3 p;
+                trail_get(&app->gc_trails[pi], i, &p);
+                float dx = (float)p.x - cam_pos.x;
+                float dy = (float)p.y - cam_pos.y;
+                float dz = (float)p.z - cam_pos.z;
+                float d = dx*dx + dy*dy + dz*dz;
+                if (d < gdmin) gdmin = d;
+                if (d > gdmax) gdmax = d;
+            }
+            gdmin = sqrtf(gdmin); gdmax = sqrtf(gdmax);
+            float gdrange = gdmax - gdmin;
+            if (gdrange < 1e-10f) gdrange = 1.0f;
+
+            /* Adaptive subsampling */
+            float gtw = app->trail_thickness;
+            if (gtw < 1.0f) gtw = 1.0f;
+            int gn_passes = (gtw <= 1.01f) ? 1 : (int)gtw;
+            int gfull_res = gc_show / 5;
+            int gold_step = 1;
+            if (gc_show > 50000) {
+                gold_step = (gc_show - gfull_res) / 30000;
+                if (gold_step < 2) gold_step = 2;
+            }
+
+            #define DASH_SEGS 4
+            rlBegin(RL_LINES);
+            int gstep = 1;
+            int gprev_i = 0;
+            int gc_cap = app->gc_trails[pi].capacity;
+            int gc_head = app->gc_trails[pi].head;
+            for (int i = 1; i < gc_show; i += gstep) {
+                if (i > gfull_res && gold_step > 1) gstep = gold_step;
+
+                /* Dashed pattern anchored to buffer index (stable as trail grows) */
+                int buf_idx = (gc_head - 1 - i + gc_cap) % gc_cap;
+                int dash_on = (buf_idx / DASH_SEGS) % 2 == 0;
+                if (!dash_on) { gprev_i = i; continue; }
+
+                Vec3 a, b;
+                trail_get(&app->gc_trails[pi], gprev_i, &a);
+                trail_get(&app->gc_trails[pi], i, &b);
+
+                float age = (float)i / (float)gc_show;
+                float age_fade = 1.0f - age * gc_fade;
+
+                float dx = (float)a.x - cam_pos.x;
+                float dy = (float)a.y - cam_pos.y;
+                float dz = (float)a.z - cam_pos.z;
+                float seg_dist = sqrtf(dx*dx + dy*dy + dz*dz);
+                float t2 = (seg_dist - gdmin) / gdrange;
+                float dist_fade = 1.0f - 0.5f * t2;
+
+                unsigned char alpha = (unsigned char)(gc.a * age_fade * dist_fade);
+
+                rlColor4ub(gc.r, gc.g, gc.b, alpha);
+                rlVertex3f((float)a.x, (float)a.y, (float)a.z);
+                rlVertex3f((float)b.x, (float)b.y, (float)b.z);
+
+                for (int k = 1; k < gn_passes; k++) {
+                    Vec3 seg_dir = vec3_sub(b, a);
+                    Vec3 view_dir = vec3_sub(a, g_cam_pos);
+                    Vec3 od = vec3_cross(seg_dir, view_dir);
+                    double olen = vec3_len(od);
+                    if (olen < 1e-12) continue;
+                    Vec3 da = vec3_scale(k * 0.5 * g_px * seg_dist / olen, od);
+                    rlColor4ub(gc.r, gc.g, gc.b, alpha);
+                    rlVertex3f((float)(a.x+da.x), (float)(a.y+da.y), (float)(a.z+da.z));
+                    rlVertex3f((float)(b.x+da.x), (float)(b.y+da.y), (float)(b.z+da.z));
+                    rlColor4ub(gc.r, gc.g, gc.b, alpha);
+                    rlVertex3f((float)(a.x-da.x), (float)(a.y-da.y), (float)(a.z-da.z));
+                    rlVertex3f((float)(b.x-da.x), (float)(b.y-da.y), (float)(b.z-da.z));
+                }
+
+                gprev_i = i;
+            }
+            rlEnd();
+            #undef DASH_SEGS
+
+            /* GC sphere (smaller) */
+            DrawSphere(v3(app->gc_particles[pi].pos), 0.003f, gc);
+        }
+    }
+
     /* Orbit trails and particle spheres for all particles.
      * x1 shows ~30 gyroperiods, x10 ~300, x100 all available.
      * Fade rate decreases at longer ranges so the tail stays visible. */
@@ -558,7 +669,6 @@ void render3d_draw(const struct AppState *app)
     if (pr > 2) pr = 2;
     int max_trail = trail_table[pr];
     float fade_strength = app->trail_fade;
-    Vector3 cam_pos = app->camera.position;
 
     for (int pi = 0; pi < app->n_particles; pi++) {
         int sp = app->particles[pi].species;

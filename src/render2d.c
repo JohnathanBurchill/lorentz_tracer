@@ -50,6 +50,48 @@ static void draw_series(const struct AppState *app,
     }
 }
 
+/* Draw a dashed data series (8px on, 4px off in screen space) */
+static void draw_series_dashed(const struct AppState *app,
+                               const double *t, const double *y, int count, int head, int cap,
+                               int max_show, double tmin, double tmax, double ymin, double ymax,
+                               float px, float py, float pw, float ph, Color color)
+{
+    (void)app;
+    if (count < 2) return;
+    int show = count < max_show ? count : max_show;
+
+    int idx_new = (head - 1 + cap) % cap;
+    int idx_old = (head - 1 - (show - 1) + cap) % cap;
+    double dt_span = t[idx_new] - t[idx_old];
+    double gap_thresh = (show > 1 && dt_span > 0) ? dt_span / show * 10.0 : 1e30;
+
+    float accum = 0.0f;  /* accumulated screen-space distance */
+    float dash_on = 8.0f, dash_off = 4.0f;
+    float dash_cycle = dash_on + dash_off;
+
+    for (int i = 1; i < show; i++) {
+        int i0 = (head - 1 - (i - 1) + cap) % cap;
+        int i1 = (head - 1 - i + cap) % cap;
+        if (isnan(y[i0]) || isnan(y[i1])) continue;
+        double dt = t[i0] - t[i1];
+        if (dt < 0 || dt > gap_thresh) { accum = 0.0f; continue; }
+        float x1 = map_x(px, pw, tmin, tmax, t[i0]);
+        float y1f = map_y(py, ph, ymin, ymax, y[i0]);
+        float x2 = map_x(px, pw, tmin, tmax, t[i1]);
+        float y2f = map_y(py, ph, ymin, ymax, y[i1]);
+        if (x1 < px && x2 < px) continue;
+        if (x1 > px + pw && x2 > px + pw) continue;
+        /* Skip segments that go outside the vertical plot area */
+        if (y[i0] < ymin || y[i0] > ymax || y[i1] < ymin || y[i1] > ymax) continue;
+        float dx = x2 - x1, dy = y2f - y1f;
+        float seg_len = sqrtf(dx*dx + dy*dy);
+        float phase = fmodf(accum, dash_cycle);
+        if (phase < dash_on)
+            DrawLineEx((Vector2){x1, y1f}, (Vector2){x2, y2f}, 2.0f, color);
+        accum += seg_len;
+    }
+}
+
 /* Draw a complete plot panel with axes, labels, and multiple particle series.
  * field_sel: 0=pitch_angle, 1=mu */
 static void draw_panel_multi(const struct AppState *app,
@@ -154,6 +196,23 @@ static void draw_panel_multi(const struct AppState *app,
         ymin = lo - ypad;
         ymax = hi + ypad;
         if (lo >= 0.0 && ymin < 0.0) ymin = 0.0;
+    }
+
+    /* GC traces (underlaid, dashed, darker) */
+    if (app->show_gc_trajectory) {
+        for (int pi = 0; pi < app->n_particles; pi++) {
+            const DiagTimeSeries *di = &app->diags[pi];
+            const double *gc_y = (field_sel == 0) ? di->gc_pitch_angle : di->gc_mu;
+            int sp = app->particles[pi].species;
+            if (sp < 0 || sp >= NUM_SPECIES) sp = NUM_SPECIES - 1;
+            Color c = app->species_colors[sp];
+            c.r = (unsigned char)(c.r * 0.55f);
+            c.g = (unsigned char)(c.g * 0.55f);
+            c.b = (unsigned char)(c.b * 0.55f);
+            if (pi != sel) c.a = 60;
+            draw_series_dashed(app, di->time, gc_y, di->count, di->head, di->capacity,
+                               max_show, tmin, tmax, ymin, ymax, px, py, pw, ph, c);
+        }
     }
 
     /* Draw background particles first (dimmed) */

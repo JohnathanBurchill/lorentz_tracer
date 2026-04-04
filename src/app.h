@@ -8,6 +8,7 @@
 #include "boris.h"
 #include "trail.h"
 #include "diagnostics.h"
+#include "gc.h"
 #include "recorder.h"
 #include "tutorial.h"
 #include "explorer.h"
@@ -68,6 +69,8 @@ typedef struct AppState {
     Particle particles[MAX_PARTICLES];
     OrbitTrail trails[MAX_PARTICLES];
     DiagTimeSeries diags[MAX_PARTICLES];
+    GCParticle gc_particles[MAX_PARTICLES];
+    OrbitTrail gc_trails[MAX_PARTICLES];
     double E0_keVs[MAX_PARTICLES]; /* initial kinetic energy per particle */
     int step_interval[MAX_PARTICLES]; /* subcycling: step every Nth master substep */
     double particle_dt[MAX_PARTICLES]; /* per-particle timestep */
@@ -76,6 +79,8 @@ typedef struct AppState {
     #define STEP_HISTORY_MAX 4096
     Vec3 step_hist_pos[STEP_HISTORY_MAX][MAX_PARTICLES];
     Vec3 step_hist_vel[STEP_HISTORY_MAX][MAX_PARTICLES];
+    Vec3 step_hist_gc_pos[STEP_HISTORY_MAX][MAX_PARTICLES];
+    double step_hist_gc_ppar[STEP_HISTORY_MAX][MAX_PARTICLES];
     double step_hist_time[STEP_HISTORY_MAX];
     int step_hist_head;   /* next write index */
     int step_hist_count;  /* number of valid entries */
@@ -156,11 +161,14 @@ typedef struct AppState {
     Color light_colors[NUM_USER_COLORS];
     Color light_species[NUM_SPECIES];
 
+    int show_gc_trajectory;  /* guiding-centre drift trail visible */
+    int gc_symplectic;       /* 0 = Alfvén drifts, 1 = B* symplectic form */
     int show_trail;          /* orbit trail visible */
     float trail_fade;        /* trail alpha falloff: 0=no fade, 1=full fade to transparent */
     int plot_range;          /* 0=x1 (~30 gyro), 1=x10 (~300), 2=x100 (~3000) */
     int pitch_autoscale;     /* 0 = fixed 0-180, 1 = autoscale */
     int follow_particle;
+    int follow_gc;           /* 0=follow particle, 1=follow its GC position */
     float cam_follow_dist;   /* distance from particle in follow mode */
     int cam_field_aligned;   /* 0=off, 1=look along +bhat, 2=look along -bhat */
     int kappa_screen_dir;    /* screen direction of kappa-hat: 0=up 1=right 2=down 3=left */
