@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "Lorentz Tracer"
+abstract: >-
+  Interactive charged-particle orbit simulation. Solves the full Lorentz
+  force equation in real time across ten magnetic field models, with 3D
+  visualization, live diagnostics, and guiding-centre trajectory comparison.
+authors:
+  - family-names: Burchill
+    given-names: Johnathan K.
+    orcid: "https://orcid.org/0000-0003-1874-2641"
+version: "0.7"
+date-released: "2026-04-04"
+license: MIT
+repository-code: "https://github.com/JohnathanBurchill/lorentz_tracer"
+keywords:
+  - plasma physics
+  - charged particle
+  - Boris integrator
+  - guiding centre
+  - magnetic field
+  - Lorentz force
+  - adiabatic invariant
