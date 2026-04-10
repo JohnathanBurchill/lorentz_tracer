@@ -2,6 +2,8 @@
 
 Interactive charged-particle orbit simulation. Solves the full Lorentz force equation in real time across ten magnetic field models, with 3D visualization and live diagnostics.
 
+[Try the web demo](https://johnathanburchill.github.io/lorentz_tracer/)
+
 ## Features
 
 - Boris integrator (energy-conserving to machine precision)
