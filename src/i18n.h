@@ -45,6 +45,10 @@ typedef enum {
     STR_B_SCALE,                /* "B scale" */
     STR_F_SCALE,                /* "F scale" */
     STR_GIJ,                    /* "G_ij (G)" */
+    STR_INIT_CONDITIONS,        /* "Init" */
+    STR_EXPORT_PDF,             /* "Export PDF" */
+    STR_EXPORT_DONE,            /* "PDF saved: %s" */
+    STR_EXPORT_FAIL,            /* "PDF export failed" */
     STR_SCALE_BAR,              /* "Scale bar" */
     STR_AXES,                   /* "Axes" */
     STR_PLOTS,                  /* "Plots" */
@@ -120,6 +124,7 @@ typedef enum {
     /* Plots (render2d.c) */
     STR_PLOT_PITCH_ANGLE,       /* "Pitch angle" */
     STR_PLOT_MAG_MOMENT,        /* "Magnetic moment" */
+    STR_PLOT_PHASE_VKVT,        /* "v_κ vs v_τ" */
     STR_PLOT_TIME,              /* "Time (s)" */
 
     /* Playback file picker */

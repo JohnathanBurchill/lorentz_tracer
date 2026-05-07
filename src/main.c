@@ -69,6 +69,10 @@ static void resolve_resource_dir(char *buf, int buflen)
 }
 
 static AppState *g_app; /* for emscripten callback */
+/* LT_AUTO_EXPORT_FRAME=N (env var): trigger PDF export on frame N then exit
+ * 10 frames later. Useful for scripted figure generation and verification. */
+static int g_auto_export_frame = -1;
+static int g_frame_counter = 0;
 
 static void main_loop_step(void)
 {
@@ -76,6 +80,11 @@ static void main_loop_step(void)
     g_app->win_h = GetScreenHeight();
     app_update(g_app);
     app_render(g_app);
+    g_frame_counter++;
+    if (g_auto_export_frame >= 0 && g_frame_counter == g_auto_export_frame)
+        g_app->pdf_export_request = 1;
+    if (g_auto_export_frame >= 0 && g_frame_counter == g_auto_export_frame + 10)
+        exit(0);
 }
 
 int main(int argc, char **argv)
@@ -83,6 +92,10 @@ int main(int argc, char **argv)
     int skip_splash = 0;
     for (int i = 1; i < argc; i++)
         if (strcmp(argv[i], "--no-splash") == 0) skip_splash = 1;
+    {
+        const char *e = getenv("LT_AUTO_EXPORT_FRAME");
+        if (e && *e) g_auto_export_frame = atoi(e);
+    }
 
     static AppState app;
     g_app = &app;
@@ -126,16 +139,8 @@ int main(int argc, char **argv)
     for (int i = 0x100; i <= 0x17F; i++) codepoints[ncp++] = i; /* Latin Extended-A (ĉĝŝŭ etc.) */
     for (int i = 0x180; i <= 0x24F; i++) codepoints[ncp++] = i; /* Latin Extended-B */
     for (int i = 0x400; i <= 0x4FF; i++) codepoints[ncp++] = i; /* Cyrillic */
-    codepoints[ncp++] = 0x03B1;  /* α */
-    codepoints[ncp++] = 0x03B2;  /* β */
-    codepoints[ncp++] = 0x03B3;  /* γ */
-    codepoints[ncp++] = 0x03B5;  /* ε */
-    codepoints[ncp++] = 0x03BA;  /* κ */
-    codepoints[ncp++] = 0x03BB;  /* λ */
-    codepoints[ncp++] = 0x03BC;  /* μ */
-    codepoints[ncp++] = 0x03C0;  /* π */
-    codepoints[ncp++] = 0x03C6;  /* φ */
-    codepoints[ncp++] = 0x03C9;  /* ω */
+    /* Greek and Coptic block (uppercase + lowercase) */
+    for (int i = 0x0370; i <= 0x03FF; i++) codepoints[ncp++] = i;
     codepoints[ncp++] = 0x2202;  /* ∂ */
     codepoints[ncp++] = 0x2207;  /* ∇ */
     codepoints[ncp++] = 0x00D7;  /* × */
@@ -155,7 +160,6 @@ int main(int argc, char **argv)
     codepoints[ncp++] = 0x2098;  /* ₘ */
     codepoints[ncp++] = 0x2099;  /* ₙ */
     codepoints[ncp++] = 0x2083;  /* ₃ */
-    codepoints[ncp++] = 0x03B5;  /* ε (already above but harmless) */
     codepoints[ncp++] = 0x2084;  /* ₄ */
 
     snprintf(font_path, sizeof(font_path), "%s/fonts/Inter-Regular.ttf", res_dir);

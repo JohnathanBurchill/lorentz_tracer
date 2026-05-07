@@ -68,6 +68,7 @@ set(SOURCES
     src/render3d.c
     src/render2d.c
     src/recorder.c
+    src/pdf_export.c
 )
 if(APPLE)
     list(APPEND SOURCES src/platform_macos.c)

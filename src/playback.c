@@ -191,6 +191,14 @@ int playback_load(AppState *app, const char *path)
                 app->show_B_vec = atoi(rest);
             } else if (strcmp(key, "show_Gij") == 0) {
                 app->show_Gij = atoi(rest);
+            } else if (strcmp(key, "show_init_conditions") == 0) {
+                app->show_init_conditions = atoi(rest);
+            } else if (strcmp(key, "phase_swap_axes") == 0) {
+                app->phase_swap_axes = atoi(rest) ? 1 : 0;
+            } else if (strcmp(key, "phase_flip_x") == 0) {
+                app->phase_flip_x = atoi(rest) ? 1 : 0;
+            } else if (strcmp(key, "phase_flip_y") == 0) {
+                app->phase_flip_y = atoi(rest) ? 1 : 0;
             } else if (strcmp(key, "plot_range") == 0) {
                 app->plot_range = atoi(rest);
             } else if (strcmp(key, "pitch_autoscale") == 0) {
@@ -301,6 +309,10 @@ void apply_event(AppState *app, const PlaybackEvent *ev)
     else if (strcmp(key, "follow_particle") == 0)       app->follow_particle = (int)v[0];
     else if (strcmp(key, "cam_field_aligned") == 0)     app->cam_field_aligned = (int)v[0];
     else if (strcmp(key, "show_Gij") == 0)              app->show_Gij = (int)v[0];
+    else if (strcmp(key, "show_init_conditions") == 0)  app->show_init_conditions = (int)v[0];
+    else if (strcmp(key, "phase_swap_axes") == 0)       app->phase_swap_axes = (int)v[0];
+    else if (strcmp(key, "phase_flip_x") == 0)          app->phase_flip_x = (int)v[0];
+    else if (strcmp(key, "phase_flip_y") == 0)          app->phase_flip_y = (int)v[0];
     else if (strcmp(key, "ui_visible") == 0)             app->ui_visible = (int)v[0];
     else if (strcmp(key, "axis_scale") == 0)             app->axis_scale = (float)v[0];
     else if (strcmp(key, "radiation_loss") == 0)          app->radiation_loss = (int)v[0];

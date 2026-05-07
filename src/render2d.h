@@ -3,6 +3,6 @@
 
 struct AppState;
 
-void render2d_draw(const struct AppState *app);
+void render2d_draw(struct AppState *app);
 
 #endif

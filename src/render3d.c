@@ -820,3 +820,15 @@ void render3d_draw(const struct AppState *app)
         g_arrow_lw = saved_lw;
     }
 }
+
+int render3d_field_line_count(void) { return fl_num_lines; }
+
+const Vec3 *render3d_field_line_get(int idx, int *out_n)
+{
+    if (idx < 0 || idx >= fl_num_lines) {
+        if (out_n) *out_n = 0;
+        return NULL;
+    }
+    if (out_n) *out_n = fl_line_count[idx];
+    return &fl_cache[fl_line_start[idx]];
+}

@@ -85,6 +85,10 @@ static const char *g_strings_en[STR__COUNT] = {
     [STR_B_SCALE]           = "B scale",
     [STR_F_SCALE]           = "F scale",
     [STR_GIJ]               = "G_ij (G)",
+    [STR_INIT_CONDITIONS]   = "Init",
+    [STR_EXPORT_PDF]        = "Export PDF",
+    [STR_EXPORT_DONE]       = "PDF saved: %s",
+    [STR_EXPORT_FAIL]       = "PDF export failed",
     [STR_SCALE_BAR]         = "Scale bar",
     [STR_AXES]              = "Axes",
     [STR_PLOTS]             = "Plots",
@@ -160,6 +164,7 @@ static const char *g_strings_en[STR__COUNT] = {
     /* Plots */
     [STR_PLOT_PITCH_ANGLE]  = "Pitch angle",
     [STR_PLOT_MAG_MOMENT]   = "Magnetic moment",
+    [STR_PLOT_PHASE_VKVT]   = "v\xce\xba vs v\xcf\x84",
     [STR_PLOT_TIME]         = "Time (s)",
 
     /* Playback picker */

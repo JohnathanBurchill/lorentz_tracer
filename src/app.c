@@ -3,6 +3,7 @@
 #include "i18n_cjk_codepoints.h"
 #include "render3d.h"
 #include "render2d.h"
+#include "pdf_export.h"
 #include "ui.h"
 #include "rlgl.h"
 #include "raymath.h"
@@ -305,6 +306,15 @@ void app_init(AppState *app)
     app->show_Gij = 0;
     app->Gij_valid = 0;
     app->gij_zoom = 1.0f;
+    app->show_init_conditions = 0;
+    app->init_zoom = 1.0f;
+    app->init_rect[0] = app->init_rect[1] = 0;
+    app->init_rect[2] = app->init_rect[3] = 0;
+    app->phase_swap_axes = 0;
+    app->phase_flip_x = 0;
+    app->phase_flip_y = 0;
+    app->phase_rect[0] = app->phase_rect[1] = 0;
+    app->phase_rect[2] = app->phase_rect[3] = 0;
 
     /* UI sections: all open by default */
     for (int i = 0; i < 5; i++) app->ui_section_open[i] = 1;
@@ -418,6 +428,11 @@ static void event_log_write_state(AppState *app, const char *txt_path)
     fprintf(f, "show_velocity_vec %d\n", app->show_velocity_vec);
     fprintf(f, "show_B_vec %d\n", app->show_B_vec);
     fprintf(f, "show_Gij %d\n", app->show_Gij);
+    fprintf(f, "show_init_conditions %d\n", app->show_init_conditions);
+    fprintf(f, "init_zoom %.6g\n", app->init_zoom);
+    fprintf(f, "phase_swap_axes %d\n", app->phase_swap_axes);
+    fprintf(f, "phase_flip_x %d\n", app->phase_flip_x);
+    fprintf(f, "phase_flip_y %d\n", app->phase_flip_y);
     fprintf(f, "plot_range %d\n", app->plot_range);
     fprintf(f, "pitch_autoscale %d\n", app->pitch_autoscale);
     fprintf(f, "follow_particle %d\n", app->follow_particle);
@@ -537,6 +552,220 @@ static void event_log_close(AppState *app)
         fclose(app->event_log);
         app->event_log = NULL;
     }
+}
+
+/* Ensure PDF export directory exists; returns path prefix. */
+static void resolve_export_dir(char *buf, int buflen)
+{
+#ifdef __EMSCRIPTEN__
+    snprintf(buf, buflen, "/tmp");
+    return;
+#elif defined(_WIN32)
+    const char *home = getenv("USERPROFILE");
+    if (home) {
+        snprintf(buf, buflen, "%s\\Pictures\\Lorentz_Tracer", home);
+        _mkdir(buf);
+        return;
+    }
+#else
+    const char *home = getenv("HOME");
+    if (home) {
+#ifdef __APPLE__
+        snprintf(buf, buflen, "%s/Pictures/Lorentz_Tracer", home);
+#else
+        const char *xdg = getenv("XDG_PICTURES_DIR");
+        if (xdg)
+            snprintf(buf, buflen, "%s/Lorentz_Tracer", xdg);
+        else
+            snprintf(buf, buflen, "%s/Pictures/Lorentz_Tracer", home);
+#endif
+        mkdir(buf, 0755);
+        return;
+    }
+#endif
+    snprintf(buf, buflen, ".");
+}
+
+/* Parse a parameter name like "B0 (T)" into a base ("B0"), a digit suffix
+ * for subscripting ("0"), and a unit ("T"). If there is no parenthesised
+ * unit, unit_out is empty. The trailing-digit detection handles names like
+ * R0, B0, omega0; non-digit suffixes (e.g. Lm) are not subscripted to keep
+ * behaviour predictable across the various field models. */
+static void parse_param_name(const char *full,
+                             char *base_out, int base_cap,
+                             char *sub_out, int sub_cap,
+                             char *unit_out, int unit_cap)
+{
+    base_out[0] = sub_out[0] = unit_out[0] = 0;
+
+    /* Split off " (unit)" suffix */
+    int len = (int)strlen(full);
+    int name_end = len;
+    const char *p = strstr(full, " (");
+    if (p) {
+        name_end = (int)(p - full);
+        const char *u_start = p + 2;
+        const char *u_end = strrchr(u_start, ')');
+        if (u_end && u_end > u_start) {
+            int ulen = (int)(u_end - u_start);
+            if (ulen >= unit_cap) ulen = unit_cap - 1;
+            memcpy(unit_out, u_start, ulen);
+            unit_out[ulen] = 0;
+        }
+    }
+
+    /* Find trailing digits in name to use as subscript. */
+    int sub_start = name_end;
+    while (sub_start > 0 &&
+           full[sub_start - 1] >= '0' && full[sub_start - 1] <= '9')
+        sub_start--;
+
+    int blen = sub_start;
+    if (blen >= base_cap) blen = base_cap - 1;
+    memcpy(base_out, full, blen);
+    base_out[blen] = 0;
+
+    int slen = name_end - sub_start;
+    if (slen >= sub_cap) slen = sub_cap - 1;
+    memcpy(sub_out, full + sub_start, slen);
+    sub_out[slen] = 0;
+}
+
+int init_overlay_build(const AppState *app, InitOverlayLine *out, int max)
+{
+    int n = 0;
+    if (!app || !out || max <= 0 || app->n_particles <= 0) return 0;
+
+    int si = app->selected_particle;
+    if (si < 0 || si >= app->n_particles) si = 0;
+    const ParticlePlacement *ic = &app->init_conditions[si];
+    const FieldModel *fm_ic = &app->models[app->current_model];
+
+    #define ADD(idx, p_, s_, su_) do { \
+        if (n >= max) return n; \
+        out[n].blank = 0; out[n].font_idx = (idx); \
+        snprintf(out[n].pre, 80, "%s", (p_)); \
+        snprintf(out[n].sub, 8, "%s", (s_)); \
+        snprintf(out[n].suf, 80, "%s", (su_)); \
+        n++; \
+    } while (0)
+    #define BLANK_LINE() do { if (n < max) { out[n].blank = 1; n++; } } while (0)
+
+    /* Model line — proportional font */
+    char field_buf[96];
+    snprintf(field_buf, sizeof(field_buf), "Field: %s", fm_ic->name);
+    ADD(0, field_buf, "", "");
+
+    /* Parameters — mono with optional digit subscript and unit after value */
+    for (int p = 0; p < fm_ic->n_params; p++) {
+        char base[32], sub[8], unit[16];
+        parse_param_name(fm_ic->param_names[p], base, sizeof(base),
+                         sub, sizeof(sub), unit, sizeof(unit));
+        char pre[64], suf[64];
+        snprintf(pre, sizeof(pre), "  %s", base);
+        if (unit[0])
+            snprintf(suf, sizeof(suf), " = %.4g %s", fm_ic->params[p], unit);
+        else
+            snprintf(suf, sizeof(suf), " = %.4g", fm_ic->params[p]);
+        ADD(2, pre, sub, suf);
+    }
+
+    /* Particle block */
+    BLANK_LINE();
+    const char *sp_names[] = {
+        "Electron", "Positron", "Proton", "Alpha", "O+", "Custom"};
+    int sp = ic->species;
+    if (sp < 0 || sp >= 6) sp = 5;
+    char particle_buf[64];
+    snprintf(particle_buf, sizeof(particle_buf), "Particle: %s", sp_names[sp]);
+    ADD(0, particle_buf, "", "");
+
+    if (sp == SPECIES_CUSTOM) {
+        char qbuf[48], mbuf[48];
+        snprintf(qbuf, sizeof(qbuf), "  q = %.4g C", ic->custom_q);
+        snprintf(mbuf, sizeof(mbuf), "  m = %.4g kg", ic->custom_m);
+        ADD(2, qbuf, "", "");
+        ADD(2, mbuf, "", "");
+    }
+
+    /* Initial conditions header — proportional font, sits between particle
+     * properties (q, m) and the actual launch state (v, α, pos) */
+    BLANK_LINE();
+    ADD(0, "Initial conditions", "", "");
+
+    if (sp == SPECIES_CUSTOM) {
+        char vbuf[48];
+        snprintf(vbuf, sizeof(vbuf), "  v = %.4g m/s", ic->custom_speed);
+        ADD(2, vbuf, "", "");
+    } else {
+        char ebuf[48];
+        snprintf(ebuf, sizeof(ebuf), "  E = %.4g keV", ic->E_keV);
+        ADD(2, ebuf, "", "");
+    }
+
+    char abuf[48];
+    snprintf(abuf, sizeof(abuf), "  \xce\xb1 = %.4g\xc2\xb0", ic->pitch_deg);
+    ADD(2, abuf, "", "");
+
+    char pbuf[80];
+    snprintf(pbuf, sizeof(pbuf), "  pos = (%.3g, %.3g, %.3g) m",
+             ic->pos.x, ic->pos.y, ic->pos.z);
+    ADD(2, pbuf, "", "");
+
+    #undef ADD
+    #undef BLANK_LINE
+    return n;
+}
+
+/* Build a non-colliding PDF export path, run the export, and surface the
+ * outcome via a brief on-screen toast. The UI panel is hidden for the export
+ * so the figure has no left-side margin; the screen state is restored after. */
+static void do_pdf_export(AppState *app)
+{
+    char dir[512];
+    resolve_export_dir(dir, sizeof(dir));
+
+    time_t now = time(NULL);
+    struct tm *tmv = localtime(&now);
+    const FieldModel *fm = &app->models[app->current_model];
+
+    char path[1024];
+    int suffix = 0;
+    do {
+        if (suffix == 0) {
+            snprintf(path, sizeof(path),
+                     "%s/%04d-%02d-%02d_%02d%02d%02d_%s.pdf",
+                     dir,
+                     tmv->tm_year + 1900, tmv->tm_mon + 1, tmv->tm_mday,
+                     tmv->tm_hour, tmv->tm_min, tmv->tm_sec, fm->code);
+        } else {
+            snprintf(path, sizeof(path),
+                     "%s/%04d-%02d-%02d_%02d%02d%02d_%s_%03d.pdf",
+                     dir,
+                     tmv->tm_year + 1900, tmv->tm_mon + 1, tmv->tm_mday,
+                     tmv->tm_hour, tmv->tm_min, tmv->tm_sec, fm->code,
+                     suffix);
+        }
+        FILE *test = fopen(path, "rb");
+        if (!test) break;
+        fclose(test);
+    } while (++suffix < 1000);
+
+    int rc = pdf_export(app, path);
+
+    if (rc == 0) {
+        const char *base = path;
+        for (const char *p = path; *p; p++)
+            if (*p == '/' || *p == '\\') base = p + 1;
+        snprintf(app->toast_text, sizeof(app->toast_text),
+                 TR(STR_EXPORT_DONE), base);
+        printf("PDF export: %s\n", path);
+    } else {
+        snprintf(app->toast_text, sizeof(app->toast_text), "%s",
+                 TR(STR_EXPORT_FAIL));
+        fprintf(stderr, "PDF export failed: %s\n", path);
+    }
+    app->toast_until_time = GetTime() + 3.0;
 }
 
 /* Ensure output directory exists and return path prefix */
@@ -708,6 +937,13 @@ void app_reset_particle(AppState *app)
     gc_init_from_particle(&app->gc_particles[0], &app->particles[0],
                           &app->models[app->current_model], app->relativistic,
                           app->dt);
+    /* Capture initial conditions for reproducibility overlay */
+    app->init_conditions[0] = (ParticlePlacement){
+        .pos = app->init_pos, .species = app->species,
+        .E_keV = app->E_keV, .pitch_deg = app->pitch_deg,
+        .custom_q = app->custom_q, .custom_m = app->custom_m,
+        .custom_speed = app->custom_speed
+    };
     app->needs_reset = 0;
     app->step_hist_head = 0;
     app->step_hist_count = 0;
@@ -819,6 +1055,14 @@ void app_add_particle(AppState *app, Vec3 pos)
         .custom_speed = app->custom_speed
     };
     app->redo_count = 0;  /* new placement clears redo history */
+
+    /* Capture initial conditions for reproducibility overlay */
+    app->init_conditions[idx] = (ParticlePlacement){
+        .pos = pos, .species = app->species,
+        .E_keV = app->E_keV, .pitch_deg = app->pitch_deg,
+        .custom_q = app->custom_q, .custom_m = app->custom_m,
+        .custom_speed = app->custom_speed
+    };
 
     /* Remember for reset */
     app->last_drop_pos = pos;
@@ -1188,9 +1432,17 @@ void app_update(AppState *app)
                             m.y >= app->gij_rect[1] &&
                             m.y < app->gij_rect[1] + app->gij_rect[3]);
             }
+            /* Check if mouse is over initial conditions overlay */
+            int over_init = 0;
+            if (!over_gij && app->show_init_conditions && app->init_rect[2] > 0) {
+                over_init = (m.x >= app->init_rect[0] &&
+                             m.x < app->init_rect[0] + app->init_rect[2] &&
+                             m.y >= app->init_rect[1] &&
+                             m.y < app->init_rect[1] + app->init_rect[3]);
+            }
             /* Check if mouse is over plots area */
             int over_plots = 0;
-            if (!over_gij && app->show_plots) {
+            if (!over_gij && !over_init && app->show_plots) {
                 float sx, sy, sw, sh;
                 app_scene_rect(app, &sx, &sy, &sw, &sh);
                 float ph = app->win_h * app->plots_height_frac;
@@ -1198,6 +1450,7 @@ void app_update(AppState *app)
                 over_plots = (m.x >= sx && m.x < sx + sw && m.y >= py && m.y < py + ph);
             }
             float *z = over_gij ? &app->gij_zoom :
+                        over_init ? &app->init_zoom :
                         over_plots ? &app->plot_zoom : &app->ui_zoom;
             if (zplus) *z = fminf(*z + 0.1f, 2.5f);
             else if (zminus) *z = fmaxf(*z - 0.1f, 0.5f);
@@ -1362,6 +1615,16 @@ void app_update(AppState *app)
         }
     }
     if (IsKeyPressed(KEY_G)) app->show_Gij = !app->show_Gij;
+    {
+#ifdef __APPLE__
+        int mod = IsKeyDown(KEY_LEFT_SUPER) || IsKeyDown(KEY_RIGHT_SUPER);
+#else
+        int mod = IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL);
+#endif
+#ifndef __EMSCRIPTEN__
+        if (IsKeyPressed(KEY_E) && mod) app->pdf_export_request = 1;
+#endif
+    }
     if (IsKeyPressed(KEY_THREE)) app->stereo_3d = !app->stereo_3d;
     if (app->stereo_3d) {
         if (IsKeyPressed(KEY_RIGHT_BRACKET)) {
@@ -1396,6 +1659,28 @@ void app_update(AppState *app)
             app->drop_height = app->particles[app->selected_particle].pos.z;
         else
             app->drop_height = app->models[app->current_model].default_pos.z;
+    }
+
+    /* Phase-plot click handling: inside inner rect = swap axes;
+     * left-margin band = flip y; bottom-margin band = flip x. */
+    if (app->show_plots && app->phase_rect[2] > 0 &&
+        IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        Vector2 m = GetMousePosition();
+        float bx = app->phase_rect[0], by = app->phase_rect[1];
+        float bw = app->phase_rect[2], bh = app->phase_rect[3];
+        float ix = app->phase_inner[0], iy = app->phase_inner[1];
+        float iw = app->phase_inner[2], ih = app->phase_inner[3];
+        if (m.x >= bx && m.x <= bx + bw && m.y >= by && m.y <= by + bh) {
+            int in_inner = (m.x >= ix && m.x <= ix + iw &&
+                            m.y >= iy && m.y <= iy + ih);
+            if (in_inner) {
+                app->phase_swap_axes = !app->phase_swap_axes;
+            } else if (m.x < ix && m.y >= iy && m.y <= iy + ih) {
+                app->phase_flip_y = !app->phase_flip_y;
+            } else if (m.y > iy + ih && m.x >= ix && m.x <= ix + iw) {
+                app->phase_flip_x = !app->phase_flip_x;
+            }
+        }
     }
 
 placement:
@@ -1796,6 +2081,40 @@ physics:
                     app->diags[pi].gc_pitch_angle[di] =
                         gc_pitch_angle(&app->gc_particles[pi], fm, app->relativistic);
                     app->diags[pi].gc_mu[di] = app->gc_particles[pi].mu;
+
+                    /* v_kappa, v_tau in field-aligned frame at this position */
+                    Vec3 ppos = app->particles[pi].pos;
+                    Vec3 Bp = fm->eval_B(fm->params, ppos);
+                    double Bpm = vec3_len(Bp);
+                    double v_kappa = NAN, v_tau = NAN;
+                    if (Bpm > 1e-30) {
+                        Vec3 bhi = vec3_scale(1.0/Bpm, Bp);
+                        double h = 1e-5;
+                        Vec3 pf = vec3_add(ppos, vec3_scale(h, bhi));
+                        Vec3 pb = vec3_sub(ppos, vec3_scale(h, bhi));
+                        Vec3 Bf = fm->eval_B(fm->params, pf);
+                        Vec3 Bb_ = fm->eval_B(fm->params, pb);
+                        double Bfm = vec3_len(Bf), Bbm = vec3_len(Bb_);
+                        Vec3 bf = (Bfm > 1e-30) ? vec3_scale(1.0/Bfm, Bf) : bhi;
+                        Vec3 bb2 = (Bbm > 1e-30) ? vec3_scale(1.0/Bbm, Bb_) : bhi;
+                        Vec3 kap = vec3_scale(0.5/h, vec3_sub(bf, bb2));
+                        double kmag = vec3_len(kap);
+                        Vec3 e1, e2;
+                        if (kmag > 1e-12) {
+                            e1 = vec3_scale(1.0/kmag, kap);
+                        } else {
+                            Vec3 ref = {0,0,1};
+                            if (fabs(vec3_dot(bhi, ref)) > 0.9) ref = (Vec3){1,0,0};
+                            Vec3 perp = vec3_sub(ref,
+                                vec3_scale(vec3_dot(ref, bhi), bhi));
+                            e1 = vec3_norm(perp);
+                        }
+                        e2 = vec3_cross(bhi, e1);
+                        v_kappa = vec3_dot(app->particles[pi].vel, e1);
+                        v_tau   = vec3_dot(app->particles[pi].vel, e2);
+                    }
+                    app->diags[pi].v_kappa[di] = v_kappa;
+                    app->diags[pi].v_tau[di]   = v_tau;
                 }
             }
         }
@@ -2289,6 +2608,67 @@ void app_render_inner(AppState *app)
         app->gij_rect[3] = gy - gij_y0;
     }
 
+    /* Initial conditions overlay (upper right of 3D scene) */
+    if (app->show_init_conditions && app->n_particles > 0) {
+        InitOverlayLine ovr[24];
+        int n = init_overlay_build(app, ovr, 24);
+
+        float iz = app->init_zoom;
+        float fsz = 11 * iz;
+        float row_sp = 14 * iz;
+        float sub_fsz = fsz * 0.75f;
+        float sub_dy = fsz * 0.3f;
+
+        /* Compute total width using whichever font each line uses */
+        float width = 0;
+        for (int i = 0; i < n; i++) {
+            if (ovr[i].blank) continue;
+            Font f = (ovr[i].font_idx == 0) ? app->font_ui : app->font_mono;
+            Vector2 wp = MeasureTextEx(f, ovr[i].pre, fsz, 1);
+            float ws = ovr[i].sub[0]
+                ? MeasureTextEx(f, ovr[i].sub, sub_fsz, 1).x : 0;
+            float wf = ovr[i].suf[0]
+                ? MeasureTextEx(f, ovr[i].suf, fsz, 1).x : 0;
+            float lw = wp.x + ws + wf;
+            if (lw > width) width = lw;
+        }
+        float total_h = n * row_sp;
+
+        float ix = scene_x + scene_w - width - 14;
+        if (ix < scene_x) ix = scene_x;
+        float iy = (scene_y > 10) ? scene_y + 10 : 10;
+        float scene_bottom = scene_y + scene_h;
+        if (iy + total_h > scene_bottom) {
+            iy = scene_bottom - total_h;
+            if (iy < 0) iy = 0;
+        }
+
+        Color tc = app->theme.text_dim;
+        for (int i = 0; i < n; i++) {
+            if (ovr[i].blank) continue;
+            float ly = iy + i * row_sp;
+            Font f = (ovr[i].font_idx == 0) ? app->font_ui : app->font_mono;
+            DrawTextEx(f, ovr[i].pre, (Vector2){ix, ly}, fsz, 1, tc);
+            float x_run = ix + MeasureTextEx(f, ovr[i].pre, fsz, 1).x;
+            if (ovr[i].sub[0]) {
+                DrawTextEx(f, ovr[i].sub,
+                           (Vector2){x_run, ly + sub_dy}, sub_fsz, 1, tc);
+                x_run += MeasureTextEx(f, ovr[i].sub, sub_fsz, 1).x;
+            }
+            if (ovr[i].suf[0]) {
+                DrawTextEx(f, ovr[i].suf, (Vector2){x_run, ly}, fsz, 1, tc);
+            }
+        }
+
+        app->init_rect[0] = ix;
+        app->init_rect[1] = iy;
+        app->init_rect[2] = width;
+        app->init_rect[3] = total_h;
+    } else {
+        app->init_rect[2] = 0;
+        app->init_rect[3] = 0;
+    }
+
     /* 2D telemetry plots (independent of UI panel) */
     if (app->show_plots)
         render2d_draw(app);
@@ -2315,6 +2695,17 @@ void app_render_inner(AppState *app)
             DrawTextEx(app->font_mono, drop_hud,
                        (Vector2){dx, 12}, 14, 1, ORANGE);
         }
+        if (app->toast_text[0] && GetTime() < app->toast_until_time) {
+            Vector2 tsz = MeasureTextEx(app->font_ui, app->toast_text, 14, 1);
+            float pad = 8;
+            float bx = (app->win_w - tsz.x) * 0.5f - pad;
+            float by = app->win_h - tsz.y - 30;
+            Color box = app->theme.panel_bg; box.a = 220;
+            DrawRectangle((int)bx, (int)by, (int)(tsz.x + 2*pad),
+                          (int)(tsz.y + 2*pad), box);
+            DrawTextEx(app->font_ui, app->toast_text,
+                       (Vector2){bx + pad, by + pad}, 14, 1, app->theme.text);
+        }
     }
 
 }
@@ -2336,6 +2727,13 @@ void app_render(AppState *app)
                              img.width, img.height);
         UnloadImage(img);
     }
+
+#ifndef __EMSCRIPTEN__
+    if (app->pdf_export_request) {
+        app->pdf_export_request = 0;
+        do_pdf_export(app);
+    }
+#endif
 }
 
 #ifndef __EMSCRIPTEN__
@@ -2429,6 +2827,11 @@ void app_save_state(const AppState *app)
     fprintf(f, "plots_edge=%d\n", app->plots_edge);
     fprintf(f, "plot_zoom=%.6g\n", app->plot_zoom);
     fprintf(f, "show_Gij=%d\n", app->show_Gij);
+    fprintf(f, "show_init_conditions=%d\n", app->show_init_conditions);
+    fprintf(f, "init_zoom=%.6g\n", app->init_zoom);
+    fprintf(f, "phase_swap_axes=%d\n", app->phase_swap_axes);
+    fprintf(f, "phase_flip_x=%d\n", app->phase_flip_x);
+    fprintf(f, "phase_flip_y=%d\n", app->phase_flip_y);
     fprintf(f, "gij_zoom=%.6g\n", app->gij_zoom);
     fprintf(f, "show_gc_field_line=%d\n", app->show_gc_field_line);
     fprintf(f, "show_gc_trajectory=%d\n", app->show_gc_trajectory);
@@ -2590,6 +2993,19 @@ void app_load_state(AppState *app)
         }
         else if (strcmp(key, "show_Gij") == 0)
             app->show_Gij = atoi(val);
+        else if (strcmp(key, "show_init_conditions") == 0)
+            app->show_init_conditions = atoi(val);
+        else if (strcmp(key, "init_zoom") == 0) {
+            app->init_zoom = (float)atof(val);
+            if (app->init_zoom < 0.5f) app->init_zoom = 0.5f;
+            if (app->init_zoom > 2.5f) app->init_zoom = 2.5f;
+        }
+        else if (strcmp(key, "phase_swap_axes") == 0)
+            app->phase_swap_axes = atoi(val) ? 1 : 0;
+        else if (strcmp(key, "phase_flip_x") == 0)
+            app->phase_flip_x = atoi(val) ? 1 : 0;
+        else if (strcmp(key, "phase_flip_y") == 0)
+            app->phase_flip_y = atoi(val) ? 1 : 0;
         else if (strcmp(key, "gij_zoom") == 0) {
             app->gij_zoom = (float)atof(val);
             if (app->gij_zoom < 0.5f) app->gij_zoom = 0.5f;
@@ -2761,8 +3177,8 @@ void app_reload_fonts(AppState *app)
     for (int i = 0x100; i <= 0x17F; i++) codepoints[ncp++] = i;
     for (int i = 0x180; i <= 0x24F; i++) codepoints[ncp++] = i;
     for (int i = 0x400; i <= 0x4FF; i++) codepoints[ncp++] = i;
-    int greek[] = {0x03B1,0x03B2,0x03B3,0x03B5,0x03BA,0x03BB,0x03BC,0x03C0,0x03C6,0x03C9};
-    for (int i = 0; i < 10; i++) codepoints[ncp++] = greek[i];
+    /* Greek and Coptic block (uppercase + lowercase) */
+    for (int i = 0x0370; i <= 0x03FF; i++) codepoints[ncp++] = i;
     int math[] = {0x2202,0x2207,0x00D7,0x2016,0x22A5,0x2081,0x2082,0x2080,0x00B2,0x00B3,
                   0x2212,0x00B7,0x00A0,0x00EA,0x00E2,0x221A,0x2098,0x2099,0x2083,0x2084};
     for (int i = 0; i < 20; i++) codepoints[ncp++] = math[i];

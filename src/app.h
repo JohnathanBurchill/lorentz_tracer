@@ -90,6 +90,9 @@ typedef struct AppState {
     int undo_count;     /* placements that can be undone */
     int redo_count;     /* placements that can be redone */
 
+    /* Per-particle initial conditions captured at launch (for reproducibility) */
+    ParticlePlacement init_conditions[MAX_PARTICLES];
+
     /* Last manually-placed particle position (for reset) */
     Vec3 last_drop_pos;
     int has_last_drop;   /* 1 after any particle placed this session */
@@ -231,6 +234,25 @@ typedef struct AppState {
     float gij_zoom;      /* font scale for Gij overlay: 1.0 = default */
     float gij_rect[4];  /* bounding box [x, y, w, h] from last render */
 
+    /* Initial conditions overlay (upper right) */
+    int show_init_conditions;
+    float init_zoom;          /* font scale: 1.0 = default */
+    float init_rect[4];       /* bounding box [x,y,w,h] from last render */
+
+    /* Brief on-screen feedback after PDF export (or other actions) */
+    char toast_text[256];
+    double toast_until_time; /* GetTime() seconds */
+
+    /* PDF export trigger flag (consumed at end of frame after rendering) */
+    int pdf_export_request;
+
+    /* Phase plot interactivity */
+    float phase_rect[4];     /* panel bounds {x,y,w,h} from last render */
+    float phase_inner[4];    /* inner plot rect {x,y,w,h} */
+    int phase_swap_axes;     /* 0 = τ on x, κ on y; 1 = κ on x, τ on y */
+    int phase_flip_x;        /* 1 = mirror x-axis direction */
+    int phase_flip_y;        /* 1 = mirror y-axis direction */
+
     /* Window */
     int win_w;
     int win_h;
@@ -289,5 +311,19 @@ void app_reload_fonts(AppState *app);  /* reload fonts for current language */
 /* Scene geometry helpers (account for ui_edge) */
 void app_scene_rect(const AppState *app, float *x, float *y, float *w, float *h);
 int  app_point_in_scene(const AppState *app, float px, float py);
+
+/* Initial-conditions overlay layout. One entry per row. font_idx 0 = font_ui,
+ * 2 = font_mono (matches PDF font slot indices). The row text is rendered as
+ * pre + sub (smaller, lowered) + suf, which lets parameter names like B0
+ * display as B with a subscripted 0. blank=1 means an empty spacer row. */
+typedef struct {
+    int blank;
+    int font_idx;
+    char pre[80];
+    char sub[8];
+    char suf[80];
+} InitOverlayLine;
+
+int init_overlay_build(const AppState *app, InitOverlayLine *out, int max);
 
 #endif

@@ -10,6 +10,8 @@ typedef struct {
     double energy_keV[DIAG_MAX_SAMPLES];
     double gc_pitch_angle[DIAG_MAX_SAMPLES];  /* GC pitch angle (degrees) */
     double gc_mu[DIAG_MAX_SAMPLES];           /* GC adiabatic invariant */
+    double v_kappa[DIAG_MAX_SAMPLES];         /* v · κ̂ */
+    double v_tau[DIAG_MAX_SAMPLES];           /* v · (b̂ × κ̂) */
     int head;
     int count;
     int capacity;

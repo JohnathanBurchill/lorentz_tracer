@@ -855,9 +855,17 @@ static void section_display(AppState *app, Clay_Color text_c, Clay_Color dim_c,
     CLAY_AUTO_ID({ .layout = { .childGap = 4, .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) } } }) {
         if (do_toggle(CLAY_ID("TglGij"), TR(STR_GIJ), app->show_Gij, fill_c, track_c, hov, wcfg))
             app->show_Gij = !app->show_Gij;
+        if (do_toggle(CLAY_ID("TglInit"), TR(STR_INIT_CONDITIONS), app->show_init_conditions, fill_c, track_c, hov, wcfg))
+            app->show_init_conditions = !app->show_init_conditions;
         if (do_toggle(CLAY_ID("TglScale"), TR(STR_SCALE_BAR), app->show_scale_bar, fill_c, track_c, hov, wcfg))
             app->show_scale_bar = !app->show_scale_bar;
     }
+
+#ifndef __EMSCRIPTEN__
+    if (do_button(CLAY_ID("ExportPdfBtn"), TR(STR_EXPORT_PDF),
+                  track_c, hov, wcfg))
+        app->pdf_export_request = 1;
+#endif
 
     /* Axes slider */
     do_slider(CLAY_ID("AxesSlider"), TR(STR_AXES), Sf("%.1f", app->axis_scale),
