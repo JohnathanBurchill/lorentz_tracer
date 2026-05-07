@@ -202,12 +202,6 @@ static void pdf_clip_rect(PdfWriter *w, float x, float y, float ww, float hh)
               x, PDFY(w, y + hh), ww, hh);
 }
 
-static void pdf_rect_fill(PdfWriter *w, float x, float y, float ww, float hh)
-{
-    cs_printf(w, "%.4f %.4f %.4f %.4f re f\n",
-              x, PDFY(w, y + hh), ww, hh);
-}
-
 static void pdf_rect_stroke(PdfWriter *w, float x, float y, float ww, float hh)
 {
     cs_printf(w, "%.4f %.4f %.4f %.4f re S\n",
@@ -362,6 +356,24 @@ static void map_codepoint(unsigned int cp, int preferred_font,
     /* Unmapped: fall back to '?' in preferred font */
     *out_font = preferred_font;
     *out_byte = '?';
+}
+
+/* Pre-multiply a colour with its alpha against a white background and return
+ * a fully opaque colour. Use this for primitives where overlapping strokes
+ * would otherwise composite to a darker shade than a single stroke (faded
+ * trails crossing themselves, dimmed plot traces). The PDF page is white,
+ * so blending toward (255,255,255) approximates what the user expects to
+ * see on a white figure. */
+static Color premult_white(Color c)
+{
+    if (c.a >= 255) { Color r = c; r.a = 255; return r; }
+    float a = c.a / 255.0f;
+    Color r;
+    r.r = (unsigned char)(255.0f - a * (255.0f - c.r));
+    r.g = (unsigned char)(255.0f - a * (255.0f - c.g));
+    r.b = (unsigned char)(255.0f - a * (255.0f - c.b));
+    r.a = 255;
+    return r;
 }
 
 /* Width of `s` when rendered in PDF Courier (mono, font slot F2): codepoint
@@ -587,11 +599,9 @@ static void emit_panel_multi(PdfWriter *w, const struct AppState *app,
     float pw = bounds.width - margin_l - margin_r;
     float ph = bounds.height - margin_t - margin_b;
 
-    pdf_set_fill_color(w, th->plot_bg);
-    pdf_rect_fill(w, bounds.x, bounds.y, bounds.width, bounds.height);
-    Color inner = (Color){th->plot_bg.r-5, th->plot_bg.g-5, th->plot_bg.b-5, 255};
-    pdf_set_fill_color(w, inner);
-    pdf_rect_fill(w, px, py, pw, ph);
+    /* Skip the panel/inner fill: PDF page is white, the box outline alone
+     * delineates the data area. Avoids the off-white wash that the theme's
+     * plot_bg would otherwise paint. */
     pdf_set_stroke_color(w, th->text_dim);
     pdf_set_line_width(w, 1.0f);
     pdf_rect_stroke(w, px, py, pw, ph);
@@ -692,7 +702,7 @@ static void emit_panel_multi(PdfWriter *w, const struct AppState *app,
             if (pi != sel) c.a = 60;
             emit_series_dashed(w, di->time, gc_y, di->count, di->head,
                                di->capacity, max_show, tmin, tmax, ymin, ymax,
-                               px, py, pw, ph, c, 2.0f);
+                               px, py, pw, ph, premult_white(c), 2.0f);
         }
     }
 
@@ -707,7 +717,7 @@ static void emit_panel_multi(PdfWriter *w, const struct AppState *app,
         c.a = 60;
         emit_series(w, di->time, yi, di->count, di->head, di->capacity,
                     max_show, tmin, tmax, ymin, ymax,
-                    px, py, pw, ph, c, 2.0f);
+                    px, py, pw, ph, premult_white(c), 2.0f);
     }
 
     /* Selected particle on top */
@@ -765,11 +775,7 @@ static void emit_phase_panel(PdfWriter *w, const struct AppState *app,
     float pw = bounds.width - margin_l - margin_r;
     float ph = bounds.height - margin_t - margin_b;
 
-    pdf_set_fill_color(w, th->plot_bg);
-    pdf_rect_fill(w, bounds.x, bounds.y, bounds.width, bounds.height);
-    Color inner = (Color){th->plot_bg.r-5, th->plot_bg.g-5, th->plot_bg.b-5, 255};
-    pdf_set_fill_color(w, inner);
-    pdf_rect_fill(w, px, py, pw, ph);
+    /* No fill — let the white page show through; outline marks the data area */
     pdf_set_stroke_color(w, th->text_dim);
     pdf_set_line_width(w, 1.0f);
     pdf_rect_stroke(w, px, py, pw, ph);
@@ -937,7 +943,7 @@ static void emit_phase_panel(PdfWriter *w, const struct AppState *app,
         float ycen = pmap_y(py, ph, ymin, ymax, 0.0);
         Color gc = th->text_dim;
         gc.a = 60;
-        pdf_set_stroke_color(w, gc);
+        pdf_set_stroke_color(w, premult_white(gc));
         pdf_set_line_width(w, 1.0f);
         pdf_line(w, px, ycen, px + pw, ycen);
         pdf_line(w, x0, py, x0, py + ph);
@@ -1335,9 +1341,11 @@ static void item_polyline(ItemList *il, const Projector *pr,
     it->pts_off = off;
 }
 
-/* Polyline whose color/alpha varies along the path. We split into sub-runs of
- * constant alpha (quantized), each becoming its own PI_POLYLINE item with the
- * same depth (so they stay together when sorted). */
+/* Polyline whose color/alpha varies along the path. world_pts is ordered
+ * oldest-to-newest (callers reverse the ring buffer to get this layout so
+ * newer segments stroke over older ones). Section near s_start = 0 is
+ * therefore the oldest part of the trail and should fade out; the newest
+ * end (s_start near n-1) stays opaque. */
 static void item_polyline_alpha_fade(ItemList *il, const Projector *pr,
                                      const Vec3 *world_pts, int n,
                                      Color base_color, float lw, float fade,
@@ -1350,13 +1358,18 @@ static void item_polyline_alpha_fade(ItemList *il, const Projector *pr,
     while (s_start < n - 1) {
         int s_end = s_start + seg_size;
         if (s_end >= n) s_end = n - 1;
-        float age = (float)(s_start + s_end) * 0.5f / (float)n;
+        /* age = 1 at the oldest end, 0 at the newest end */
+        float age = 1.0f - (float)(s_start + s_end) * 0.5f / (float)n;
         float age_fade = 1.0f - age * fade;
         if (age_fade < 0) age_fade = 0;
         Color c = base_color;
         c.a = (unsigned char)(base_color.a * age_fade);
+        /* Pre-multiply against white so that segments crossing themselves
+         * (very common in periodic gyration trails) don't accumulate to a
+         * darker shade where they overlap. The fade is preserved in the
+         * RGB while the stroke is fully opaque. */
         item_polyline(il, pr, &world_pts[s_start],
-                      s_end - s_start + 1, c, lw);
+                      s_end - s_start + 1, premult_white(c), lw);
         s_start = s_end;
     }
 }
@@ -1538,9 +1551,7 @@ static void emit_3d_scene(PdfWriter *w, const struct AppState *app)
     pdf_save(w);
     pdf_clip_rect(w, sx, sy, sw, sh);
 
-    /* Background fill for the scene region */
-    pdf_set_fill_color(w, app->theme.bg);
-    pdf_rect_fill(w, sx, sy, sw, sh);
+    /* No scene-region fill: leave the page white. */
 
     ItemList il = {0};
     const FieldModel *fm = &app->models[app->current_model];
@@ -1950,9 +1961,9 @@ int pdf_export(const struct AppState *app, const char *path)
     /* Use round line joins and caps so polylines look smooth */
     cs_append(w, "1 J 1 j\n", 8);
 
-    /* Background fill covering the visible window region (incl. plot strip) */
-    pdf_set_fill_color(w, app->theme.bg);
-    pdf_rect_fill(w, sx, 0, sw, page_h);
+    /* No page background: the PDF is left white (page default) so the
+     * figure embeds cleanly without an off-white wash from the screen
+     * theme. The scene/plot panels still draw their box outlines. */
 
     emit_3d_scene(w, app);
     emit_overlays(w, app);
