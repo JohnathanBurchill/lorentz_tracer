@@ -10,7 +10,7 @@ authors:
   - family-names: Burchill
     given-names: Johnathan K.
     orcid: "https://orcid.org/0000-0002-8364-0307"
-version: "0.8"
+version: "0.9"
 date-released: "2026-05-06"
 license: MIT
 repository-code: "https://github.com/JohnathanBurchill/lorentz_tracer"
