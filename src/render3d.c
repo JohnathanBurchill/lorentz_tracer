@@ -382,6 +382,17 @@ static void build_field_lines(const struct AppState *app)
                 fl_cache_add_line(circle, npts + 1);
             }
         }
+    } else if (model == 10) {
+        /* Harris sheet: seed on a y-z grid at x = 0; lines run along x
+         * (sheared by the guide field, tilted across the sheet by Bn).
+         * Denser seeding near z = 0 shows the field reversal. */
+        double zs[] = {-3.0, -1.5, -0.75, -0.25, 0.25, 0.75, 1.5, 3.0};
+        Vec3 seeds[24];
+        int ns = 0;
+        for (int iz = 0; iz < 8; iz++)
+            for (int iy = -1; iy <= 1; iy++)
+                seeds[ns++] = (Vec3){0.0, iy * 2.5, zs[iz]};
+        build_field_lines_generic(fm, seeds, ns, 0.05, 400);
     }
 }
 

@@ -144,6 +144,7 @@ typedef enum {
     STR_MODEL_TOKAMAK,          /* "Tokamak" */
     STR_MODEL_STELLARATOR,      /* "Stellarator (NAX)" */
     STR_MODEL_TORUS,            /* "Torus" */
+    STR_MODEL_HARRIS,           /* "Harris sheet" */
 
     /* Field parameter names */
     STR_PARAM_B0,               /* "B0 (T)" */
@@ -161,6 +162,9 @@ typedef enum {
     STR_PARAM_CONFIG,           /* "Config" */
     STR_PARAM_R0_PHYS,          /* "R0_phys (m)" */
     STR_PARAM_B0_PHYS,          /* "B0_phys (T)" */
+    STR_PARAM_L_SHEET,          /* "L (m)" (sheet half-thickness) */
+    STR_PARAM_BG_GUIDE,         /* "Bg guide (T)" */
+    STR_PARAM_BN_NORMAL,        /* "Bn normal (T)" */
 
     /* Stellarator config names */
     STR_STEL_CFG_R2,            /* "r2 s5.1 (QA)" */

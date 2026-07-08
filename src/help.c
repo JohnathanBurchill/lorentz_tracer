@@ -398,6 +398,20 @@ static void tab_fields(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color d
       "of confinement. This demonstrates why a poloidal field component "
       "(as in a tokamak) is needed to confine plasma toroidally. "
       "Parameters: B0, major radius R0, minor radius a.");
+    GAP(6); RULE(); GAP(4);
+
+    H("10. HARRIS SHEET  (current sheet with guide field)");
+    M("  B = B\xe2\x82\x80 tanh(z/L) \xc3\xaa_x + Bg \xc3\xaa_y + Bn \xc3\xaa_z");
+    P("The Harris current sheet: the field reverses direction across "
+      "the z = 0 plane over a half-thickness L, the standard model of "
+      "the magnetotail and reconnecting current sheets. Near the "
+      "neutral plane the guiding-center approximation breaks down and "
+      "particles execute Speiser (meandering) orbits, bouncing across "
+      "the field reversal. A guide field Bg along the current direction "
+      "magnetizes the sheet and turns the meandering into gyration "
+      "about the sheared field; a normal field Bn lets particles cross "
+      "the sheet and ejects them along x. "
+      "Parameters: B0, half-thickness L, guide field Bg, normal field Bn.");
 }
 
 /* ================================================================
@@ -448,7 +462,7 @@ static void tab_interface(AppState *app, Clay_Color hc, Clay_Color bc, Clay_Colo
     GAP(6); RULE(); GAP(4);
 
     H("MODEL / PARTICLE");
-    P("Field Model dropdown: choose from 10 magnetic field geometries. "
+    P("Field Model dropdown: choose from 11 magnetic field geometries. "
       "Each model has adjustable parameters via sliders. Species: "
       "Electron, Proton, Alpha, O+, or Custom (set charge, mass, speed "
       "directly). Energy: kinetic energy in keV with range selector "

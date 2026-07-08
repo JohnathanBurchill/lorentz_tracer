@@ -53,6 +53,7 @@ set(SOURCES
     src/field_tokamak.c
     src/field_stellarator.c
     src/field_torus.c
+    src/field_harris.c
     src/nax_axis.c
     src/nax.c
     src/boris.c

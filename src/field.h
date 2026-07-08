@@ -6,7 +6,7 @@
 #define FIELD_MAX_PARAMS    8
 #define FIELD_MAX_NAME      64
 #define FIELD_MAX_PNAME     32
-#define FIELD_NUM_MODELS    10
+#define FIELD_NUM_MODELS    11
 
 typedef struct {
     char name[FIELD_MAX_NAME];
@@ -46,6 +46,7 @@ void field_init_bottle(FieldModel *fm);
 void field_init_tokamak(FieldModel *fm);
 void field_init_stellarator(FieldModel *fm);
 void field_init_torus(FieldModel *fm);
+void field_init_harris(FieldModel *fm);
 
 
 #endif
