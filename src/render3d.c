@@ -780,12 +780,24 @@ void render3d_draw(const struct AppState *app)
         Vec3 pos = app->particles[si].pos;
         Vec3 vel = app->particles[si].vel;
         double v_mag = vec3_len(vel);
-        double unit_len = 0.06; /* fixed arrow length for unit mode */
+        /* Unit-mode arrows keep a constant apparent size (~30 px at the
+         * particle's distance). A fixed world length disappears when the
+         * camera is far from the orbit (e.g. a long Harris-sheet transit
+         * viewed from hundreds of metres). */
+        double px_at_pos = (app->camera.projection == CAMERA_ORTHOGRAPHIC)
+            ? app->camera.fovy / (double)GetScreenHeight()
+            : g_px * vec3_len(vec3_sub(pos, g_cam_pos));
+        double unit_len = 30.0 * px_at_pos;
+        /* Arrowhead proportional to arrow length; the settings slider is
+         * calibrated as head size for the legacy 0.06 m unit arrow. */
+        double head_ratio = (double)app->arrow_head_size / 0.06;
+        float saved_head = g_arrow_head_size;
 
         if (app->show_velocity_vec && v_mag > 1e-30) {
             double len = app->vec_scaled
                 ? v_mag * pow(10.0, (double)app->vec_scale_v)
                 : unit_len;
+            g_arrow_head_size = (float)(head_ratio * len);
             Vec3 vdir = vec3_scale(1.0 / v_mag, vel);
             Vec3 vtip = vec3_add(pos, vec3_scale(len, vdir));
             draw_arrow(pos, vtip, app->color_vel);
@@ -798,6 +810,7 @@ void render3d_draw(const struct AppState *app)
                 double len = app->vec_scaled
                     ? Bmag * pow(10.0, (double)app->vec_scale_B)
                     : unit_len;
+                g_arrow_head_size = (float)(head_ratio * len);
                 Vec3 bdir = vec3_scale(1.0 / Bmag, B);
                 Vec3 btip = vec3_add(pos, vec3_scale(len, bdir));
                 draw_arrow(pos, btip, app->color_B);
@@ -810,6 +823,7 @@ void render3d_draw(const struct AppState *app)
                     double len = app->vec_scaled
                         ? Fmag * pow(10.0, (double)app->vec_scale_F)
                         : unit_len;
+                    g_arrow_head_size = (float)(head_ratio * len);
                     Vec3 fdir = vec3_scale(1.0 / Fmag, F);
                     Vec3 ftip = vec3_add(pos, vec3_scale(len, fdir));
                     draw_arrow(pos, ftip, app->color_F);
@@ -838,25 +852,33 @@ void render3d_draw(const struct AppState *app)
                     double len = app->vec_scaled
                         ? mag * pow(10.0, (double)app->vec_scale_v)
                         : unit_len;
+                    g_arrow_head_size = (float)(head_ratio * len);
                     Vec3 tip = vec3_add(pos,
                                         vec3_scale(len / mag, arrows[k].vec));
                     draw_arrow(pos, tip, arrows[k].col);
                 }
             }
         }
+        g_arrow_head_size = saved_head;
     }
 
     /* In field-aligned view, show kappa-hat (e1) and binormal (e2) */
     if (app->cam_field_aligned && app->frame_e1_init) {
         int saved_lw = g_arrow_lw;
+        float saved_head = g_arrow_head_size;
         g_arrow_lw = app->lw_triad;
         Vec3 pos = app->particles[app->selected_particle].pos;
-        double arrow_len = 0.06;
+        double px_at_pos = (app->camera.projection == CAMERA_ORTHOGRAPHIC)
+            ? app->camera.fovy / (double)GetScreenHeight()
+            : g_px * vec3_len(vec3_sub(pos, g_cam_pos));
+        double arrow_len = 30.0 * px_at_pos;
+        g_arrow_head_size = (float)((double)app->arrow_head_size / 0.06 * arrow_len);
         Vec3 e1tip = vec3_add(pos, vec3_scale(arrow_len, app->frame_e1));
         draw_arrow(pos, e1tip, app->color_kappa);
         Vec3 e2tip = vec3_add(pos, vec3_scale(arrow_len, app->frame_e2));
         draw_arrow(pos, e2tip, app->color_binormal);
         g_arrow_lw = saved_lw;
+        g_arrow_head_size = saved_head;
     }
 }
 
