@@ -72,6 +72,9 @@ static AppState *g_app; /* for emscripten callback */
 /* LT_AUTO_EXPORT_FRAME=N (env var): trigger PDF export on frame N then exit
  * 10 frames later. Useful for scripted figure generation and verification. */
 static int g_auto_export_frame = -1;
+/* LT_AUTO_SCREENSHOT=path.png (env var): dump the framebuffer to a PNG on
+ * frame LT_AUTO_EXPORT_FRAME (default 120), then exit. */
+static const char *g_auto_shot_path = NULL;
 static int g_frame_counter = 0;
 
 static void main_loop_step(void)
@@ -81,6 +84,16 @@ static void main_loop_step(void)
     app_update(g_app);
     app_render(g_app);
     g_frame_counter++;
+    if (g_auto_shot_path) {
+        int shot_frame = (g_auto_export_frame >= 0) ? g_auto_export_frame : 120;
+        if (g_frame_counter == shot_frame) {
+            Image img = LoadImageFromScreen();
+            ExportImage(img, g_auto_shot_path);
+            UnloadImage(img);
+            exit(0);
+        }
+        return;
+    }
     if (g_auto_export_frame >= 0 && g_frame_counter == g_auto_export_frame)
         g_app->pdf_export_request = 1;
     if (g_auto_export_frame >= 0 && g_frame_counter == g_auto_export_frame + 10)
@@ -95,6 +108,8 @@ int main(int argc, char **argv)
     {
         const char *e = getenv("LT_AUTO_EXPORT_FRAME");
         if (e && *e) g_auto_export_frame = atoi(e);
+        e = getenv("LT_AUTO_SCREENSHOT");
+        if (e && *e) g_auto_shot_path = e;
     }
 
     static AppState app;
