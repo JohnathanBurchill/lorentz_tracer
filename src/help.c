@@ -265,6 +265,33 @@ static void tab_physics(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color 
       "framework.");
     GAP(8); RULE(); GAP(4);
 
+    H("DRIVER CHANNELS (EXACT LORENTZ-FORCE SPLIT)");
+    P("The Display section has toggles for the driver-velocity channels "
+      "of the exact perpendicular oscillator equation (Burchill 2026): "
+      "differentiating the Lorentz force splits the field rate "
+      "dB/dt = (dB/dt) b^ + B (db^/dt) into one channel per member, "
+      "with no approximation:");
+    M("  d\xc2\xb2v_perp/dt\xc2\xb2 = \xe2\x88\x92\xce\xa9\xe2\x82\x80\xc2\xb2 "
+      "[ v_perp \xe2\x88\x92 v_gradB \xe2\x88\x92 v_gradb^ ]");
+    GAP(4);
+    P("v_gradB collects the field-strength rate (the cross-product "
+      "drive plus the parametric \xce\xb4""B member); its gyroaverage is "
+      "the gradient-B drift. "
+      "v_gradb^ is the perpendicular part of the field-direction "
+      "rotation; its gyroaverage is the curvature drift. The gyration "
+      "remainder w~ = v_perp \xe2\x88\x92 v_gradB "
+      "\xe2\x88\x92 v_gradb^ is the oscillation left after the "
+      "drivers. The reference strength B\xe2\x82\x80 is the trailing "
+      "one-gyroperiod average of |B| along the orbit, so the arrows are "
+      "functionals of the orbit's recent history, not purely local "
+      "quantities. Where the guiding-center picture holds, w~ is a "
+      "near-circular gyration and the driver arrows are small and "
+      "steady; near a field reversal (Harris sheet) the drivers and "
+      "remainder grow to the particle speed and the split reports the "
+      "breakdown pointwise. The arrows are velocities and share the "
+      "v arrow's scale slider in scaled mode.");
+    GAP(8); RULE(); GAP(4);
+
     H("THE BORIS ALGORITHM");
     P("The simulation uses the Boris pusher, a symplectic leapfrog "
       "integrator that exactly preserves speed during the magnetic "
@@ -502,7 +529,9 @@ static void tab_interface(AppState *app, Clay_Color hc, Clay_Color bc, Clay_Colo
     H("DISPLAY");
     P("Field lines: magnetic field line visualization. GC fl: instantaneous "
       "guiding-center field line through the particle's GC. Vel/B vectors: "
-      "arrows at the particle. G_ij: field-direction gradient tensor. "
+      "arrows at the particle. v_gradb^ / v_gradB / w~: "
+      "the exact Lorentz-force driver channels and gyration remainder "
+      "(see the Physics tab). G_ij: field-direction gradient tensor. "
       "Axes: coordinate axis markers. Plot range: time window for 2D "
       "diagnostic plots. Autoscale: auto-range pitch angle plot. "
       "Radiation: Larmor radiation damping with adjustable multiplier. "

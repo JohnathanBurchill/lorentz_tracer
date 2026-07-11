@@ -816,6 +816,34 @@ void render3d_draw(const struct AppState *app)
                 }
             }
         }
+
+        /* Burchill 2026 driver-channel arrows: v_∇b^, v_∇B, w~.
+         * Velocities, so they share the v arrow's scale in scaled mode. */
+        if (app->show_vgradbhat_vec || app->show_vgradB_vec ||
+            app->show_wtilde_vec) {
+            double B0 = b0window_avg(&app->b0win);
+            if (!(B0 > 0.0)) B0 = field_Bmag(fm, pos); /* window self-start */
+            DriverChannels ch;
+            drivers_eval(fm, &app->particles[si], B0, app->relativistic, &ch);
+            if (ch.valid) {
+                struct { int on; Vec3 vec; Color col; } arrows[3] = {
+                    { app->show_vgradbhat_vec, ch.v_gradbhat, app->color_vgradbhat },
+                    { app->show_vgradB_vec,    ch.v_gradB,    app->color_vgradB },
+                    { app->show_wtilde_vec,    ch.w_tilde,    app->color_wtilde },
+                };
+                for (int k = 0; k < 3; k++) {
+                    if (!arrows[k].on) continue;
+                    double mag = vec3_len(arrows[k].vec);
+                    if (mag <= 1e-30) continue;
+                    double len = app->vec_scaled
+                        ? mag * pow(10.0, (double)app->vec_scale_v)
+                        : unit_len;
+                    Vec3 tip = vec3_add(pos,
+                                        vec3_scale(len / mag, arrows[k].vec));
+                    draw_arrow(pos, tip, arrows[k].col);
+                }
+            }
+        }
     }
 
     /* In field-aligned view, show kappa-hat (e1) and binormal (e2) */

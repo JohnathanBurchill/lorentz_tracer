@@ -148,6 +148,9 @@ static const char *g_strings_en[STR__COUNT] = {
     [STR_COLOR_KAPPA]       = "\xce\xba-hat",
     [STR_COLOR_BINORMAL]    = "Binormal",
     [STR_COLOR_AXES]        = "Axes",
+    [STR_COLOR_VGRADBHAT]   = "v_gradb^ arrow",
+    [STR_COLOR_VGRADB]      = "v_gradB arrow",
+    [STR_COLOR_WTILDE]      = "w~ arrow",
     [STR_LANGUAGE]          = "Language",
 
     /* Color picker */

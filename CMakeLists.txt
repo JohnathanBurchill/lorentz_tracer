@@ -58,6 +58,7 @@ set(SOURCES
     src/nax.c
     src/boris.c
     src/gc.c
+    src/drivers.c
     src/trail.c
     src/diagnostics.c
     src/ui.c

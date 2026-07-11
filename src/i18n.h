@@ -108,6 +108,9 @@ typedef enum {
     STR_COLOR_KAPPA,            /* "κ-hat" */
     STR_COLOR_BINORMAL,         /* "Binormal" */
     STR_COLOR_AXES,             /* "Axes" */
+    STR_COLOR_VGRADBHAT,        /* "v_gradb^ arrow" */
+    STR_COLOR_VGRADB,           /* "v_gradB arrow" */
+    STR_COLOR_WTILDE,           /* "w~ arrow" */
     STR_LANGUAGE,               /* "Language" */
 
     /* Color picker */

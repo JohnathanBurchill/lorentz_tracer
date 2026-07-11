@@ -99,7 +99,7 @@ static void cam_trans_start(AppState *app, int mode, float duration)
     app->cam_trans.start_up = v3f_normalize(app->camera.up);
 }
 
-/* Pack/unpack the 9 named color fields into/from an array */
+/* Pack/unpack the 12 named color fields into/from an array */
 static void colors_to_array(const AppState *app, Color out[NUM_USER_COLORS])
 {
     out[0] = app->color_vel;
@@ -111,6 +111,9 @@ static void colors_to_array(const AppState *app, Color out[NUM_USER_COLORS])
     out[6] = app->color_gc_fl;
     out[7] = app->color_pos_fl;
     out[8] = app->color_axes;
+    out[9] = app->color_vgradbhat;
+    out[10] = app->color_vgradB;
+    out[11] = app->color_wtilde;
 }
 
 static void colors_from_array(AppState *app, const Color in[NUM_USER_COLORS])
@@ -124,6 +127,9 @@ static void colors_from_array(AppState *app, const Color in[NUM_USER_COLORS])
     app->color_gc_fl       = in[6];
     app->color_pos_fl      = in[7];
     app->color_axes        = in[8];
+    app->color_vgradbhat   = in[9];
+    app->color_vgradB      = in[10];
+    app->color_wtilde      = in[11];
 }
 
 void app_apply_theme(AppState *app)
@@ -235,6 +241,11 @@ void app_init(AppState *app)
     app->relativistic = 0;
     app->show_velocity_vec = 1;
     app->show_F_vec = 0;
+    app->show_vgradbhat_vec = 0;
+    app->show_vgradB_vec = 0;
+    app->show_wtilde_vec = 0;
+    b0window_reset(&app->b0win);
+    app->b0win_particle = -1;
     app->show_scale_bar = 1;
     app->vec_scaled = 0;
     app->vec_scale_v = 0.0f;
@@ -258,6 +269,9 @@ void app_init(AppState *app)
     app->dark_colors[6] = (Color){180, 120, 60, 255};   /* gc fl */
     app->dark_colors[7] = (Color){180, 120, 60, 180};   /* pos fl */
     app->dark_colors[8] = (Color){100, 100, 110, 200};  /* axes */
+    app->dark_colors[9] = (Color){255, 230, 0, 200};    /* v_gradbhat */
+    app->dark_colors[10] = (Color){160, 90, 255, 200};  /* v_gradB */
+    app->dark_colors[11] = (Color){255, 70, 90, 200};   /* w~ */
     app->dark_species[0] = (Color){80, 160, 255, 255};  /* electron */
     app->dark_species[1] = (Color){220, 110, 170, 255}; /* positron */
     app->dark_species[2] = (Color){220, 220, 80, 255};  /* proton */
@@ -275,6 +289,9 @@ void app_init(AppState *app)
     app->light_colors[6] = (Color){140, 90, 40, 255};   /* gc fl */
     app->light_colors[7] = (Color){140, 90, 40, 160};   /* pos fl */
     app->light_colors[8] = (Color){80, 80, 90, 200};    /* axes */
+    app->light_colors[9] = (Color){170, 150, 0, 220};   /* v_gradbhat */
+    app->light_colors[10] = (Color){110, 50, 190, 220}; /* v_gradB */
+    app->light_colors[11] = (Color){200, 30, 60, 220};  /* w~ */
     app->light_species[0] = (Color){30, 100, 220, 255}; /* electron */
     app->light_species[1] = (Color){180, 60, 120, 255}; /* positron */
     app->light_species[2] = (Color){180, 160, 0, 255};  /* proton */
@@ -370,6 +387,9 @@ static void event_log_snapshot(AppState *app)
     app->prev_gc_fl_length = app->gc_fl_length;
     app->prev_show_velocity_vec = app->show_velocity_vec;
     app->prev_show_B_vec = app->show_B_vec;
+    app->prev_show_vgradbhat_vec = app->show_vgradbhat_vec;
+    app->prev_show_vgradB_vec = app->show_vgradB_vec;
+    app->prev_show_wtilde_vec = app->show_wtilde_vec;
     app->prev_plot_range = app->plot_range;
     app->prev_pitch_autoscale = app->pitch_autoscale;
     app->prev_follow_particle = app->follow_particle;
@@ -427,6 +447,9 @@ static void event_log_write_state(AppState *app, const char *txt_path)
     fprintf(f, "gc_fl_length %.15g\n", app->gc_fl_length);
     fprintf(f, "show_velocity_vec %d\n", app->show_velocity_vec);
     fprintf(f, "show_B_vec %d\n", app->show_B_vec);
+    fprintf(f, "show_vgradbhat_vec %d\n", app->show_vgradbhat_vec);
+    fprintf(f, "show_vgradB_vec %d\n", app->show_vgradB_vec);
+    fprintf(f, "show_wtilde_vec %d\n", app->show_wtilde_vec);
     fprintf(f, "show_Gij %d\n", app->show_Gij);
     fprintf(f, "show_init_conditions %d\n", app->show_init_conditions);
     fprintf(f, "init_zoom %.6g\n", app->init_zoom);
@@ -498,6 +521,9 @@ static void event_log_check(AppState *app)
     LOG_DBL("gc_fl_length", gc_fl_length)
     LOG_INT("show_velocity_vec", show_velocity_vec)
     LOG_INT("show_B_vec", show_B_vec)
+    LOG_INT("show_vgradbhat_vec", show_vgradbhat_vec)
+    LOG_INT("show_vgradB_vec", show_vgradB_vec)
+    LOG_INT("show_wtilde_vec", show_wtilde_vec)
     LOG_INT("plot_range", plot_range)
     LOG_INT("pitch_autoscale", pitch_autoscale)
     LOG_INT("follow_particle", follow_particle)
@@ -840,6 +866,8 @@ void app_reset_particle(AppState *app)
     app->selected_particle = 0;
     app->undo_count = 0;
     app->redo_count = 0;
+    b0window_reset(&app->b0win);
+    app->b0win_particle = -1;
 
     FieldModel *fm = &app->models[app->current_model];
     if (app->needs_reset == 2) {
@@ -2065,6 +2093,22 @@ physics:
                     trail_push(&app->trails[pi], app->particles[pi].pos);
                     trail_push(&app->gc_trails[pi], app->gc_particles[pi].pos);
                 }
+                /* Trailing gyroperiod |B| window for the driver channels
+                 * (Burchill 2026 reference B0), selected particle only */
+                if (app->show_vgradbhat_vec || app->show_vgradB_vec ||
+                    app->show_wtilde_vec) {
+                    int si = app->selected_particle;
+                    if (app->b0win_particle != si) {
+                        b0window_reset(&app->b0win);
+                        app->b0win_particle = si;
+                    }
+                    const Particle *sp = &app->particles[si];
+                    double Bm = field_Bmag(fm, sp->pos);
+                    double m_eff = drivers_eff_mass(sp, app->relativistic);
+                    double dpsi = fabs(sp->q) * Bm / m_eff
+                                * (app->dt * trail_interval);
+                    b0window_push(&app->b0win, Bm, dpsi);
+                }
             }
             app->sim_time += app->dt;
 
@@ -2805,6 +2849,9 @@ void app_save_state(const AppState *app)
     fprintf(f, "show_velocity_vec=%d\n", app->show_velocity_vec);
     fprintf(f, "show_B_vec=%d\n", app->show_B_vec);
     fprintf(f, "show_F_vec=%d\n", app->show_F_vec);
+    fprintf(f, "show_vgradbhat_vec=%d\n", app->show_vgradbhat_vec);
+    fprintf(f, "show_vgradB_vec=%d\n", app->show_vgradB_vec);
+    fprintf(f, "show_wtilde_vec=%d\n", app->show_wtilde_vec);
     fprintf(f, "show_scale_bar=%d\n", app->show_scale_bar);
     fprintf(f, "vec_scaled=%d\n", app->vec_scaled);
     fprintf(f, "vec_scale_v=%.6g\n", app->vec_scale_v);
@@ -2862,7 +2909,8 @@ void app_save_state(const AppState *app)
     {
         static const char *cnames[NUM_USER_COLORS] = {
             "color_vel", "color_B", "color_F", "color_kappa", "color_binormal",
-            "color_field_lines", "color_gc_fl", "color_pos_fl", "color_axes"
+            "color_field_lines", "color_gc_fl", "color_pos_fl", "color_axes",
+            "color_vgradbhat", "color_vgradB", "color_wtilde"
         };
         /* Get active colors into a temp array */
         Color active[NUM_USER_COLORS];
@@ -2941,6 +2989,12 @@ void app_load_state(AppState *app)
             app->show_velocity_vec = atoi(val);
         else if (strcmp(key, "show_F_vec") == 0)
             app->show_F_vec = atoi(val);
+        else if (strcmp(key, "show_vgradbhat_vec") == 0)
+            app->show_vgradbhat_vec = atoi(val);
+        else if (strcmp(key, "show_vgradB_vec") == 0)
+            app->show_vgradB_vec = atoi(val);
+        else if (strcmp(key, "show_wtilde_vec") == 0)
+            app->show_wtilde_vec = atoi(val);
         else if (strcmp(key, "vec_scaled") == 0)
             app->vec_scaled = atoi(val);
         else if (strcmp(key, "vec_scale_v") == 0)
@@ -3082,7 +3136,8 @@ void app_load_state(AppState *app)
             /* Per-theme colors (new format: dark_color_vel, light_color_vel, etc.) */
             static const char *cnames[NUM_USER_COLORS] = {
                 "color_vel", "color_B", "color_F", "color_kappa", "color_binormal",
-                "color_field_lines", "color_gc_fl", "color_pos_fl", "color_axes"
+                "color_field_lines", "color_gc_fl", "color_pos_fl", "color_axes",
+                "color_vgradbhat", "color_vgradB", "color_wtilde"
             };
             int cr,cg,cb,ca;
             for (int ci = 0; ci < NUM_USER_COLORS; ci++) {

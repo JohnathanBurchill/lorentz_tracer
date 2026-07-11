@@ -809,6 +809,15 @@ static void section_display(AppState *app, Clay_Color text_c, Clay_Color dim_c,
                 app->gc_symplectic = !app->gc_symplectic;
         }
     }
+    /* Burchill 2026 driver-channel arrows (exact Lorentz-force split) */
+    CLAY_AUTO_ID({ .layout = { .childGap = 4, .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) } } }) {
+        if (do_toggle(CLAY_ID("TglVgbhat"), "v_gradb^", app->show_vgradbhat_vec, fill_c, track_c, hov, wcfg))
+            app->show_vgradbhat_vec = !app->show_vgradbhat_vec;
+        if (do_toggle(CLAY_ID("TglVgradB"), "v_gradB", app->show_vgradB_vec, fill_c, track_c, hov, wcfg))
+            app->show_vgradB_vec = !app->show_vgradB_vec;
+        if (do_toggle(CLAY_ID("TglWtilde"), "w~", app->show_wtilde_vec, fill_c, track_c, hov, wcfg))
+            app->show_wtilde_vec = !app->show_wtilde_vec;
+    }
     /* Field line toggles (separate row) */
     CLAY_AUTO_ID({ .layout = { .childGap = 4, .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) } } }) {
         if (do_toggle(CLAY_ID("TglFL"), TR(STR_FIELD_LINES), app->show_field_lines, fill_c, track_c, hov, wcfg))
@@ -1325,6 +1334,9 @@ static void section_settings(AppState *app, Clay_Color text_c, Clay_Color dim_c,
         COLOR_ROW(TR(STR_COLOR_KAPPA),      "SCKap",  &app->color_kappa)
         COLOR_ROW(TR(STR_COLOR_BINORMAL),   "SCBin",  &app->color_binormal)
         COLOR_ROW(TR(STR_COLOR_AXES),       "SCAx",   &app->color_axes)
+        COLOR_ROW(TR(STR_COLOR_VGRADBHAT),  "SCVgb",  &app->color_vgradbhat)
+        COLOR_ROW(TR(STR_COLOR_VGRADB),     "SCVgB",  &app->color_vgradB)
+        COLOR_ROW(TR(STR_COLOR_WTILDE),     "SCWt",   &app->color_wtilde)
 
         CLAY_AUTO_ID({ .layout = { .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIXED(4) } } }) {}
         CLAY_TEXT(S(TR(STR_PARTICLES)), CLAY_TEXT_CONFIG({ .fontId = FONT_UI, .fontSize = UZ(13),

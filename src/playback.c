@@ -189,6 +189,12 @@ int playback_load(AppState *app, const char *path)
                 app->show_velocity_vec = atoi(rest);
             } else if (strcmp(key, "show_B_vec") == 0) {
                 app->show_B_vec = atoi(rest);
+            } else if (strcmp(key, "show_vgradbhat_vec") == 0) {
+                app->show_vgradbhat_vec = atoi(rest);
+            } else if (strcmp(key, "show_vgradB_vec") == 0) {
+                app->show_vgradB_vec = atoi(rest);
+            } else if (strcmp(key, "show_wtilde_vec") == 0) {
+                app->show_wtilde_vec = atoi(rest);
             } else if (strcmp(key, "show_Gij") == 0) {
                 app->show_Gij = atoi(rest);
             } else if (strcmp(key, "show_init_conditions") == 0) {
@@ -304,6 +310,9 @@ void apply_event(AppState *app, const PlaybackEvent *ev)
     else if (strcmp(key, "gc_fl_length") == 0)         app->gc_fl_length = v[0];
     else if (strcmp(key, "show_velocity_vec") == 0)    app->show_velocity_vec = (int)v[0];
     else if (strcmp(key, "show_B_vec") == 0)           app->show_B_vec = (int)v[0];
+    else if (strcmp(key, "show_vgradbhat_vec") == 0)   app->show_vgradbhat_vec = (int)v[0];
+    else if (strcmp(key, "show_vgradB_vec") == 0)      app->show_vgradB_vec = (int)v[0];
+    else if (strcmp(key, "show_wtilde_vec") == 0)      app->show_wtilde_vec = (int)v[0];
     else if (strcmp(key, "plot_range") == 0)            app->plot_range = (int)v[0];
     else if (strcmp(key, "pitch_autoscale") == 0)       app->pitch_autoscale = (int)v[0];
     else if (strcmp(key, "follow_particle") == 0)       app->follow_particle = (int)v[0];

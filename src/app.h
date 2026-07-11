@@ -9,6 +9,7 @@
 #include "trail.h"
 #include "diagnostics.h"
 #include "gc.h"
+#include "drivers.h"
 #include "recorder.h"
 #include "tutorial.h"
 #include "explorer.h"
@@ -130,6 +131,11 @@ typedef struct AppState {
     int show_velocity_vec;
     int show_B_vec;
     int show_F_vec;      /* Lorentz force vector q(v×B) */
+    int show_vgradbhat_vec;  /* Burchill 2026 driver channel v_∇b^ */
+    int show_vgradB_vec;     /* Burchill 2026 driver channel v_∇B */
+    int show_wtilde_vec;     /* Burchill 2026 gyration remainder w~ */
+    B0Window b0win;          /* trailing gyroperiod |B| window (selected particle) */
+    int b0win_particle;      /* particle the window tracks; -1 = none */
     int show_scale_bar;
     int vec_scaled;      /* 0 = unit vectors, 1 = scaled by magnitude */
     float vec_scale_v;   /* log10 scale for velocity arrow */
@@ -153,12 +159,15 @@ typedef struct AppState {
     Color color_gc_fl;       /* GC field line */
     Color color_pos_fl;      /* position field line */
     Color color_axes;        /* coordinate axes */
+    Color color_vgradbhat;   /* v_∇b^ driver arrow */
+    Color color_vgradB;      /* v_∇B driver arrow */
+    Color color_wtilde;      /* w~ gyration remainder arrow */
     #define NUM_SPECIES 6
     Color species_colors[NUM_SPECIES]; /* per-species trail/sphere */
 
     /* Per-theme color storage (the fields above are the "active" set;
      * on theme switch, active colors are saved here and the other set loaded) */
-    #define NUM_USER_COLORS 9
+    #define NUM_USER_COLORS 12
     Color dark_colors[NUM_USER_COLORS];
     Color dark_species[NUM_SPECIES];
     Color light_colors[NUM_USER_COLORS];
@@ -213,6 +222,7 @@ typedef struct AppState {
     int prev_show_field_lines, prev_show_gc_field_line;
     double prev_gc_fl_length;
     int prev_show_velocity_vec, prev_show_B_vec;
+    int prev_show_vgradbhat_vec, prev_show_vgradB_vec, prev_show_wtilde_vec;
     int prev_plot_range, prev_pitch_autoscale;
     int prev_follow_particle, prev_cam_field_aligned;
     int prev_show_Gij, prev_ui_visible;
