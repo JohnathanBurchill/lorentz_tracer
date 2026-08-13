@@ -4,14 +4,14 @@ type: software
 title: "Lorentz Tracer"
 abstract: >-
   Interactive charged-particle orbit simulation. Solves the full Lorentz
-  force equation in real time across ten magnetic field models, with 3D
+  force equation in real time across twelve magnetic field models, with 3D
   visualization, live diagnostics, and guiding-centre trajectory comparison.
 authors:
   - family-names: Burchill
     given-names: Johnathan K.
     orcid: "https://orcid.org/0000-0002-8364-0307"
-version: "0.9"
-date-released: "2026-05-06"
+version: "0.10"
+date-released: "2026-08-13"
 license: MIT
 repository-code: "https://github.com/JohnathanBurchill/lorentz_tracer"
 keywords:
