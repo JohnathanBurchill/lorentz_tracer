@@ -393,6 +393,22 @@ static void build_field_lines(const struct AppState *app)
             for (int iy = -1; iy <= 1; iy++)
                 seeds[ns++] = (Vec3){0.0, iy * 2.5, zs[iz]};
         build_field_lines_generic(fm, seeds, ns, 0.05, 400);
+    } else if (model == 11) {
+        /* Turbulence: seed a grid on the plane through the origin normal to
+         * B0. With dB/B0 small the lines stay nearly straight; as dB/B0
+         * grows they wander and braid. */
+        double th = fm->params[1] * (M_PI / 180.0);
+        double ph = fm->params[2] * (M_PI / 180.0);
+        Vec3 b0 = {sin(th) * cos(ph), sin(th) * sin(ph), cos(th)};
+        Vec3 ref = (fabs(b0.z) < 0.9) ? (Vec3){0.0, 0.0, 1.0} : (Vec3){1.0, 0.0, 0.0};
+        Vec3 u = vec3_norm(vec3_cross(b0, ref));
+        Vec3 v = vec3_cross(b0, u);
+        Vec3 seeds[9];
+        int ns = 0;
+        for (int iu = -1; iu <= 1; iu++)
+            for (int iv = -1; iv <= 1; iv++)
+                seeds[ns++] = vec3_add(vec3_scale(iu * 3.0, u), vec3_scale(iv * 3.0, v));
+        build_field_lines_generic(fm, seeds, ns, 0.05, 400);
     }
 }
 

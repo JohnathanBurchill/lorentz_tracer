@@ -188,6 +188,7 @@ static const char *g_strings_en[STR__COUNT] = {
     [STR_MODEL_STELLARATOR] = "Stellarator (NAX)",
     [STR_MODEL_TORUS]       = "Torus",
     [STR_MODEL_HARRIS]      = "Harris sheet",
+    [STR_MODEL_TURBULENCE]  = "Turbulence (B0 + dB)",
 
     /* Field parameter names */
     [STR_PARAM_B0]          = "B0 (T)",
@@ -208,6 +209,13 @@ static const char *g_strings_en[STR__COUNT] = {
     [STR_PARAM_L_SHEET]     = "L (m)",
     [STR_PARAM_BG_GUIDE]    = "Bg guide (T)",
     [STR_PARAM_BN_NORMAL]   = "Bn normal (T)",
+    [STR_PARAM_B0_THETA]    = "B0 theta (deg)",
+    [STR_PARAM_B0_PHI]      = "B0 phi (deg)",
+    [STR_PARAM_DB_B0]       = "dB/B0",
+    [STR_PARAM_SPEC_S]      = "s (slope)",
+    [STR_PARAM_K1]          = "k1 (1/m)",
+    [STR_PARAM_K2]          = "k2 (1/m)",
+    [STR_PARAM_SEED]        = "Seed",
     [STR_STEL_CFG_R2]       = "r2 s5.1 (QA)",
     [STR_STEL_CFG_LP22]     = "Precise QA (LP22)",
 
@@ -292,7 +300,7 @@ static const char *g_strings_en[STR__COUNT] = {
         "parameters.",
     [STR_TUT_S9_BRIEF]  = "Try selecting the Dipole field model from the dropdown. "
         "The view resets automatically when switching models.",
-    [STR_TUT_S9_DETAIL] = "The Field Model dropdown lists 11 magnetic field geometries: "
+    [STR_TUT_S9_DETAIL] = "The Field Model dropdown lists 12 magnetic field geometries: "
         "circular, grad-B, dipole, magnetic bottle, tokamak, and more. "
         "Each model has adjustable parameters. Selecting a new model "
         "resets the particle and camera to defaults. Try selecting "

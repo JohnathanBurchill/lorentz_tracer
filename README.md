@@ -1,13 +1,13 @@
 # Lorentz Tracer
 
-Interactive charged-particle orbit simulation. Solves the full Lorentz force equation in real time across ten magnetic field models, with 3D visualization and live diagnostics.
+Interactive charged-particle orbit simulation. Solves the full Lorentz force equation in real time across twelve magnetic field models, with 3D visualization and live diagnostics.
 
 [Try the web demo](https://johnathanburchill.github.io/lorentz_tracer/)
 
 ## Features
 
 - Boris integrator (energy-conserving to machine precision)
-- Ten magnetic field models: circular (constant |B|), linear/quadratic/sinusoidal grad-B, nonphysical (div B != 0), magnetic dipole, magnetic bottle, tokamak, stellarator (near-axis), torus
+- Twelve magnetic field models: circular (constant |B|), linear/quadratic/sinusoidal grad-B, nonphysical (div B != 0), magnetic dipole, magnetic bottle, tokamak, stellarator (near-axis), torus, Harris current sheet, isotropic turbulence (power-law spectrum)
 - Multiple particles with independent species (charge, mass)
 - 3D orbit visualization with field lines and particle trails
 - Live diagnostic plots: pitch angle, magnetic moment, energy, position

@@ -148,6 +148,7 @@ typedef enum {
     STR_MODEL_STELLARATOR,      /* "Stellarator (NAX)" */
     STR_MODEL_TORUS,            /* "Torus" */
     STR_MODEL_HARRIS,           /* "Harris sheet" */
+    STR_MODEL_TURBULENCE,       /* "Turbulence (B0 + dB)" */
 
     /* Field parameter names */
     STR_PARAM_B0,               /* "B0 (T)" */
@@ -168,6 +169,13 @@ typedef enum {
     STR_PARAM_L_SHEET,          /* "L (m)" (sheet half-thickness) */
     STR_PARAM_BG_GUIDE,         /* "Bg guide (T)" */
     STR_PARAM_BN_NORMAL,        /* "Bn normal (T)" */
+    STR_PARAM_B0_THETA,         /* "B0 theta (deg)" */
+    STR_PARAM_B0_PHI,           /* "B0 phi (deg)" */
+    STR_PARAM_DB_B0,            /* "dB/B0" (turbulence level) */
+    STR_PARAM_SPEC_S,           /* "s (slope)" (spectral index) */
+    STR_PARAM_K1,               /* "k1 (1/m)" */
+    STR_PARAM_K2,               /* "k2 (1/m)" */
+    STR_PARAM_SEED,             /* "Seed" */
 
     /* Stellarator config names */
     STR_STEL_CFG_R2,            /* "r2 s5.1 (QA)" */

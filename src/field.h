@@ -6,7 +6,7 @@
 #define FIELD_MAX_PARAMS    8
 #define FIELD_MAX_NAME      64
 #define FIELD_MAX_PNAME     32
-#define FIELD_NUM_MODELS    11
+#define FIELD_NUM_MODELS    12
 
 typedef struct {
     char name[FIELD_MAX_NAME];
@@ -15,6 +15,7 @@ typedef struct {
     double params[FIELD_MAX_PARAMS];
     double param_min[FIELD_MAX_PARAMS];
     double param_max[FIELD_MAX_PARAMS];
+    int param_log[FIELD_MAX_PARAMS];  /* 1 = slider is logarithmic in the value */
     int n_params;
 
     Vec3 (*eval_B)(const double *params, Vec3 pos);
@@ -47,6 +48,7 @@ void field_init_tokamak(FieldModel *fm);
 void field_init_stellarator(FieldModel *fm);
 void field_init_torus(FieldModel *fm);
 void field_init_harris(FieldModel *fm);
+void field_init_turbulence(FieldModel *fm);
 
 
 #endif

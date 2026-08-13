@@ -324,6 +324,7 @@ static void tab_physics(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color 
     P("- A. J. Brizard and T. S. Hahm, \"Foundations of nonlinear gyrokinetic theory,\" Rev. Mod. Phys. 79, 421 (2007).");
     P("- J. Buchner and L. M. Zelenyi, \"Regular and chaotic charged particle motion in magnetotaillike field reversals,\" J. Geophys. Res. 94, 11821 (1989).");
     P("- C. M. Cully and E. F. Donovan, \"A derivation of the gradient drift based on energy conservation,\" Am. J. Phys. 67, 909 (1999).");
+    P("- J. Giacalone and J. R. Jokipii, \"The transport of cosmic rays across a turbulent magnetic field,\" Astrophys. J. 520, 204 (1999).");
     P("- M. Kruskal, \"Elementary orbit and drift theory,\" Plasma Physics (IAEA, 1965).");
     P("- R. M. Kulsrud, Plasma Physics for Astrophysics (Princeton, 2005).");
     P("- R. G. Littlejohn, \"Variational principles of guiding centre motion,\" J. Plasma Phys. 29, 111 (1983).");
@@ -439,6 +440,36 @@ static void tab_fields(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color d
       "about the sheared field; a normal field Bn lets particles cross "
       "the sheet and ejects them along x. "
       "Parameters: B0, half-thickness L, guide field Bg, normal field Bn.");
+    GAP(6); RULE(); GAP(4);
+
+    H("11. TURBULENCE  (uniform B0 plus isotropic fluctuations)");
+    M("  B = B\xe2\x82\x80 b\xcc\x82\xe2\x82\x80 + \xce\xa3 A\xe2\x82\x99 \xc3\xaa\xe2\x82\x99 cos(k\xe2\x82\x99\xc2\xb7x + \xcf\x86\xe2\x82\x99),   \xc3\xaa\xe2\x82\x99 \xc2\xb7 k\xe2\x82\x99 = 0");
+    P("A uniform background field of adjustable magnitude and orientation "
+      "(polar angle theta, azimuth phi) superposed with a frozen "
+      "isotropic turbulent fluctuation, built as a sum of 64 randomly "
+      "oriented transverse plane waves (Giacalone and Jokipii 1999). "
+      "Each polarisation is perpendicular to its own wavevector, so "
+      "div B = 0 exactly.");
+    GAP(4);
+    P("Wavevector magnitudes are spaced logarithmically between k1 and k2, "
+      "with amplitudes reproducing an omnidirectional spectrum "
+      "P(k) ~ k^-s inside that band: s = 5/3 is Kolmogorov, 3/2 "
+      "Kraichnan, 2 shock-dominated, 0 white noise. The fluctuation "
+      "level is set by dB/B0, the ratio of the rms fluctuation to the "
+      "background field.");
+    GAP(4);
+    P("Because the realisation is static and there is no E field, energy "
+      "is conserved exactly and the turbulence scatters pitch angle only. "
+      "Scattering is strongest when the Larmor radius is comparable to "
+      "1/k (cyclotron resonance); the k1 and k2 sliders are logarithmic "
+      "so the band can be placed anywhere from 0.01 to 1000 1/m. "
+      "At small dB/B0 the guiding centre "
+      "follows a wandering field line; at dB/B0 near 1 the motion "
+      "becomes chaotic and the magnetic moment stops being conserved. "
+      "The Seed slider selects a different random realisation of the "
+      "same spectrum. "
+      "Parameters: B0, orientation theta and phi, dB/B0, spectral slope "
+      "s, band limits k1 and k2, seed.");
 }
 
 /* ================================================================
@@ -489,7 +520,7 @@ static void tab_interface(AppState *app, Clay_Color hc, Clay_Color bc, Clay_Colo
     GAP(6); RULE(); GAP(4);
 
     H("MODEL / PARTICLE");
-    P("Field Model dropdown: choose from 11 magnetic field geometries. "
+    P("Field Model dropdown: choose from 12 magnetic field geometries. "
       "Each model has adjustable parameters via sliders. Species: "
       "Electron, Proton, Alpha, O+, or Custom (set charge, mass, speed "
       "directly). Energy: kinetic energy in keV with range selector "

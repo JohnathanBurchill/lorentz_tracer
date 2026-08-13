@@ -471,6 +471,18 @@ static void section_model(AppState *app, Clay_Color text_c, Clay_Color dim_c,
                 }
                 continue;
             }
+            if (fm->param_log[i]) {
+                /* Slider position is linear in log(value): write back only on
+                 * an actual drag, so the exp/log round trip cannot jitter the
+                 * parameter and force a field-line rebuild every frame. */
+                double cur = fm->params[i] > 0.0 ? fm->params[i] : fm->param_min[i];
+                float lv = (float)log(cur);
+                if (do_slider(CLAY_IDI("PSlider", i), fm->param_names[i], Sf("%.3g", fm->params[i]),
+                              &lv, (float)log(fm->param_min[i]), (float)log(fm->param_max[i]),
+                              track_c, fill_c, text_c))
+                    fm->params[i] = exp((double)lv);
+                continue;
+            }
             float val = (float)fm->params[i];
             do_slider(CLAY_IDI("PSlider", i), fm->param_names[i], Sf("%.3g", fm->params[i]),
                       &val, (float)fm->param_min[i], (float)fm->param_max[i], track_c, fill_c, text_c);

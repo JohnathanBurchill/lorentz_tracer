@@ -35,6 +35,7 @@ void field_init_all(FieldModel models[FIELD_NUM_MODELS])
     field_init_stellarator(&models[8]);
     field_init_torus(&models[9]);
     field_init_harris(&models[10]);
+    field_init_turbulence(&models[11]);
 }
 
 void field_retranslate(FieldModel models[FIELD_NUM_MODELS])
@@ -58,6 +59,7 @@ void field_retranslate(FieldModel models[FIELD_NUM_MODELS])
         case 8: field_init_stellarator(&models[m]); break;
         case 9: field_init_torus(&models[m]); break;
         case 10: field_init_harris(&models[m]); break;
+        case 11: field_init_turbulence(&models[m]); break;
         }
 
         for (int i = 0; i < np; i++)

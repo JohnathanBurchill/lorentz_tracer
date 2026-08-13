@@ -54,6 +54,7 @@ set(SOURCES
     src/field_stellarator.c
     src/field_torus.c
     src/field_harris.c
+    src/field_turbulence.c
     src/nax_axis.c
     src/nax.c
     src/boris.c
