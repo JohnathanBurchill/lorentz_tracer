@@ -89,6 +89,11 @@ if(NOT EMSCRIPTEN AND (NOT WIN32 OR NOT MSVC))
     target_link_libraries(lorentz_tracer PRIVATE m)
 endif()
 
+# MSVC does not declare M_PI and friends from <math.h> without this.
+if(MSVC)
+    target_compile_definitions(lorentz_tracer PRIVATE _USE_MATH_DEFINES)
+endif()
+
 # ---- libav integration ----
 if(LIBAV_FOUND)
     target_compile_definitions(lorentz_tracer PRIVATE HAS_LIBAV)
