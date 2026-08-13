@@ -517,6 +517,14 @@ static void tab_interface(AppState *app, Clay_Color hc, Clay_Color bc, Clay_Colo
     H("THE UI PANEL  (U to toggle)");
     P("The side panel has four collapsible sections. Click a section "
       "header to expand or collapse it.");
+    GAP(4);
+    P("Hold Shift while dragging any slider to snap to round values "
+      "instead of tracking the pointer continuously. The step comes from "
+      "the slider's range: pitch angle snaps to 5 deg, so 0, 45 and 90 "
+      "are easy to hit exactly, and an azimuth snaps to 10 deg. "
+      "Logarithmic sliders (k1, k2) snap to 1, 2, 5 and their powers of "
+      "ten; sliders holding a power of ten snap to whole exponents. "
+      "Shift does not pan the view while a slider is being dragged.");
     GAP(6); RULE(); GAP(4);
 
     H("MODEL / PARTICLE");

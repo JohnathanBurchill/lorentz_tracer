@@ -211,12 +211,51 @@ void ui_sync_from_app(const struct AppState *app) { (void)app; }
 
 /* ======== Widget helpers ======== */
 
+static int shift_held(void)
+{
+    return IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
+}
+
+/* Snap step for a Shift-drag: the 1/2/5 x 10^n value nearest a thirty-sixth
+ * of the slider range. A 0-180 deg range gives 5 (so pitch lands on 0, 45,
+ * 90, 180), 0-360 gives 10, and 0-2 gives 0.05. */
+static float nice_step(float range)
+{
+    if (!(range > 0.0f)) return 0.0f;
+    double raw = (double)range / 36.0;
+    double dec = pow(10.0, floor(log10(raw)));
+    double m = raw / dec;
+    double nm = (m < 1.4142) ? 1.0 : (m < 3.1623) ? 2.0 : (m < 7.0711) ? 5.0 : 10.0;
+    return (float)(nm * dec);
+}
+
+/* Nearest 1/2/5 x 10^n to v: the round values of a logarithmic axis. */
+static double nice_125(double v)
+{
+    if (!(v > 0.0)) return v;
+    double dec = pow(10.0, floor(log10(v)));
+    double m = v / dec;
+    double nm = (m < 1.4142) ? 1.0 : (m < 3.1623) ? 2.0 : (m < 7.0711) ? 5.0 : 10.0;
+    return nm * dec;
+}
+
+/* One-shot Shift-snap override for the next do_slider call, cleared on use:
+ * > 0 snaps to that step, < 0 disables snapping entirely. */
+static float g_slider_snap;
+
+/* Snap the next slider to an explicit step rather than one derived from its
+ * range. For sliders holding an exponent, where the round value is 1 whatever
+ * the range. */
+static void slider_snap_step(float step) { g_slider_snap = step; }
+
 /* Slider with embedded label (left) and value (right), Blender-style.
  * Returns 1 if value changed. label and val_text may be NULL. */
 static int do_slider(Clay_ElementId tid, const char *label, Clay_String val_text,
                      float *val, float vmin, float vmax,
                      Clay_Color track_c, Clay_Color fill_c, Clay_Color text_c)
 {
+    float snap = g_slider_snap;
+    g_slider_snap = 0.0f;
     float pct = (vmax > vmin) ? (*val - vmin) / (vmax - vmin) : 0;
     if (pct < 0) pct = 0; if (pct > 1) pct = 1;
     Clay_Color slider_text_c = {240, 240, 240, 255};
@@ -265,10 +304,49 @@ static int do_slider(Clay_ElementId tid, const char *label, Clay_String val_text
             float t = (GetMousePosition().x - d.boundingBox.x) / d.boundingBox.width;
             if (t < 0) t = 0; if (t > 1) t = 1;
             float nv = vmin + t * (vmax - vmin);
+            /* Shift: snap to round values instead of tracking the pointer
+             * continuously, so exact settings are easy to hit. */
+            if (shift_held() && snap >= 0.0f) {
+                float step = (snap > 0.0f) ? snap : nice_step(vmax - vmin);
+                if (step > 0.0f) {
+                    nv = roundf(nv / step) * step;
+                    if (nv < vmin) nv = vmin;
+                    if (nv > vmax) nv = vmax;
+                }
+            }
             if (nv != *val) { *val = nv; changed = 1; }
         }
     }
     return changed;
+}
+
+/* Logarithmic slider: the handle position is linear in log(value) while the
+ * stored value stays the real quantity. Shift snaps to the 1/2/5 x 10^n
+ * sequence, the round values of a log axis. */
+static int do_slider_log(Clay_ElementId tid, const char *label, Clay_String val_text,
+                         double *val, double vmin, double vmax,
+                         Clay_Color track_c, Clay_Color fill_c, Clay_Color text_c)
+{
+    float lv = (float)log(*val > 0.0 ? *val : vmin);
+    g_slider_snap = -1.0f;   /* the position is a logarithm; snap the value below */
+    int changed = do_slider(tid, label, val_text, &lv,
+                            (float)log(vmin), (float)log(vmax),
+                            track_c, fill_c, text_c);
+    if (!changed) return 0;
+
+    double v = exp((double)lv);
+    if (shift_held()) v = nice_125(v);
+    if (v < vmin) v = vmin;
+    if (v > vmax) v = vmax;
+    *val = v;
+    return 1;
+}
+
+/* True while a slider has pointer capture, so scene interactions that share
+ * the Shift modifier stay out of the way. */
+int ui_slider_active(void)
+{
+    return g_active_slider != 0;
 }
 
 /* Toggle: colored rectangle + label. Returns 1 if clicked. */
@@ -472,15 +550,13 @@ static void section_model(AppState *app, Clay_Color text_c, Clay_Color dim_c,
                 continue;
             }
             if (fm->param_log[i]) {
-                /* Slider position is linear in log(value): write back only on
-                 * an actual drag, so the exp/log round trip cannot jitter the
-                 * parameter and force a field-line rebuild every frame. */
-                double cur = fm->params[i] > 0.0 ? fm->params[i] : fm->param_min[i];
-                float lv = (float)log(cur);
-                if (do_slider(CLAY_IDI("PSlider", i), fm->param_names[i], Sf("%.3g", fm->params[i]),
-                              &lv, (float)log(fm->param_min[i]), (float)log(fm->param_max[i]),
-                              track_c, fill_c, text_c))
-                    fm->params[i] = exp((double)lv);
+                /* do_slider_log writes back only on an actual drag, so the
+                 * exp/log round trip cannot jitter the parameter and force a
+                 * field-line rebuild every frame. */
+                do_slider_log(CLAY_IDI("PSlider", i), fm->param_names[i],
+                              Sf("%.3g", fm->params[i]), &fm->params[i],
+                              fm->param_min[i], fm->param_max[i],
+                              track_c, fill_c, text_c);
                 continue;
             }
             float val = (float)fm->params[i];
@@ -862,15 +938,21 @@ static void section_display(AppState *app, Clay_Color text_c, Clay_Color dim_c,
             app->vec_scaled = !app->vec_scaled;
     }
     if (app->vec_scaled) {
-        if (app->show_velocity_vec)
+        if (app->show_velocity_vec) {
+            slider_snap_step(1.0f);
             do_slider(CLAY_ID("VScaleSlider"), TR(STR_V_SCALE), Sf("10^%.0f", app->vec_scale_v),
                       &app->vec_scale_v, -10, 2, track_c, fill_c, text_c);
-        if (app->show_B_vec)
+        }
+        if (app->show_B_vec) {
+            slider_snap_step(1.0f);
             do_slider(CLAY_ID("BScaleSlider"), TR(STR_B_SCALE), Sf("10^%.0f", app->vec_scale_B),
                       &app->vec_scale_B, -4, 4, track_c, fill_c, text_c);
-        if (app->show_F_vec)
+        }
+        if (app->show_F_vec) {
+            slider_snap_step(1.0f);
             do_slider(CLAY_ID("FScaleSlider"), TR(STR_F_SCALE), Sf("10^%.0f", app->vec_scale_F),
                       &app->vec_scale_F, -4, 20, track_c, fill_c, text_c);
+        }
     }
 
     CLAY_AUTO_ID({ .layout = { .childGap = 4, .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) } } }) {
@@ -927,6 +1009,7 @@ static void section_display(AppState *app, Clay_Color text_c, Clay_Color dim_c,
             app->radiation_loss = !app->radiation_loss;
     }
     if (app->radiation_loss) {
+        slider_snap_step(1.0f);
         do_slider(CLAY_ID("RadSlider"), TR(STR_RAD_X), Sf("x10^%.0f", app->radiation_mult),
                   &app->radiation_mult, 0, 12, track_c, fill_c, text_c);
     }

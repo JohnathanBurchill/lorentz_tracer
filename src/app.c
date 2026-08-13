@@ -1591,8 +1591,10 @@ void app_update(AppState *app)
         app->camera.position = p;
         app->camera.target = t;
     }
-    /* Right-shift + left-drag: pan camera in the view plane */
-    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && IsKeyDown(KEY_RIGHT_SHIFT)) {
+    /* Right-shift + left-drag: pan camera in the view plane.
+     * Not while a slider is captured: there Shift snaps the value instead. */
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && IsKeyDown(KEY_RIGHT_SHIFT)
+        && !ui_slider_active()) {
         app->cam_trans.active = 0;
         Vector2 delta = GetMouseDelta();
         Vector3 fwd = {
@@ -1734,7 +1736,8 @@ placement:
         if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
             mouse_dragging = 0;
 
-        if (any_shift && in_scene && !mouse_dragging && !IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+        if (any_shift && in_scene && !mouse_dragging && !ui_slider_active()
+            && !IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
             Ray ray = build_pick_ray(app, mouse, scene_x, scene_y, scene_w, scene_h);
             FieldModel *fm = &app->models[app->current_model];
 
