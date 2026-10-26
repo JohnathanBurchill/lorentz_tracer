@@ -10,21 +10,31 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
-# ---- raylib via FetchContent ----
-include(FetchContent)
-
-FetchContent_Declare(
-    raylib
-    GIT_REPOSITORY https://github.com/raysan5/raylib.git
-    GIT_TAG        5.5
-    GIT_SHALLOW    TRUE
-)
-set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
-if(EMSCRIPTEN)
-    set(PLATFORM Web CACHE STRING "" FORCE)
+# ---- raylib 6: system install if present, else FetchContent ----
+if(NOT EMSCRIPTEN AND NOT CMAKE_CROSSCOMPILING)
+    find_package(raylib 6.0 CONFIG QUIET)
 endif()
-FetchContent_MakeAvailable(raylib)
+
+if(raylib_FOUND)
+    message(STATUS "Using system raylib ${raylib_VERSION}: ${raylib_DIR}")
+else()
+    # Release tarball (~50 MB) rather than a git clone, which pulls ~150 MB
+    # and prints nothing while it does.
+    message(STATUS "Downloading raylib 6.2 (~50 MB)...")
+    include(FetchContent)
+    FetchContent_Declare(
+        raylib
+        URL      https://github.com/raysan5/raylib/archive/refs/tags/6.2.tar.gz
+        URL_HASH SHA256=df7a13129b1bec9e73a6962efff170beba310ee6eab8f94cd000b7316b4db5ee
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    )
+    set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
+    if(EMSCRIPTEN)
+        set(PLATFORM Web CACHE STRING "" FORCE)
+    endif()
+    FetchContent_MakeAvailable(raylib)
+endif()
 
 # ---- raygui (vendored single header) ----
 # raygui.h should be in third_party/

@@ -676,10 +676,10 @@ static void tab_about(AppState *app, Clay_Color hc, Clay_Color bc, Clay_Color mc
     GAP(8); RULE(); GAP(4);
 
     H("TECHNICAL FOUNDATION");
-    P("Written in C99 with raylib 5.5 for graphics and clay.h for UI "
+    P("Written in C99 with raylib 6 for graphics and clay.h for UI "
       "layout. Video encoding via libav (libavcodec, libavformat, "
       "libavutil, libswscale). Builds on macOS, Linux, and Windows "
-      "via CMake with FetchContent for raylib.");
+      "via CMake, using an installed raylib or fetching it.");
     GAP(8); RULE(); GAP(4);
 
     H("LICENSE");

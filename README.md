@@ -18,7 +18,7 @@ Interactive charged-particle orbit simulation. Solves the full Lorentz force equ
 
 ## Build
 
-Requires CMake 3.20+ and a C99 compiler. raylib 5.5 is fetched automatically.
+Requires CMake 3.20+ and a C99 compiler. Uses an installed raylib 6.0+ if CMake can find one; otherwise raylib 6.2 is downloaded automatically.
 
 ```sh
 cmake -B build -DCMAKE_BUILD_TYPE=Release
