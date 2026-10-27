@@ -80,14 +80,11 @@ static void parse_title_from_file(const char *dir, const char *fname, char *titl
         if (line[0] == '#') continue;
         if (len == 0) continue;
 
-        char key[64];
-        if (sscanf(line, "%63s", key) == 1 && strcmp(key, "title") == 0) {
-            /* Read next line as title */
-            if (fgets(line, sizeof(line), f)) {
-                len = (int)strlen(line);
-                while (len > 0 && (line[len-1] == '\n' || line[len-1] == '\r')) line[--len] = '\0';
-                snprintf(title, title_len, "%s", line);
-            }
+        char key[64] = "", rest[448];
+        rest[0] = '\0';
+        if (sscanf(line, "%63s %447[^\n]", key, rest) >= 1 && strcmp(key, "title") == 0) {
+            /* The title is the rest of the line */
+            snprintf(title, title_len, "%s", rest);
             break;
         }
         /* If we hit model/species/param before title, no title in file */
@@ -192,12 +189,8 @@ int explorer_load(AppState *app, const char *path)
             if (sscanf(line, "%127s %511[^\n]", key, rest) < 1) continue;
 
             if (strcmp(key, "title") == 0) {
-                /* Title is on the next line */
-                if (fgets(line, sizeof(line), f)) {
-                    len = (int)strlen(line);
-                    while (len > 0 && (line[len-1] == '\n' || line[len-1] == '\r')) line[--len] = '\0';
-                    snprintf(ex->title, sizeof(ex->title), "%s", line);
-                }
+                /* The title is the rest of the line */
+                snprintf(ex->title, sizeof(ex->title), "%s", rest);
             } else if (strcmp(key, "description") == 0) {
                 in_description = 1;
             } else if (strcmp(key, "model") == 0) {
