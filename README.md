@@ -48,6 +48,14 @@ emcmake cmake -B build-wasm -DCMAKE_BUILD_TYPE=Release
 cmake --build build-wasm
 ```
 
+## Command line
+
+```sh
+lorentz_tracer --scenario 04_magnetic_mirror
+```
+
+`--scenario NAME` starts a scenario, as Explore > Load Scenario does. `NAME` is a scenario file, or one in the app's scenarios folder, with or without `.txt`; if neither can be read, the program says so and exits. `--no-splash` skips the opening animation.
+
 ## On a beamer slide
 
 The beameup presenter console can run Lorentz Tracer live in a box on a slide, where it takes the mouse and keys while the pointer is over the box. Build it with the option:

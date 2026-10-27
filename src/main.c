@@ -104,11 +104,31 @@ static void main_loop_step(void)
         exit(0);
 }
 
+/* --scenario NAME: start a scenario as Explore > Load Scenario does. NAME is
+ * a scenario file, or one in the app's scenarios folder, .txt optional. */
+static int start_scenario(AppState *app, const char *name)
+{
+    char path[1280];
+    snprintf(path, sizeof(path), "%s", name);
+    if (explorer_load(app, path) != 0) {
+        snprintf(path, sizeof(path), "%s/scenarios/%s", app->res_dir, name);
+        if (explorer_load(app, path) != 0) {
+            snprintf(path, sizeof(path), "%s/scenarios/%s.txt", app->res_dir, name);
+            if (explorer_load(app, path) != 0) return -1;
+        }
+    }
+    explorer_start(app);
+    return 0;
+}
+
 int main(int argc, char **argv)
 {
     int skip_splash = 0;
-    for (int i = 1; i < argc; i++)
+    const char *scenario = NULL;
+    for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--no-splash") == 0) skip_splash = 1;
+        else if (strcmp(argv[i], "--scenario") == 0 && i + 1 < argc) scenario = argv[++i];
+    }
     {
         const char *e = getenv("LT_AUTO_EXPORT_FRAME");
         if (e && *e) g_auto_export_frame = atoi(e);
@@ -650,6 +670,11 @@ int main(int argc, char **argv)
     }
 
 main_loop:
+    if (scenario && start_scenario(&app, scenario) != 0) {
+        fprintf(stderr, "lorentz_tracer: cannot read scenario %s\n", scenario);
+        CloseWindow();
+        return 1;
+    }
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(main_loop_step, 0, 1);
 #else
