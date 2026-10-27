@@ -85,7 +85,8 @@ static void tab_keys(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color dc)
        "RShift + left-drag    Pan camera in view plane\n"
        "Scroll wheel          Zoom in / out\n"
        "LShift + hover        Preview particle placement point\n"
-       "LShift + click        Place particle at preview point");
+       "LShift + click        Place particle at preview point\n"
+       "Option + hover/click  Same, on the magnetic equator (Alt on Linux/Windows)");
     GAP(8);
     H("TOUCH");
     ML("1-finger drag         Orbit camera\n"
@@ -644,7 +645,13 @@ static void tab_interface(AppState *app, Clay_Color hc, Clay_Color bc, Clay_Colo
       "where the particle will be placed. A preview field line is drawn. "
       "Click to place. The algorithm picks the point along the line of "
       "sight with the strongest |B| (or closest to the camera target in "
-      "uniform fields).");
+      "uniform fields). Hold Option instead (Alt on Linux and Windows) to "
+      "place the particle where the line of sight crosses the magnetic "
+      "equator, the surface on which |B| is a minimum along each field "
+      "line: the centre of the tail current sheet in the Earth model, "
+      "at any dipole tilt. There the strongest |B| would always lie next "
+      "to the Earth. Fields with no such minimum, such as a uniform one, "
+      "give no Option preview.");
     GAP(6); RULE(); GAP(4);
 
     H("STATE PERSISTENCE");

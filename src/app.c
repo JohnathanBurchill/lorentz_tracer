@@ -1051,6 +1051,58 @@ static Ray build_pick_ray(const AppState *a, Vector2 ms,
     return (Ray){ .position = a->camera.position, .direction = rd };
 }
 
+/* Rate of change of |B| along the field direction at p, by central
+ * difference over +-h; zero where |B| is extremal along the field line. */
+static double dBds(const FieldModel *fm, Vec3 p, double h)
+{
+    Vec3 B = fm->eval_B(fm->params, p);
+    double Bm = vec3_len(B);
+    if (Bm < 1e-30) return 0.0;
+    Vec3 hb = vec3_scale(h / Bm, B);
+    return (field_Bmag(fm, vec3_add(p, hb)) - field_Bmag(fm, vec3_sub(p, hb))) / (2.0 * h);
+}
+
+/* First point where the ray crosses the magnetic equator, the surface on
+ * which |B| is a minimum along each field line. Marches t in (0, t_max]
+ * for a sign change of dBds, bisects it, and keeps it only if |B| rises
+ * along the field on both sides: that rejects maxima, and the jump at a
+ * boundary into uniform field, where dBds is zero. The march stops at the
+ * model's central body, which hides what lies behind it. */
+static int ray_magnetic_equator(const FieldModel *fm, Ray ray, double t_max,
+                                Vec3 *out)
+{
+    const int n = 200;
+    double h = 1e-4 * t_max, dside = 2.5e-3 * t_max;
+    Vec3 o = {ray.position.x, ray.position.y, ray.position.z};
+    Vec3 d = {ray.direction.x, ray.direction.y, ray.direction.z};
+    double t0 = 0.0, f0 = dBds(fm, o, h);
+    for (int i = 1; i <= n; i++) {
+        double t1 = t_max * i / n;
+        Vec3 p1 = vec3_add(o, vec3_scale(t1, d));
+        if (field_inside_body(fm, p1)) return 0;
+        double f1 = dBds(fm, p1, h);
+        if ((f0 < 0.0 && f1 > 0.0) || (f0 > 0.0 && f1 < 0.0)) {
+            double ta = t0, tb = t1, fa = f0;
+            for (int k = 0; k < 40; k++) {
+                double tm = 0.5 * (ta + tb);
+                double fmid = dBds(fm, vec3_add(o, vec3_scale(tm, d)), h);
+                if ((fmid < 0.0) == (fa < 0.0)) { ta = tm; fa = fmid; }
+                else tb = tm;
+            }
+            Vec3 p = vec3_add(o, vec3_scale(0.5 * (ta + tb), d));
+            Vec3 B = fm->eval_B(fm->params, p);
+            Vec3 sb = vec3_scale(dside / vec3_len(B), B);
+            if (dBds(fm, vec3_add(p, sb), h) > 0.0 && dBds(fm, vec3_sub(p, sb), h) < 0.0) {
+                *out = p;
+                return 1;
+            }
+        }
+        t0 = t1;
+        f0 = f1;
+    }
+    return 0;
+}
+
 static void recompute_dt(AppState *app);
 #ifndef __EMSCRIPTEN__
 static void state_file_path(char *buf, int buflen);
@@ -1741,10 +1793,13 @@ void app_update(AppState *app)
 
 placement:
     /* Left-shift+click: place particle at max |B| along line of sight.
-     * While left-shift is held (without clicking), show a preview field line
-     * at the candidate placement point. */
+     * Option+click (Alt off macOS; Shift wins if both are held): place it
+     * where the line of sight crosses the magnetic equator, the minimum of
+     * |B| along the field line. While the key is held (without clicking),
+     * show a preview field line at the candidate placement point. */
     {
         int any_shift = IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
+        int any_alt = IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT);
         Vector2 mouse = GetMousePosition();
         float scene_x, scene_y, scene_w, scene_h;
         app_scene_rect(app, &scene_x, &scene_y, &scene_w, &scene_h);
@@ -1762,63 +1817,73 @@ placement:
         if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
             mouse_dragging = 0;
 
-        if (any_shift && in_scene && !mouse_dragging && !ui_slider_active()
+        if ((any_shift || any_alt) && in_scene && !mouse_dragging && !ui_slider_active()
             && !IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
             Ray ray = build_pick_ray(app, mouse, scene_x, scene_y, scene_w, scene_h);
             FieldModel *fm = &app->models[app->current_model];
-
-            /* Sample |B| along ray. Two-pass: first find max |B|, then
-             * among points with |B| >= 99% of max, pick closest to camera target.
-             * This handles both peaked fields (stellarator) and uniform fields
-             * (circular B) where we want the point nearest the target. */
-            float cam_d = sqrtf(
-                (app->camera.position.x - app->camera.target.x) *
-                (app->camera.position.x - app->camera.target.x) +
-                (app->camera.position.y - app->camera.target.y) *
-                (app->camera.position.y - app->camera.target.y) +
-                (app->camera.position.z - app->camera.target.z) *
-                (app->camera.position.z - app->camera.target.z));
-            float ray_max = cam_d * 4.0f;
-            int n_samples = 100;
-
-            /* Pass 1: find max |B| along ray */
-            double peak_Bmag = 0.0;
-            for (int i = 0; i < n_samples; i++) {
-                float t = ray_max * (float)i / (float)(n_samples - 1);
-                Vec3 p = {
-                    ray.position.x + t * ray.direction.x,
-                    ray.position.y + t * ray.direction.y,
-                    ray.position.z + t * ray.direction.z,
-                };
-                double Bm = field_Bmag(fm, p);
-                if (Bm > peak_Bmag) peak_Bmag = Bm;
-            }
-
-            /* Pass 2: among points with |B| >= 99% of peak, pick closest
-             * to camera target */
             double best_Bmag = 0.0;
             Vec3 best_pos = {0, 0, 0};
-            double best_dist2 = 1e30;
-            double threshold = peak_Bmag * 0.99;
-            Vec3 tgt = {app->camera.target.x, app->camera.target.y,
-                        app->camera.target.z};
-            for (int i = 0; i < n_samples; i++) {
-                float t = ray_max * (float)i / (float)(n_samples - 1);
-                Vec3 p = {
-                    ray.position.x + t * ray.direction.x,
-                    ray.position.y + t * ray.direction.y,
-                    ray.position.z + t * ray.direction.z,
-                };
-                double Bm = field_Bmag(fm, p);
-                if (Bm >= threshold) {
-                    double d2 = vec3_dot(vec3_sub(p, tgt), vec3_sub(p, tgt));
-                    if (d2 < best_dist2) {
-                        best_dist2 = d2;
-                        best_Bmag = Bm;
-                        best_pos = p;
+
+            if (!any_shift) {
+                /* Option/Alt: where the line of sight crosses the magnetic
+                 * equator, searched as far as the Shift pick looks */
+                float cam_d = Vector3Distance(app->camera.position, app->camera.target);
+                if (ray_magnetic_equator(fm, ray, 4.0 * cam_d, &best_pos))
+                    best_Bmag = field_Bmag(fm, best_pos);
+            } else {
+                /* Sample |B| along ray. Two-pass: first find max |B|, then
+                 * among points with |B| >= 99% of max, pick closest to camera target.
+                 * This handles both peaked fields (stellarator) and uniform fields
+                 * (circular B) where we want the point nearest the target. */
+                float cam_d = sqrtf(
+                    (app->camera.position.x - app->camera.target.x) *
+                    (app->camera.position.x - app->camera.target.x) +
+                    (app->camera.position.y - app->camera.target.y) *
+                    (app->camera.position.y - app->camera.target.y) +
+                    (app->camera.position.z - app->camera.target.z) *
+                    (app->camera.position.z - app->camera.target.z));
+                float ray_max = cam_d * 4.0f;
+                int n_samples = 100;
+
+                /* Pass 1: find max |B| along ray */
+                double peak_Bmag = 0.0;
+                for (int i = 0; i < n_samples; i++) {
+                    float t = ray_max * (float)i / (float)(n_samples - 1);
+                    Vec3 p = {
+                        ray.position.x + t * ray.direction.x,
+                        ray.position.y + t * ray.direction.y,
+                        ray.position.z + t * ray.direction.z,
+                    };
+                    double Bm = field_Bmag(fm, p);
+                    if (Bm > peak_Bmag) peak_Bmag = Bm;
+                }
+
+                /* Pass 2: among points with |B| >= 99% of peak, pick closest
+                 * to camera target */
+                double best_dist2 = 1e30;
+                double threshold = peak_Bmag * 0.99;
+                Vec3 tgt = {app->camera.target.x, app->camera.target.y,
+                            app->camera.target.z};
+                for (int i = 0; i < n_samples; i++) {
+                    float t = ray_max * (float)i / (float)(n_samples - 1);
+                    Vec3 p = {
+                        ray.position.x + t * ray.direction.x,
+                        ray.position.y + t * ray.direction.y,
+                        ray.position.z + t * ray.direction.z,
+                    };
+                    double Bm = field_Bmag(fm, p);
+                    if (Bm >= threshold) {
+                        double d2 = vec3_dot(vec3_sub(p, tgt), vec3_sub(p, tgt));
+                        if (d2 < best_dist2) {
+                            best_dist2 = d2;
+                            best_Bmag = Bm;
+                            best_pos = p;
+                        }
                     }
                 }
             }
+            if (field_inside_body(fm, best_pos))
+                best_Bmag = 0.0;   /* it would be lost at once */
 
             if (best_Bmag > 1e-15 &&
                 isfinite(best_pos.x) && isfinite(best_pos.y) && isfinite(best_pos.z)) {
