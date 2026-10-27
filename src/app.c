@@ -1103,6 +1103,42 @@ static int ray_magnetic_equator(const FieldModel *fm, Ray ray, double t_max,
     return 0;
 }
 
+/* Toggle a borderless window that fills the current monitor. On macOS,
+ * raylib's ToggleBorderlessWindowed binds the window to the monitor
+ * (exclusive fullscreen), and GLFW then switches the display to the
+ * nearest listed mode, which on a scaled Retina display is a different
+ * resolution. An undecorated window sized to the monitor, with the menu bar
+ * and Dock hidden, looks the same and leaves the display mode alone. */
+void app_toggle_borderless(void)
+{
+#ifdef __APPLE__
+    extern void macos_fix_window_switching(void *nswindow);
+    extern void macos_set_fullscreen_presentation(int on);
+    static int on = 0;
+    static Vector2 prev_pos;
+    static int prev_w, prev_h;
+    if (!on) {
+        prev_pos = GetWindowPosition();
+        prev_w = GetScreenWidth();
+        prev_h = GetScreenHeight();
+        int m = GetCurrentMonitor();
+        Vector2 mp = GetMonitorPosition(m);
+        SetWindowState(FLAG_WINDOW_UNDECORATED);
+        SetWindowPosition((int)mp.x, (int)mp.y);
+        SetWindowSize(GetMonitorWidth(m), GetMonitorHeight(m));
+    } else {
+        ClearWindowState(FLAG_WINDOW_UNDECORATED);
+        SetWindowSize(prev_w, prev_h);
+        SetWindowPosition((int)prev_pos.x, (int)prev_pos.y);
+    }
+    on = !on;
+    macos_set_fullscreen_presentation(on);
+    macos_fix_window_switching(GetWindowHandle());
+#else
+    ToggleBorderlessWindowed();
+#endif
+}
+
 static void recompute_dt(AppState *app);
 #ifndef __EMSCRIPTEN__
 static void state_file_path(char *buf, int buflen);
@@ -1267,13 +1303,7 @@ void app_update(AppState *app)
 #else
     if (IsKeyPressed(KEY_F) && IsKeyDown(KEY_LEFT_CONTROL))
 #endif
-    {
-        ToggleBorderlessWindowed();
-#ifdef __APPLE__
-        extern void macos_fix_window_switching(void *nswindow);
-        macos_fix_window_switching(GetWindowHandle());
-#endif
-    }
+        app_toggle_borderless();
 
     /* Help overlay captures all input when visible */
     if (app->show_help) {
@@ -2479,6 +2509,9 @@ void app_render_inner(AppState *app)
          * gap is fraction of half_w; offset in screen pixels. */
         int gap_px = (int)(app->stereo_gap * half_w * 0.5f);
 
+        /* BeginDrawing's modelview carries the HiDPI screen scale; the 2D
+         * overlays drawn after the scene need it back */
+        Matrix screen_mv = rlGetMatrixModelview();
         for (int eye = 0; eye < 2; eye++) {
             float sign = (eye == 0) ? -1.0f : 1.0f;
             Camera3D eye_cam = app->camera;
@@ -2528,7 +2561,7 @@ void app_render_inner(AppState *app)
             rlMatrixMode(RL_PROJECTION);
             rlPopMatrix();
             rlMatrixMode(RL_MODELVIEW);
-            rlLoadIdentity();
+            rlSetMatrixModelview(screen_mv);
 
             EndScissorMode();
         }
@@ -2547,6 +2580,9 @@ void app_render_inner(AppState *app)
         rlViewport(vp_x, vp_y, vp_w, vp_h);
 
         float aspect = scene_w / scene_h;
+        /* BeginDrawing's modelview carries the HiDPI screen scale; the 2D
+         * overlays drawn after the scene need it back */
+        Matrix screen_mv = rlGetMatrixModelview();
         rlDrawRenderBatchActive();
         rlMatrixMode(RL_PROJECTION);
         rlPushMatrix();
@@ -2580,7 +2616,7 @@ void app_render_inner(AppState *app)
         rlMatrixMode(RL_PROJECTION);
         rlPopMatrix();
         rlMatrixMode(RL_MODELVIEW);
-        rlLoadIdentity();
+        rlSetMatrixModelview(screen_mv);
 
         rlViewport(0, 0, fb_w, fb_h);
         EndScissorMode();

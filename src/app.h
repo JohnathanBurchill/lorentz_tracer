@@ -319,6 +319,7 @@ void app_switch_colors(AppState *app, int old_dark_mode);
 void app_save_state(const AppState *app);
 void app_load_state(AppState *app);
 void app_reload_fonts(AppState *app);  /* reload fonts for current language */
+void app_toggle_borderless(void);      /* screen-filling borderless window */
 
 /* Scene geometry helpers (account for ui_edge) */
 void app_scene_rect(const AppState *app, float *x, float *y, float *w, float *h);

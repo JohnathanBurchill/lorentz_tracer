@@ -131,11 +131,7 @@ int main(int argc, char **argv)
     SetExitKey(0);  /* Esc closes help overlay, not the window */
     SetTargetFPS(60);
 #ifndef __EMSCRIPTEN__
-    ToggleBorderlessWindowed();  /* start fullscreen */
-#endif
-#ifdef __APPLE__
-    extern void macos_fix_window_switching(void *nswindow);
-    macos_fix_window_switching(GetWindowHandle());
+    app_toggle_borderless();  /* start fullscreen */
 #endif
 
     app.dpi_scale = (float)GetRenderWidth() / (float)GetScreenWidth();
