@@ -48,6 +48,10 @@ typedef struct {
                                /* rotation from the body's frame to the
                                   scene's: rows are the scene axes in body
                                   coordinates (NULL = the same frame) */
+    int (*inside)(const double *params, Vec3 pos);
+                               /* 1 within the model's magnetosphere, where a
+                                  field line can count as closed; a line that
+                                  leaves it is open (NULL = everywhere) */
 } FieldModel;
 
 /* Initialize all field models */
@@ -99,6 +103,14 @@ int field_L_shell(const FieldModel *fm, Vec3 pos, double *L);
  * The trace steps step times the distance from the origin; field_L_shell
  * uses 0.01. */
 int field_min_B_point(const FieldModel *fm, Vec3 pos, double step, Vec3 *pmin);
+
+/* The dips in |B| along the closed field line from foot, a point just above
+ * the body: the deepest, and the deepest other one walled off from it by a
+ * rise of more than 0.1% above both, each placed by a parabola through the
+ * samples about it. Returns how many (0 for an open line) and puts them in
+ * mins in their order along the line from foot. Steps are step times the
+ * distance from the origin. */
+int field_line_minima(const FieldModel *fm, Vec3 foot, double step, Vec3 mins[2]);
 
 /* Per-model init functions */
 void field_init_circular(FieldModel *fm);

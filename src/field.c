@@ -80,6 +80,7 @@ int field_min_B_point(const FieldModel *fm, Vec3 pos, double step, Vec3 *pmin_ou
             if (Bmag <= 0.0) break;
             if (Bmag < Bmin) { Bmin = Bmag; pmin = p; }
             if (field_inside_body(fm, p)) { closed = 1; break; }
+            if (fm->inside && !fm->inside(fm->params, p)) break;   /* left it: open */
             double r = vec3_len(p);
             if (r > 100.0) break;
             double h = dir * step * r;
@@ -94,6 +95,76 @@ int field_min_B_point(const FieldModel *fm, Vec3 pos, double step, Vec3 *pmin_ou
     }
     *pmin_out = pmin;
     return 1;
+}
+
+/* Minimum of |B| near sample i, from the parabola through samples i-1, i,
+ * i+1, spaced about equally along the field line */
+static Vec3 refine_min(const Vec3 *p, const double *b, int i)
+{
+    double den = b[i - 1] - 2.0 * b[i] + b[i + 1];
+    double t = den > 0.0 ? 0.5 * (b[i - 1] - b[i + 1]) / den : 0.0;
+    if (t < -0.5) t = -0.5;
+    if (t > 0.5) t = 0.5;
+    Vec3 d1 = vec3_scale(0.5, vec3_sub(p[i + 1], p[i - 1]));
+    Vec3 d2 = vec3_scale(0.5, vec3_add(vec3_sub(p[i + 1], vec3_scale(2.0, p[i])), p[i - 1]));
+    return vec3_add(p[i], vec3_add(vec3_scale(t, d1), vec3_scale(t * t, d2)));
+}
+
+int field_line_minima(const FieldModel *fm, Vec3 foot, double step, Vec3 mins[2])
+{
+    enum { NMAX = 20000 };
+    static Vec3 p[NMAX];
+    static double b[NMAX];
+    if (fm->body_radius <= 0.0) return 0;
+
+    /* Trace away from the body until the line comes back down */
+    Vec3 x = foot;
+    Vec3 B0 = fm->eval_B(fm->params, x);
+    double dir = vec3_dot(B0, x) > 0.0 ? 1.0 : -1.0;
+    int n = 0, closed = 0;
+    while (n < NMAX) {
+        Vec3 B = fm->eval_B(fm->params, x);
+        double Bmag = vec3_len(B);
+        if (Bmag <= 0.0) break;
+        p[n] = x;
+        b[n++] = Bmag;
+        if (n > 1 && field_inside_body(fm, x)) { closed = 1; break; }
+        if (fm->inside && !fm->inside(fm->params, x)) break;     /* left it: open */
+        double r = vec3_len(x);
+        if (r > 100.0) break;
+        double h = dir * step * r;
+        Vec3 k1 = vec3_scale(1.0 / Bmag, B);
+        Vec3 k2 = unit_B(fm, vec3_add(x, vec3_scale(0.5 * h, k1)));
+        Vec3 k3 = unit_B(fm, vec3_add(x, vec3_scale(0.5 * h, k2)));
+        Vec3 k4 = unit_B(fm, vec3_add(x, vec3_scale(h, k3)));
+        Vec3 k = vec3_add(vec3_add(k1, k4), vec3_scale(2.0, vec3_add(k2, k3)));
+        x = vec3_add(x, vec3_scale(h / 6.0, k));
+    }
+    if (!closed || n < 3) return 0;
+
+    /* The deepest dip, then the deepest other one walled off from it by a
+     * rise of more than 0.1% above both */
+    int g = 1;
+    for (int i = 1; i + 1 < n; i++)
+        if (b[i] < b[g]) g = i;
+    int second = -1;
+    for (int i = 1; i + 1 < n; i++) {
+        if (i == g || !(b[i] < b[i - 1] && b[i] <= b[i + 1])) continue;
+        int lo = i < g ? i : g, hi = i < g ? g : i;
+        double wall = 0.0;
+        for (int j = lo + 1; j < hi; j++)
+            if (b[j] > wall) wall = b[j];
+        if (wall - b[i] > 1e-3 * wall && (second < 0 || b[i] < b[second]))
+            second = i;
+    }
+    if (second < 0) {
+        mins[0] = refine_min(p, b, g);
+        return 1;
+    }
+    int first = second < g ? second : g, last = second < g ? g : second;
+    mins[0] = refine_min(p, b, first);
+    mins[1] = refine_min(p, b, last);
+    return 2;
 }
 
 void field_init_all(FieldModel models[FIELD_NUM_MODELS])

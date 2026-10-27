@@ -504,24 +504,33 @@ static void draw_body(const struct AppState *app, const FieldModel *fm)
 }
 
 /* ---- Magnetic equator surface ----
- * The point of minimum |B| on each closed field line, joined into a mesh.
+ * The points of minimum |B| on the closed field lines, joined into a mesh.
  * Field lines are seeded at their northern footpoints, just above the
- * body, on a grid of dipole latitude and longitude, with latitudes spaced
- * evenly in log dipole L so the stretched tail is sampled finely. Each
- * closed line is met once, neighbouring footpoints give neighbouring
- * lines, and open lines from the polar cap leave a clean outer edge. Each
- * seed costs a full field-line trace, in steps of 4% of the distance, so
- * the grid fills in 6 ms worth of traces each frame, low latitudes first,
- * and starts again when the field changes. Neighbours whose minima lie far
- * apart, where the minimum jumps from one dip in |B| to another as on the
- * dayside, are left unjoined, and the surface stops at 30 radii. */
-#define EQ_NLAT 64
-#define EQ_NPHI 48
-#define EQ_L0 1.5      /* footpoint latitudes acos(sqrt(1/L)), L log-spaced */
-#define EQ_L1 12.0   /* beyond it, lines are open or close past 30 radii */
-static Vec3 eq_pt[EQ_NLAT][EQ_NPHI];
-static unsigned char eq_ok[EQ_NLAT][EQ_NPHI];
-static int eq_done;                      /* seeds traced so far */
+ * body, on a grid of dipole longitude and of latitude rows set by dipole L,
+ * log-spaced from 1.5 to 12 to start with. Each footpoint costs a trace in
+ * steps of 4% of the distance; the grid fills in 6 ms worth each frame and
+ * starts again when the field changes. Rows are then added between any two
+ * whose minima lie more than a fifth of their distance apart, as where the
+ * night-side lines stretch down the tail, until the gaps close or the rows
+ * run out. A line that leaves the model's magnetosphere (fm->inside), as
+ * through T96's boundary layer, counts as open and has no minimum here.
+ *
+ * A line whose |B| has two separate dips (on the dayside, beyond about
+ * L = 8) keeps both, and each dip joins the branch it lies nearer to in the
+ * row inside it (eq_branches), so the surface splits into two sheets there
+ * instead of jumping between them. Minima more than half their distance
+ * apart are not joined, and the surface stops at 30 radii. */
+#define EQ_NPHI    48
+#define EQ_NBASE   48            /* starting rows */
+#define EQ_MAXROWS 160
+#define EQ_L0      1.5
+#define EQ_L1      12.0
+static double eq_L[EQ_MAXROWS];               /* rows' dipole L, ascending */
+static int eq_nrows;
+static int eq_cols[EQ_MAXROWS];               /* footpoints traced in each row */
+static unsigned char eq_n[EQ_MAXROWS][EQ_NPHI];   /* dips kept: 0 none */
+static Vec3 eq_pt[2][EQ_MAXROWS][EQ_NPHI];    /* northern and southern dip */
+static int eq_finished;
 static int eq_model = -1;
 static double eq_params[FIELD_MAX_PARAMS];
 static Vec3 eq_e1, eq_e2, eq_e3;         /* dipole frame: e3 to the north pole */
@@ -546,6 +555,44 @@ static void eq_dipole_frame(const FieldModel *fm)
     eq_e2 = vec3_cross(eq_e3, eq_e1);
 }
 
+static double eq_gap(Vec3 p, Vec3 q)
+{
+    return vec3_len(vec3_sub(p, q)) / (0.5 * (vec3_len(p) + vec3_len(q)));
+}
+
+/* Add a row halfway (in log L) between the two whose minima lie furthest
+ * apart, if more than a fifth of their distance; 0 when none needs it.
+ * Pairs where a second dip appears, or the line opens, are left alone: no
+ * row in between brings those together. */
+static int eq_refine(void)
+{
+    if (eq_nrows >= EQ_MAXROWS) return 0;
+    int best = -1;
+    double worst = 0.2;
+    for (int k = 0; k + 1 < eq_nrows; k++) {
+        if (eq_L[k + 1] / eq_L[k] < 1.003) continue;
+        for (int j = 0; j < EQ_NPHI; j++) {
+            int a = eq_n[k][j];
+            if (!a || a != eq_n[k + 1][j]) continue;
+            for (int s = 0; s < a; s++) {
+                double g = eq_gap(eq_pt[s][k][j], eq_pt[s][k + 1][j]);
+                if (g > worst) { worst = g; best = k; }
+            }
+        }
+    }
+    if (best < 0) return 0;
+    int k = best + 1, m = eq_nrows - k;
+    memmove(&eq_L[k + 1], &eq_L[k], m * sizeof(eq_L[0]));
+    memmove(&eq_cols[k + 1], &eq_cols[k], m * sizeof(eq_cols[0]));
+    memmove(&eq_n[k + 1], &eq_n[k], m * sizeof(eq_n[0]));
+    for (int s = 0; s < 2; s++)
+        memmove(&eq_pt[s][k + 1], &eq_pt[s][k], m * sizeof(eq_pt[s][0]));
+    eq_L[k] = sqrt(eq_L[k - 1] * eq_L[k + 1]);
+    eq_cols[k] = 0;
+    eq_nrows++;
+    return 1;
+}
+
 static void eq_update(const struct AppState *app)
 {
     const FieldModel *fm = &app->models[app->current_model];
@@ -556,52 +603,103 @@ static void eq_update(const struct AppState *app)
         eq_model = app->current_model;
         memcpy(eq_params, fm->params, sizeof(eq_params));
         eq_dipole_frame(fm);
-        eq_done = 0;
+        eq_nrows = EQ_NBASE;
+        for (int k = 0; k < EQ_NBASE; k++) {
+            eq_L[k] = EQ_L0 * pow(EQ_L1 / EQ_L0, (double)k / (EQ_NBASE - 1));
+            eq_cols[k] = 0;
+        }
+        eq_finished = 0;
     }
     double t0 = GetTime();
-    double rf = 1.02 * fm->body_radius;
-    while (eq_done < EQ_NLAT * EQ_NPHI && GetTime() - t0 < 0.006) {
-        int k = eq_done / EQ_NPHI, j = eq_done % EQ_NPHI;
-        double lat = acos(sqrt(1.0 / (EQ_L0 * pow(EQ_L1 / EQ_L0, (double)k / (EQ_NLAT - 1)))));
+    double rf = 1.02 * fm->body_radius, rmax = 30.0 * fm->body_radius;
+    while (!eq_finished && GetTime() - t0 < 0.006) {
+        int k = 0;
+        while (k < eq_nrows && eq_cols[k] == EQ_NPHI) k++;
+        if (k == eq_nrows) {
+            if (!eq_refine()) eq_finished = 1;
+            continue;
+        }
+        int j = eq_cols[k]++;
+        double lat = acos(sqrt(1.0 / eq_L[k]));
         double lon = 2.0 * M_PI * j / EQ_NPHI;
         Vec3 seed = vec3_scale(rf, vec3_add(vec3_scale(sin(lat), eq_e3),
                         vec3_add(vec3_scale(cos(lat) * cos(lon), eq_e1),
                                  vec3_scale(cos(lat) * sin(lon), eq_e2))));
-        Vec3 p;
-        eq_ok[k][j] = field_min_B_point(fm, seed, 0.04, &p) &&
-                      vec3_len(p) < 30.0 * fm->body_radius;
-        eq_pt[k][j] = p;
-        eq_done++;
+        Vec3 m[2];
+        int n = field_line_minima(fm, seed, 0.04, m);
+        /* Drop dips beyond 30 radii */
+        if (n == 2 && vec3_len(m[1]) >= rmax) n = 1;
+        if (n >= 1 && vec3_len(m[0]) >= rmax) { m[0] = m[1]; n--; }
+        eq_n[k][j] = (unsigned char)n;
+        eq_pt[0][k][j] = m[0];
+        eq_pt[1][k][j] = n == 2 ? m[1] : m[0];
     }
 }
+
+/* Which branch each dip belongs to: working outward from the inner rows,
+ * where every line has a single dip on the one equator, a dip joins the
+ * branch it lies nearer to in the row inside it. So a branch carries on
+ * through lines where its partner dip is missing or too shallow to count,
+ * and ends where its own dip does. */
+static Vec3 eq_br[2][EQ_MAXROWS][EQ_NPHI];
+static unsigned char eq_bv[2][EQ_MAXROWS][EQ_NPHI];
+
+static void eq_branches(void)
+{
+    for (int k = 0; k < eq_nrows; k++) {
+        int done = eq_cols[k] == EQ_NPHI;
+        for (int j = 0; j < EQ_NPHI; j++) {
+            eq_bv[0][k][j] = eq_bv[1][k][j] = 0;
+            int n = done ? eq_n[k][j] : 0;
+            if (!n) continue;
+            Vec3 d0 = eq_pt[0][k][j], d1 = eq_pt[1][k][j];
+            int ra = k > 0 && eq_bv[0][k - 1][j], rb = k > 0 && eq_bv[1][k - 1][j];
+            Vec3 a = ra ? eq_br[0][k - 1][j] : d0, b = rb ? eq_br[1][k - 1][j] : d1;
+            if (n == 2) {
+                int swap = ra ? vec3_len(vec3_sub(d1, a)) < vec3_len(vec3_sub(d0, a))
+                         : rb ? vec3_len(vec3_sub(d0, b)) < vec3_len(vec3_sub(d1, b)) : 0;
+                eq_br[0][k][j] = swap ? d1 : d0;
+                eq_br[1][k][j] = swap ? d0 : d1;
+                eq_bv[0][k][j] = eq_bv[1][k][j] = 1;
+            } else {
+                int s = rb && (!ra || vec3_len(vec3_sub(d0, b)) < vec3_len(vec3_sub(d0, a)));
+                eq_br[s][k][j] = d0;
+                eq_bv[s][k][j] = 1;
+            }
+        }
+    }
+}
+
 static void eq_draw(const struct AppState *app)
 {
     Color c = app->dark_mode ? (Color){110, 200, 255, 50} : (Color){30, 110, 210, 55};
+    static const int tri[6] = {0, 1, 2, 0, 2, 3};
+    eq_branches();
     rlDrawRenderBatchActive();
     rlDisableDepthMask();          /* translucent: hide nothing behind it */
     rlDisableBackfaceCulling();    /* seen from either side */
-    rlCheckRenderBatchLimit(EQ_NLAT * EQ_NPHI * 6);
-    rlBegin(RL_TRIANGLES);
-    rlColor4ub(c.r, c.g, c.b, c.a);
-    for (int k = 0; k + 1 < EQ_NLAT; k++) {
-        if ((k + 2) * EQ_NPHI > eq_done) break;   /* outer ring not traced yet */
-        for (int j = 0; j < EQ_NPHI; j++) {
-            int j1 = (j + 1) % EQ_NPHI;
-            if (!eq_ok[k][j] || !eq_ok[k + 1][j] || !eq_ok[k + 1][j1] || !eq_ok[k][j1])
-                continue;
-            Vec3 q[4] = { eq_pt[k][j], eq_pt[k + 1][j], eq_pt[k + 1][j1], eq_pt[k][j1] };
-            double rmean = 0.25 * (vec3_len(q[0]) + vec3_len(q[1]) +
-                                   vec3_len(q[2]) + vec3_len(q[3]));
-            int joined = 1;
-            for (int e = 0; e < 4 && joined; e++)
-                joined = vec3_len(vec3_sub(q[e], q[(e + 1) % 4])) < 0.5 * rmean;
-            if (!joined) continue;
-            static const int tri[6] = {0, 1, 2, 0, 2, 3};
-            for (int v = 0; v < 6; v++)
-                rlVertex3f((float)q[tri[v]].x, (float)q[tri[v]].y, (float)q[tri[v]].z);
+    for (int s = 0; s < 2; s++) {
+        for (int k = 0; k + 1 < eq_nrows; k++) {
+            rlCheckRenderBatchLimit(EQ_NPHI * 6);
+            rlBegin(RL_TRIANGLES);
+            rlColor4ub(c.r, c.g, c.b, c.a);
+            for (int j = 0; j < EQ_NPHI; j++) {
+                int j1 = (j + 1) % EQ_NPHI;
+                if (!eq_bv[s][k][j] || !eq_bv[s][k + 1][j] ||
+                    !eq_bv[s][k + 1][j1] || !eq_bv[s][k][j1])
+                    continue;
+                Vec3 q[4] = { eq_br[s][k][j], eq_br[s][k + 1][j],
+                              eq_br[s][k + 1][j1], eq_br[s][k][j1] };
+                int joined = 1;
+                for (int e = 0; e < 4 && joined; e++)
+                    joined = eq_gap(q[e], q[(e + 1) % 4]) < 0.5;
+                if (!joined) continue;
+                for (int v = 0; v < 6; v++)
+                    rlVertex3f((float)q[tri[v]].x, (float)q[tri[v]].y, (float)q[tri[v]].z);
+            }
+            rlEnd();
         }
     }
-    rlEnd();
     rlDrawRenderBatchActive();
     rlEnableBackfaceCulling();
     rlEnableDepthMask();

@@ -471,6 +471,17 @@ static Vec3 earth_B(const double *params, Vec3 pos)
     return params[9] == EXT_T96 ? t96_B(params, pos) : t89_B(params, pos);
 }
 
+/* Inside the magnetopause of the external model in use: T96's own (where
+ * it gives its full model field, not its boundary layer), or Shue's */
+static int earth_inside(const double *params, Vec3 pos)
+{
+    if (params[9] == EXT_T96) {
+        const double parmod[4] = {params[7], params[8], params[5], params[6]};
+        return t96_inside(parmod, pos.x, pos.y, pos.z);
+    }
+    return inside_magnetopause(params[6], params[7], pos);
+}
+
 /* T89c takes Kp and, outside the Shue magnetopause, the whole IMF; T96
  * takes Dst and only IMF By and Bz */
 static int earth_param_shown(const double *params, int i)
@@ -534,6 +545,7 @@ void field_init_t89(FieldModel *fm)
     fm->param_max[9] = EXT_T96;
     fm->param_choices[9] = ext_field_names;
     fm->param_shown = earth_param_shown;
+    fm->inside = earth_inside;
     fm->eval_B = earth_B;
     fm->eval_E = NULL;
     fm->length_unit = RE_M;
