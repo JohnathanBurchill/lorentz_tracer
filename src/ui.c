@@ -34,6 +34,7 @@ static int g_field_dd_open;
 static int g_species_dd_open;
 static int g_stel_dd_open;
 static int g_lang_dd_open;
+static int g_plot_edit_open;   /* plot editor beside the panel */
 static char *g_rbuf;                /* render text buffer */
 static int g_rbuf_len;
 
@@ -883,7 +884,10 @@ static void section_display(AppState *app, Clay_Color text_c, Clay_Color dim_c,
                             Clay_TextElementConfig *wcfg)
 {
     do_section_header(app, 3, TR(STR_DISPLAY), dim_c, text_c);
-    if (!app->ui_section_open[3]) return;
+    if (!app->ui_section_open[3]) {
+        g_plot_edit_open = 0;   /* its Edit button is gone */
+        return;
+    }
 
     Clay_Color hov = {60,60,80,255};
 
@@ -975,40 +979,18 @@ static void section_display(AppState *app, Clay_Color text_c, Clay_Color dim_c,
     do_slider(CLAY_ID("AxesSlider"), TR(STR_AXES), Sf("%.1f", app->axis_scale),
               &app->axis_scale, 0, 10, track_c, fill_c, text_c);
 
-    /* Telemetry plots: show toggle, position, range */
+    /* Telemetry plots: show toggle, and Edit for which plots and how */
     CLAY(CLAY_ID("PlotCtrl"), {
         .layout = { .childGap = 2, .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) } }
     }) {
         if (do_toggle(CLAY_ID("TglPlots"), TR(STR_PLOTS), app->show_plots, fill_c, track_c, hov, wcfg))
             app->show_plots = !app->show_plots;
-        if (app->show_plots) {
-            const char *pos_labels[] = {TR(STR_BOTTOM), TR(STR_TOP)};
-            for (int i = 0; i < 2; i++) {
-                if (do_toggle(CLAY_IDI("PlotPos", i), pos_labels[i], app->plots_edge == i,
-                              fill_c, track_c, hov, wcfg))
-                    app->plots_edge = i;
-            }
-        }
-    }
-    if (app->show_plots) {
-        CLAY(CLAY_ID("PRGroup"), {
-            .layout = { .childGap = 2, .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) } }
-        }) {
-            const char *plabels[] = {"x1", "x10", "x100"};
-            for (int i = 0; i < 3; i++) {
-                if (do_toggle(CLAY_IDI("PRBtn", i), plabels[i], app->plot_range == i,
-                              fill_c, track_c, hov, wcfg))
-                    app->plot_range = i;
-            }
-        }
+        if (do_toggle(CLAY_ID("PlotEditBtn"), TR(STR_EDIT), g_plot_edit_open, fill_c, track_c, hov, wcfg))
+            g_plot_edit_open = !g_plot_edit_open;
     }
 
-    CLAY_AUTO_ID({ .layout = { .childGap = 4, .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) } } }) {
-        if (do_toggle(CLAY_ID("TglAS"), TR(STR_AUTOSCALE), app->pitch_autoscale, fill_c, track_c, hov, wcfg))
-            app->pitch_autoscale = !app->pitch_autoscale;
-        if (do_toggle(CLAY_ID("TglRad"), TR(STR_RADIATION), app->radiation_loss, fill_c, track_c, hov, wcfg))
-            app->radiation_loss = !app->radiation_loss;
-    }
+    if (do_toggle(CLAY_ID("TglRad"), TR(STR_RADIATION), app->radiation_loss, fill_c, track_c, hov, wcfg))
+        app->radiation_loss = !app->radiation_loss;
     if (app->radiation_loss) {
         slider_snap_step(1.0f);
         do_slider(CLAY_ID("RadSlider"), TR(STR_RAD_X), Sf("x10^%.0f", app->radiation_mult),
@@ -1074,23 +1056,20 @@ static void section_readouts(AppState *app, Clay_Color text_c, Clay_Color dim_c)
         CLAY_TEXT(Sf(TR(STR_FMT_BMAG), field_Bmag(cfm, sp->pos)), CLAY_TEXT_CONFIG(rcfg));
 
     /* L-shell of the field line through the guiding centre, for models with
-     * a central body */
-    if (cfm->body_radius > 0.0 && app->lost_time[si] < 0.0) {
-        Vec3 B = cfm->eval_B(cfm->params, sp->pos);
-        double B2 = vec3_dot(B, B);
-        Vec3 gc = sp->pos;
-        if (B2 > 0.0) {
-            double v2 = vec3_dot(sp->vel, sp->vel);
-            double gamma = app->relativistic
-                ? 1.0 / sqrt(1.0 - v2 / (SPEED_OF_LIGHT * SPEED_OF_LIGHT)) : 1.0;
-            gc = vec3_add(sp->pos, vec3_scale(gamma * sp->m / (sp->q * B2),
-                                              vec3_cross(sp->vel, B)));
+     * a central body, and the Buchner-Zelenyi kappa at the particle */
+    if (app->lost_time[si] < 0.0) {
+        if (cfm->body_radius > 0.0) {
+            double Lsh;
+            if (field_L_shell(cfm, app_particle_gc(app, si), &Lsh))
+                CLAY_TEXT(Sf(TR(STR_FMT_LSHELL), Lsh), CLAY_TEXT_CONFIG(rcfg));
+            else
+                CLAY_TEXT(S(TR(STR_LSHELL_OPEN)), CLAY_TEXT_CONFIG(rcfg));
         }
-        double Lsh;
-        if (field_L_shell(cfm, gc, &Lsh))
-            CLAY_TEXT(Sf(TR(STR_FMT_LSHELL), Lsh), CLAY_TEXT_CONFIG(rcfg));
-        else
-            CLAY_TEXT(S(TR(STR_LSHELL_OPEN)), CLAY_TEXT_CONFIG(rcfg));
+        double kap = app_particle_kappa(app, si);
+        if (isinf(kap))
+            CLAY_TEXT(S(TR(STR_KAPPA_INF)), CLAY_TEXT_CONFIG(rcfg));
+        else if (!isnan(kap))
+            CLAY_TEXT(Sf(TR(STR_FMT_KAPPA), kap), CLAY_TEXT_CONFIG(rcfg));
     }
 
     if (app->radiation_loss) {
@@ -1292,6 +1271,90 @@ static void declare_dropdowns(AppState *app, Clay_Color text_c, Clay_Color dim_c
                     }
                     g_lang_dd_open = 0;
                 }
+            }
+        }
+    }
+
+    /* Plot editor: which plots the strip shows, and their options. It opens
+     * beside the panel, level with the Edit button, kept on screen. */
+    if (g_plot_edit_open) {
+        Clay_ElementData pd = Clay_GetElementData(CLAY_ID("Panel"));
+        Clay_ElementData bd = Clay_GetElementData(CLAY_ID("PlotEditBtn"));
+        Clay_ElementData ed = Clay_GetElementData(CLAY_ID("PlotEditPanel"));
+        float y = (pd.found && bd.found) ? bd.boundingBox.y - pd.boundingBox.y : 0.0f;
+        float h = ed.found ? ed.boundingBox.height : 0.0f;
+        float bottom = (float)GetScreenHeight() - 10.0f - (pd.found ? pd.boundingBox.y : 0.0f);
+        if (y + h > bottom) y = bottom - h;
+        if (y < 0.0f) y = 0.0f;
+        int left = (app->ui_edge == 0);
+
+        Clay_Color track_c = g_dark_mode ? (Clay_Color){30,30,36,255} : (Clay_Color){210,210,218,255};
+        Clay_Color fill_c = g_dark_mode ? (Clay_Color){80,80,106,255} : (Clay_Color){128,128,160,255};
+        Clay_Color hov = {60,60,80,255};
+        Clay_TextElementConfig wcfg = { .fontId = FONT_UI, .fontSize = UZ(12),
+            .letterSpacing = 1, .textColor = text_c };
+        Clay_TextElementConfig ocfg = wcfg;   /* unavailable here */
+        ocfg.textColor = dim_c;
+        Clay_TextElementConfig hcfg = { .fontId = FONT_UI, .fontSize = UZ(12),
+            .letterSpacing = 1, .textColor = dim_c };
+
+        CLAY(CLAY_ID("PlotEditPanel"), {
+            .floating = { .attachTo = CLAY_ATTACH_TO_ELEMENT_WITH_ID,
+                          .parentId = CLAY_ID("Panel").id,
+                          .zIndex = 10,
+                          .attachPoints = left
+                              ? (Clay_FloatingAttachPoints){ CLAY_ATTACH_POINT_LEFT_TOP, CLAY_ATTACH_POINT_RIGHT_TOP }
+                              : (Clay_FloatingAttachPoints){ CLAY_ATTACH_POINT_RIGHT_TOP, CLAY_ATTACH_POINT_LEFT_TOP },
+                          .offset = { left ? 4.0f : -4.0f, y } },
+            .layout = { .layoutDirection = CLAY_TOP_TO_BOTTOM,
+                         .sizing = { CLAY_SIZING_FIXED(app->ui_panel_width - 16), CLAY_SIZING_FIT(0) },
+                         .padding = {8, 8, 8, 8}, .childGap = 4 },
+            .backgroundColor = panel_bg,
+            .border = { .width = CLAY_BORDER_OUTSIDE(1), .color = {80,80,90,180} },
+            .cornerRadius = CLAY_CORNER_RADIUS(4)
+        }) {
+            CLAY_TEXT(S(TR(STR_PLOT_OPTIONS)), CLAY_TEXT_CONFIG(hcfg));
+
+            /* Pitch angle, with its autoscale beside it */
+            CLAY_AUTO_ID({ .layout = { .childGap = 2, .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) } } }) {
+                if (do_toggle(CLAY_ID("PEPitch"), TR(STR_PLOT_PITCH_ANGLE),
+                              app->plot_mask & PLOT_PITCH, fill_c, track_c, hov, &wcfg))
+                    app->plot_mask ^= PLOT_PITCH;
+                if (do_toggle(CLAY_ID("PEAuto"), TR(STR_AUTOSCALE), app->pitch_autoscale,
+                              fill_c, track_c, hov, &wcfg))
+                    app->pitch_autoscale = !app->pitch_autoscale;
+            }
+            if (do_toggle(CLAY_ID("PEMu"), TR(STR_PLOT_MAG_MOMENT),
+                          app->plot_mask & PLOT_MU, fill_c, track_c, hov, &wcfg))
+                app->plot_mask ^= PLOT_MU;
+            /* L-shell only where the model has a body for field lines to
+             * end on; elsewhere it is shown dimmed and does nothing */
+            int has_L = app->models[app->current_model].body_radius > 0.0;
+            if (do_toggle(CLAY_ID("PELshell"), TR(STR_PLOT_LSHELL),
+                          has_L && (app->plot_mask & PLOT_LSHELL), fill_c, track_c,
+                          has_L ? hov : track_c, has_L ? &wcfg : &ocfg) && has_L)
+                app->plot_mask ^= PLOT_LSHELL;
+            if (do_toggle(CLAY_ID("PEKappa"), TR(STR_PLOT_KAPPA),
+                          app->plot_mask & PLOT_KAPPA, fill_c, track_c, hov, &wcfg))
+                app->plot_mask ^= PLOT_KAPPA;
+            if (do_toggle(CLAY_ID("PEPhase"), TR(STR_PLOT_PHASE_VKVT),
+                          app->plot_mask & PLOT_PHASE, fill_c, track_c, hov, &wcfg))
+                app->plot_mask ^= PLOT_PHASE;
+
+            /* Where the strip goes, and how much history it shows */
+            CLAY_AUTO_ID({ .layout = { .childGap = 2, .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) } } }) {
+                const char *pos_labels[] = {TR(STR_BOTTOM), TR(STR_TOP)};
+                for (int i = 0; i < 2; i++)
+                    if (do_toggle(CLAY_IDI("PEPos", i), pos_labels[i], app->plots_edge == i,
+                                  fill_c, track_c, hov, &wcfg))
+                        app->plots_edge = i;
+            }
+            CLAY_AUTO_ID({ .layout = { .childGap = 2, .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) } } }) {
+                const char *plabels[] = {"x1", "x10", "x100"};
+                for (int i = 0; i < 3; i++)
+                    if (do_toggle(CLAY_IDI("PERange", i), plabels[i], app->plot_range == i,
+                                  fill_c, track_c, hov, &wcfg))
+                        app->plot_range = i;
             }
         }
     }
@@ -1763,6 +1826,9 @@ void ui_update(struct AppState *app)
     if (app->explorer.show_picker)
         explorer_declare_picker(app);
     g_cmds = Clay_EndLayout();
+    /* The plot editor floats over the scene: the wheel there is not zoom */
+    if (g_plot_edit_open && Clay_PointerOver(CLAY_ID("PlotEditPanel")))
+        app->mouse_over_panel = 1;
 
     /* Dismiss floating elements on click outside */
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -1782,6 +1848,10 @@ void ui_update(struct AppState *app)
             !Clay_PointerOver(CLAY_ID("LangDDList")) &&
             !Clay_PointerOver(CLAY_ID("LangDDBtn")))
             g_lang_dd_open = 0;
+        if (g_plot_edit_open &&
+            !Clay_PointerOver(CLAY_ID("PlotEditPanel")) &&
+            !Clay_PointerOver(CLAY_ID("PlotEditBtn")))
+            g_plot_edit_open = 0;
         if (g_cpick_id &&
             !Clay_PointerOver(CLAY_ID("ColorPicker"))) {
             /* Don't dismiss if click was on the swatch that owns this picker */

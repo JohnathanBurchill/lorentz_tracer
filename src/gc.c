@@ -4,30 +4,10 @@
 
 #define C2 (SPEED_OF_LIGHT * SPEED_OF_LIGHT)
 
-/* ---------- helpers ---------------------------------------------------- */
-
-/* Field-line curvature: kappa = (bhat . nabla) bhat, via central differences
- * along bhat.  Returns the curvature vector (1/m units). */
-static Vec3 field_curvature(const FieldModel *fm, Vec3 pos, Vec3 bhat)
-{
-    double h = 1e-5;
-    Vec3 fwd = vec3_add(pos, vec3_scale(h, bhat));
-    Vec3 bwd = vec3_sub(pos, vec3_scale(h, bhat));
-    Vec3 Bf = fm->eval_B(fm->params, fwd);
-    Vec3 Bb = fm->eval_B(fm->params, bwd);
-    double Bf_mag = vec3_len(Bf);
-    double Bb_mag = vec3_len(Bb);
-    if (Bf_mag < 1e-30 || Bb_mag < 1e-30) return (Vec3){0, 0, 0};
-    Vec3 bf = vec3_scale(1.0 / Bf_mag, Bf);
-    Vec3 bb = vec3_scale(1.0 / Bb_mag, Bb);
-    return vec3_scale(0.5 / h, vec3_sub(bf, bb));
-}
-
 /* ---------- initialisation --------------------------------------------- */
 
-/* Compute instantaneous GC position from particle state (used per-sample). */
-static Vec3 gc_pos_from_particle(const Particle *p, Vec3 bhat,
-                                 double Bmag, int relativistic)
+Vec3 gc_pos_from_particle(const Particle *p, Vec3 bhat,
+                          double Bmag, int relativistic)
 {
     Vec3 vxb = vec3_cross(p->vel, bhat);
     double meff = p->m;

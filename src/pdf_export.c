@@ -13,6 +13,7 @@
 #include "pdf_export.h"
 #include "app.h"
 #include "render3d.h"
+#include "render2d.h"
 #include "i18n.h"
 #include "diagnostics.h"
 #include "trail.h"
@@ -292,9 +293,9 @@ static void map_codepoint(unsigned int cp, int preferred_font,
                           int *out_font, int *out_byte)
 {
     if (cp < 0x80) { *out_font = preferred_font; *out_byte = (int)cp; return; }
-    /* Common Latin-1 supplement chars in WinAnsi (Helvetica/Courier) */
-    if (cp == 0x00B0 || cp == 0x00D7 || cp == 0x00B1 ||
-        cp == 0x2212 /* minus */) {
+    /* The Latin-1 supplement (° × ± ü é ...) has the same codes in WinAnsi
+     * (Helvetica/Courier) */
+    if ((cp >= 0x00A0 && cp <= 0x00FF) || cp == 0x2212 /* minus */) {
         *out_font = preferred_font;
         if (cp == 0x2212) *out_byte = '-';
         else              *out_byte = (int)cp & 0xFF;
@@ -586,7 +587,7 @@ static void emit_series_dashed(PdfWriter *w,
 
 static void emit_panel_multi(PdfWriter *w, const struct AppState *app,
                              const char *title, const char *gk, const char *units,
-                             int field_sel,
+                             int kind,
                              int fixed_yrange, double fixed_ymin, double fixed_ymax,
                              Rectangle bounds)
 {
@@ -659,14 +660,15 @@ static void emit_panel_multi(PdfWriter *w, const struct AppState *app,
     if (tmax - tmin < 1e-30) tmax = tmin + 1.0;
 
     double ymin, ymax;
-    const double *sel_y = (field_sel == 0) ? d->pitch_angle : d->mu;
+    const double *gc_y;
+    const double *sel_y = diag_series(d, kind, &gc_y);
     if (fixed_yrange) {
         ymin = fixed_ymin; ymax = fixed_ymax;
     } else {
         double lo = 1e30, hi = -1e30;
         for (int pi = 0; pi < app->n_particles; pi++) {
             const DiagTimeSeries *di = &app->diags[pi];
-            const double *yi = (field_sel == 0) ? di->pitch_angle : di->mu;
+            const double *yi = diag_series(di, kind, &gc_y);
             int cnt = di->count < max_show ? di->count : max_show;
             for (int i = 0; i < cnt; i++) {
                 int idx = (di->head - 1 - i + di->capacity) % di->capacity;
@@ -675,6 +677,7 @@ static void emit_panel_multi(PdfWriter *w, const struct AppState *app,
                 if (yi[idx] > hi) hi = yi[idx];
             }
         }
+        if (lo > hi) { lo = 0.0; hi = 1.0; }   /* nothing to show yet */
         double yrange = hi - lo;
         double ypad;
         if (yrange > 0.0) ypad = yrange * 0.05;
@@ -692,7 +695,8 @@ static void emit_panel_multi(PdfWriter *w, const struct AppState *app,
     if (app->show_gc_trajectory) {
         for (int pi = 0; pi < app->n_particles; pi++) {
             const DiagTimeSeries *di = &app->diags[pi];
-            const double *gc_y = (field_sel == 0) ? di->gc_pitch_angle : di->gc_mu;
+            diag_series(di, kind, &gc_y);
+            if (!gc_y) break;   /* this series has no guiding-centre version */
             int sp = app->particles[pi].species;
             if (sp < 0 || sp >= NUM_SPECIES) sp = NUM_SPECIES - 1;
             Color c = app->species_colors[sp];
@@ -710,7 +714,7 @@ static void emit_panel_multi(PdfWriter *w, const struct AppState *app,
     for (int pi = 0; pi < app->n_particles; pi++) {
         if (pi == sel) continue;
         const DiagTimeSeries *di = &app->diags[pi];
-        const double *yi = (field_sel == 0) ? di->pitch_angle : di->mu;
+        const double *yi = diag_series(di, kind, &gc_y);
         int sp = app->particles[pi].species;
         if (sp < 0 || sp >= NUM_SPECIES) sp = NUM_SPECIES - 1;
         Color c = app->species_colors[sp];
@@ -997,43 +1001,25 @@ static void emit_phase_panel(PdfWriter *w, const struct AppState *app,
 
 static void emit_plot_strip(PdfWriter *w, const struct AppState *app)
 {
-    if (!app->show_plots) return;
-    float sx, sy, sw, sh;
-    app_scene_rect(app, &sx, &sy, &sw, &sh);
-    float plot_h = app->win_h * app->plots_height_frac;
-    float y0 = (app->plots_edge == 1) ? 0.0f : sy + sh;
+    if (!app_plots_visible(app)) return;
+    int kinds[PLOT_SLOTS];
+    Rectangle rects[PLOT_SLOTS];
+    int n = render2d_plot_layout(app, kinds, rects);
 
-    float outer_pad = 10.0f;
-    float strip_x = sx + outer_pad;
-    float strip_w = sw - 2 * outer_pad;
-    if (strip_w < 100) strip_w = 100;
-
-    float pz = app->plot_zoom;
-    float m_l = fmaxf(70 * pz, 50);
-    float m_r = 4;
-    float m_t = fmaxf(22 * pz, 18);
-    float m_b = fmaxf(60 * pz, 50);
-    float inner_h = plot_h - m_t - m_b;
-    if (inner_h < 1) inner_h = 1;
-    float phase_w = inner_h + m_l + m_r;
-    if (phase_w > strip_w * 0.5f) phase_w = strip_w * 0.5f;
-    float ts_w = (strip_w - phase_w) / 2.0f;
-    if (ts_w < 50) ts_w = 50;
-
-    int pitch_fixed = !app->pitch_autoscale;
     /* Pass title and axis tokens separately so the y-axis label can be
-     * built like the screen code (Greek + units). The strings below are
-     * UTF-8 already and the Greek glyphs route to Symbol font. */
-    emit_panel_multi(w, app,
-        TR(STR_PLOT_PITCH_ANGLE), "\xce\xb1", "(\xc2\xb0)", 0,
-        pitch_fixed, 0.0, 180.0,
-        (Rectangle){strip_x, y0, ts_w, plot_h});
-    emit_panel_multi(w, app,
-        TR(STR_PLOT_MAG_MOMENT), "\xce\xbc", "(J/T)", 1,
-        0, 0.0, 0.0,
-        (Rectangle){strip_x + ts_w, y0, ts_w, plot_h});
-    emit_phase_panel(w, app,
-        (Rectangle){strip_x + 2 * ts_w, y0, phase_w, plot_h});
+     * built like the screen code (Greek + units). The strings are UTF-8
+     * already and the Greek glyphs route to Symbol font. */
+    for (int i = 0; i < n; i++) {
+        if (kinds[i] == PLOT_KIND_PHASE) {
+            emit_phase_panel(w, app, rects[i]);
+            continue;
+        }
+        const char *title, *sym, *units;
+        render2d_series_labels(kinds[i], &title, &sym, &units);
+        int fixed = kinds[i] == DIAG_PITCH && !app->pitch_autoscale;
+        emit_panel_multi(w, app, title, sym, units, kinds[i],
+                         fixed, 0.0, 180.0, rects[i]);
+    }
 }
 
 /* ---- Overlays (Gij + initial conditions) ---- */

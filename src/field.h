@@ -47,6 +47,17 @@ void field_retranslate(FieldModel models[FIELD_NUM_MODELS]);
 double field_Bmag(const FieldModel *fm, Vec3 pos);
 Vec3 field_gradB(const FieldModel *fm, Vec3 pos);
 
+/* Field-line curvature vector (bhat . nabla) bhat at pos, by central
+ * differences along bhat, the unit field direction there */
+Vec3 field_curvature(const FieldModel *fm, Vec3 pos, Vec3 bhat);
+
+/* Buchner and Zelenyi (1989) kappa = sqrt(R_c / rho) at pos, for a particle
+ * of momentum magnitude p_mag (gamma m |v|) and charge q: the field-line
+ * curvature radius over the gyroradius at full speed. INFINITY where the
+ * field line is straight, NaN where B = 0. Scene units throughout, so the
+ * similarity scaling of the length unit cancels. */
+double field_kappa_bz(const FieldModel *fm, Vec3 pos, double p_mag, double q);
+
 static inline double field_length_unit(const FieldModel *fm)
 {
     return fm->length_unit > 0.0 ? fm->length_unit : 1.0;

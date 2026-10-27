@@ -96,7 +96,7 @@ static void draw_series_dashed(const struct AppState *app,
  * field_sel: 0=pitch_angle, 1=mu */
 static void draw_panel_multi(const struct AppState *app,
                              const char *title, const char *ylabel,
-                             int field_sel,
+                             int kind,
                              int fixed_yrange, double fixed_ymin, double fixed_ymax,
                              Rectangle bounds)
 {
@@ -167,7 +167,8 @@ static void draw_panel_multi(const struct AppState *app,
 
     /* Y range */
     double ymin, ymax;
-    const double *sel_y = (field_sel == 0) ? d->pitch_angle : d->mu;
+    const double *gc_y;
+    const double *sel_y = diag_series(d, kind, &gc_y);
     if (fixed_yrange) {
         ymin = fixed_ymin;
         ymax = fixed_ymax;
@@ -176,7 +177,7 @@ static void draw_panel_multi(const struct AppState *app,
         /* Scan all particles for global y range */
         for (int pi = 0; pi < app->n_particles; pi++) {
             const DiagTimeSeries *di = &app->diags[pi];
-            const double *yi = (field_sel == 0) ? di->pitch_angle : di->mu;
+            const double *yi = diag_series(di, kind, &gc_y);
             int cnt = di->count < max_show ? di->count : max_show;
             for (int i = 0; i < cnt; i++) {
                 int idx = (di->head - 1 - i + di->capacity) % di->capacity;
@@ -185,6 +186,7 @@ static void draw_panel_multi(const struct AppState *app,
                 if (yi[idx] > hi) hi = yi[idx];
             }
         }
+        if (lo > hi) { lo = 0.0; hi = 1.0; }   /* nothing to show yet */
         double yrange = hi - lo;
         double ypad;
         if (yrange > 0.0) {
@@ -202,7 +204,8 @@ static void draw_panel_multi(const struct AppState *app,
     if (app->show_gc_trajectory) {
         for (int pi = 0; pi < app->n_particles; pi++) {
             const DiagTimeSeries *di = &app->diags[pi];
-            const double *gc_y = (field_sel == 0) ? di->gc_pitch_angle : di->gc_mu;
+            diag_series(di, kind, &gc_y);
+            if (!gc_y) break;   /* this series has no guiding-centre version */
             int sp = app->particles[pi].species;
             if (sp < 0 || sp >= NUM_SPECIES) sp = NUM_SPECIES - 1;
             Color c = app->species_colors[sp];
@@ -219,7 +222,7 @@ static void draw_panel_multi(const struct AppState *app,
     for (int pi = 0; pi < app->n_particles; pi++) {
         if (pi == sel) continue;
         const DiagTimeSeries *di = &app->diags[pi];
-        const double *yi = (field_sel == 0) ? di->pitch_angle : di->mu;
+        const double *yi = diag_series(di, kind, &gc_y);
         int sp = app->particles[pi].species;
         if (sp < 0 || sp >= NUM_SPECIES) sp = NUM_SPECIES - 1;
         Color c = app->species_colors[sp];
@@ -321,7 +324,8 @@ static void draw_v_label_rot(Font font, const char *gk, const char *units,
                 (Vector2){0, 0}, -90.0f, fsz, 1, color);
 }
 
-void render2d_draw(struct AppState *app)
+int render2d_plot_layout(const struct AppState *app, int kinds[PLOT_SLOTS],
+                         Rectangle rects[PLOT_SLOTS])
 {
     float sx, sy, sw, sh;
     app_scene_rect(app, &sx, &sy, &sw, &sh);
@@ -335,31 +339,86 @@ void render2d_draw(struct AppState *app)
     float strip_w = sw - 2 * outer_pad;
     if (strip_w < 100) strip_w = 100;
 
+    static const int series[][2] = {
+        { PLOT_PITCH, DIAG_PITCH }, { PLOT_MU, DIAG_MU },
+        { PLOT_LSHELL, DIAG_LSHELL }, { PLOT_KAPPA, DIAG_KAPPA },
+    };
+    int mask = app_plot_mask(app);
+    int n_ts = 0;
+    for (int i = 0; i < 4; i++)
+        if (mask & series[i][0]) n_ts++;
+
     /* Match the margin formulas in draw_panel_multi/draw_phase_panel
      * so the phase panel's inner data area is exactly square. */
-    float pz = app->plot_zoom;
-    float m_l = fmaxf(70 * pz, 50);
-    float m_r = 4;
-    float m_t = fmaxf(22 * pz, 18);
-    float m_b = fmaxf(60 * pz, 50);
-    float inner_h = plot_h - m_t - m_b;
-    if (inner_h < 1) inner_h = 1;
-    float phase_w = inner_h + m_l + m_r;
-    if (phase_w > strip_w * 0.5f) phase_w = strip_w * 0.5f;
-    float ts_w = (strip_w - phase_w) / 2.0f;
-    if (ts_w < 50) ts_w = 50;
+    float phase_w = 0.0f;
+    if (mask & PLOT_PHASE) {
+        float pz = app->plot_zoom;
+        float m_l = fmaxf(70 * pz, 50);
+        float m_r = 4;
+        float m_t = fmaxf(22 * pz, 18);
+        float m_b = fmaxf(60 * pz, 50);
+        float inner_h = plot_h - m_t - m_b;
+        if (inner_h < 1) inner_h = 1;
+        phase_w = inner_h + m_l + m_r;
+        float cap = n_ts > 0 ? strip_w * 0.5f : strip_w;
+        if (phase_w > cap) phase_w = cap;
+    }
+    float ts_w = n_ts > 0 ? (strip_w - phase_w) / n_ts : 0.0f;
+    if (n_ts > 0 && ts_w < 50) ts_w = 50;
 
-    int pitch_fixed = !app->pitch_autoscale;
-    draw_panel_multi(app, TR(STR_PLOT_PITCH_ANGLE), "\xce\xb1 (\xc2\xb0)",
-                     0, pitch_fixed, 0.0, 180.0,
-                     (Rectangle){strip_x, y0, ts_w, plot_h});
+    int n = 0;
+    float x = strip_x;
+    for (int i = 0; i < 4; i++) {
+        if (!(mask & series[i][0])) continue;
+        kinds[n] = series[i][1];
+        rects[n++] = (Rectangle){x, y0, ts_w, plot_h};
+        x += ts_w;
+    }
+    if (mask & PLOT_PHASE) {
+        kinds[n] = PLOT_KIND_PHASE;
+        rects[n++] = (Rectangle){x, y0, phase_w, plot_h};
+    }
+    return n;
+}
 
-    draw_panel_multi(app, TR(STR_PLOT_MAG_MOMENT), "\xce\xbc (J/T)",
-                     1, 0, 0.0, 0.0,
-                     (Rectangle){strip_x + ts_w, y0, ts_w, plot_h});
+void render2d_series_labels(int kind, const char **title, const char **sym,
+                            const char **units)
+{
+    switch (kind) {
+    case DIAG_PITCH:
+        *title = TR(STR_PLOT_PITCH_ANGLE); *sym = "\xce\xb1"; *units = "(\xc2\xb0)";
+        break;
+    case DIAG_MU:
+        *title = TR(STR_PLOT_MAG_MOMENT); *sym = "\xce\xbc"; *units = "(J/T)";
+        break;
+    case DIAG_LSHELL:
+        *title = TR(STR_PLOT_LSHELL); *sym = "L"; *units = "";
+        break;
+    default:
+        *title = TR(STR_PLOT_KAPPA); *sym = "\xce\xba"; *units = "";
+        break;
+    }
+}
 
-    draw_phase_panel(app,
-                     (Rectangle){strip_x + 2 * ts_w, y0, phase_w, plot_h});
+void render2d_draw(struct AppState *app)
+{
+    int kinds[PLOT_SLOTS];
+    Rectangle rects[PLOT_SLOTS];
+    int n = render2d_plot_layout(app, kinds, rects);
+
+    app->phase_rect[2] = 0;   /* no phase panel to click unless drawn */
+    for (int i = 0; i < n; i++) {
+        if (kinds[i] == PLOT_KIND_PHASE) {
+            draw_phase_panel(app, rects[i]);
+            continue;
+        }
+        const char *title, *sym, *units;
+        render2d_series_labels(kinds[i], &title, &sym, &units);
+        char ylabel[64];
+        snprintf(ylabel, sizeof(ylabel), units[0] ? "%s %s" : "%s", sym, units);
+        int fixed = kinds[i] == DIAG_PITCH && !app->pitch_autoscale;
+        draw_panel_multi(app, title, ylabel, kinds[i], fixed, 0.0, 180.0, rects[i]);
+    }
 }
 
 static void draw_phase_panel(struct AppState *app, Rectangle bounds)

@@ -185,15 +185,29 @@ void app_switch_colors(AppState *app, int old_dark_mode)
     }
 }
 
+int app_plot_mask(const AppState *app)
+{
+    int mask = app->plot_mask;
+    if (app->models[app->current_model].body_radius <= 0.0)
+        mask &= ~PLOT_LSHELL;
+    return mask;
+}
+
+int app_plots_visible(const AppState *app)
+{
+    return app->show_plots && app_plot_mask(app) != 0;
+}
+
 void app_scene_rect(const AppState *app, float *x, float *y, float *w, float *h)
 {
+    int plots = app_plots_visible(app);
     float pw = app->ui_visible ? app->ui_panel_width : 0.0f;
-    float plot_h = app->show_plots ? app->win_h * app->plots_height_frac : 0.0f;
+    float plot_h = plots ? app->win_h * app->plots_height_frac : 0.0f;
     float sw = app->win_w - pw;
     float sh = app->win_h - plot_h;
     float sx = 0, sy = 0;
     if (app->ui_visible && app->ui_edge == 0) sx = pw; /* left panel */
-    if (app->show_plots && app->plots_edge == 1) sy = plot_h; /* plots on top */
+    if (plots && app->plots_edge == 1) sy = plot_h; /* plots on top */
     *x = sx; *y = sy; *w = sw; *h = sh;
 }
 
@@ -214,6 +228,7 @@ void app_init(AppState *app)
     app->ui_edge = 0; /* left */
     app->ui_zoom = 1.0f;
     app->show_plots = 1;
+    app->plot_mask = PLOT_PITCH | PLOT_MU | PLOT_PHASE;
     app->plots_edge = 0; /* bottom */
     app->plot_zoom = 1.0f;
     app->plots_height_frac = 0.32f;
@@ -898,6 +913,25 @@ static void update_lost(AppState *app, const FieldModel *fm)
         else if (app->lost_time[pi] < 0.0)
             app->lost_time[pi] = app->sim_time;
     }
+}
+
+Vec3 app_particle_gc(const AppState *app, int pi)
+{
+    const FieldModel *fm = &app->models[app->current_model];
+    const Particle *p = &app->particles[pi];
+    Vec3 B = fm->eval_B(fm->params, p->pos);
+    double Bmag = vec3_len(B);
+    if (Bmag <= 0.0) return p->pos;
+    return gc_pos_from_particle(p, vec3_scale(1.0 / Bmag, B), Bmag,
+                                app->relativistic);
+}
+
+double app_particle_kappa(const AppState *app, int pi)
+{
+    const FieldModel *fm = &app->models[app->current_model];
+    const Particle *p = &app->particles[pi];
+    double p_mag = drivers_eff_mass(p, app->relativistic) * vec3_len(p->vel);
+    return field_kappa_bz(fm, p->pos, p_mag, p->q);
 }
 
 void app_reset_particle(AppState *app)
@@ -1669,7 +1703,7 @@ void app_update(AppState *app)
             }
             /* Check if mouse is over plots area */
             int over_plots = 0;
-            if (!over_gij && !over_init && app->show_plots) {
+            if (!over_gij && !over_init && app_plots_visible(app)) {
                 float sx, sy, sw, sh;
                 app_scene_rect(app, &sx, &sy, &sw, &sh);
                 float ph = app->win_h * app->plots_height_frac;
@@ -1840,7 +1874,7 @@ void app_update(AppState *app)
 
     /* Phase-plot click handling: inside inner rect = swap axes;
      * left-margin band = flip y; bottom-margin band = flip x. */
-    if (app->show_plots && app->phase_rect[2] > 0 &&
+    if (app_plots_visible(app) && app->phase_rect[2] > 0 &&
         IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         Vector2 m = GetMousePosition();
         float bx = app->phase_rect[0], by = app->phase_rect[1];
@@ -2224,6 +2258,16 @@ physics:
         int trail_interval = app->steps_per_frame / 256;
         if (trail_interval < 1) trail_interval = 1;
 
+        /* L for the L-shell plot, traced once a frame at each guiding
+         * centre: a trace takes about half a millisecond, far too long for
+         * every sample, and L hardly changes within a frame */
+        int want_L = app_plots_visible(app) && (app_plot_mask(app) & PLOT_LSHELL);
+        for (int pi = 0; pi < app->n_particles; pi++) {
+            app->lshell_now[pi] = NAN;   /* open field line or not traced */
+            if (want_L && app->lost_time[pi] < 0.0)
+                field_L_shell(fm, app_particle_gc(app, pi), &app->lshell_now[pi]);
+        }
+
         for (int i = 0; i < substeps; i++) {
             /* Save state to history at trail-push points (synced with trail) */
             if (i % trail_interval == 0) {
@@ -2298,25 +2342,22 @@ physics:
                         gc_pitch_angle(&app->gc_particles[pi], fm, app->relativistic);
                     app->diags[pi].gc_mu[di] = app->gc_particles[pi].mu * L;
 
-                    /* v_kappa, v_tau in field-aligned frame at this position */
-                    Vec3 ppos = app->particles[pi].pos;
+                    /* v_kappa, v_tau in field-aligned frame at this
+                     * position, and the Buchner-Zelenyi kappa there */
+                    const Particle *pp = &app->particles[pi];
+                    Vec3 ppos = pp->pos;
                     Vec3 Bp = fm->eval_B(fm->params, ppos);
                     double Bpm = vec3_len(Bp);
-                    double v_kappa = NAN, v_tau = NAN;
+                    double v_kappa = NAN, v_tau = NAN, kappa_bz = NAN;
                     if (Bpm > 1e-30) {
                         Vec3 bhi = vec3_scale(1.0/Bpm, Bp);
-                        double h = 1e-5;
-                        Vec3 pf = vec3_add(ppos, vec3_scale(h, bhi));
-                        Vec3 pb = vec3_sub(ppos, vec3_scale(h, bhi));
-                        Vec3 Bf = fm->eval_B(fm->params, pf);
-                        Vec3 Bb_ = fm->eval_B(fm->params, pb);
-                        double Bfm = vec3_len(Bf), Bbm = vec3_len(Bb_);
-                        Vec3 bf = (Bfm > 1e-30) ? vec3_scale(1.0/Bfm, Bf) : bhi;
-                        Vec3 bb2 = (Bbm > 1e-30) ? vec3_scale(1.0/Bbm, Bb_) : bhi;
-                        Vec3 kap = vec3_scale(0.5/h, vec3_sub(bf, bb2));
+                        Vec3 kap = field_curvature(fm, ppos, bhi);
                         double kmag = vec3_len(kap);
                         Vec3 e1, e2;
                         if (kmag > 1e-12) {
+                            double rho = drivers_eff_mass(pp, app->relativistic)
+                                       * vec3_len(pp->vel) / (fabs(pp->q) * Bpm);
+                            kappa_bz = sqrt(1.0 / (kmag * rho));
                             e1 = vec3_scale(1.0/kmag, kap);
                         } else {
                             Vec3 ref = {0,0,1};
@@ -2331,6 +2372,8 @@ physics:
                     }
                     app->diags[pi].v_kappa[di] = v_kappa;
                     app->diags[pi].v_tau[di]   = v_tau;
+                    app->diags[pi].kappa[di]   = kappa_bz;
+                    app->diags[pi].lshell[di]  = app->lshell_now[pi];
                 }
             }
         }
@@ -2899,7 +2942,7 @@ void app_render_inner(AppState *app)
     }
 
     /* 2D telemetry plots (independent of UI panel) */
-    if (app->show_plots)
+    if (app_plots_visible(app))
         render2d_draw(app);
 
     /* UI panel (clay render commands from ui_update) */
@@ -3066,6 +3109,7 @@ static void state_format(const AppState *app, StateText *t)
     tprintf(t, "ui_edge=%d\n", app->ui_edge);
     tprintf(t, "ui_zoom=%.6g\n", app->ui_zoom);
     tprintf(t, "show_plots=%d\n", app->show_plots);
+    tprintf(t, "plot_mask=%d\n", app->plot_mask);
     tprintf(t, "plots_edge=%d\n", app->plots_edge);
     tprintf(t, "plot_zoom=%.6g\n", app->plot_zoom);
     tprintf(t, "show_Gij=%d\n", app->show_Gij);
@@ -3272,6 +3316,8 @@ void app_load_state(AppState *app)
             if (app->ui_zoom < 0.5f) app->ui_zoom = 0.5f;
             if (app->ui_zoom > 2.5f) app->ui_zoom = 2.5f;
         }
+        else if (strcmp(key, "plot_mask") == 0)
+            app->plot_mask = atoi(val);
         else if (strcmp(key, "show_plots") == 0)
             app->show_plots = atoi(val);
         else if (strcmp(key, "plots_edge") == 0)
@@ -3472,8 +3518,9 @@ void app_reload_fonts(AppState *app)
     /* Greek and Coptic block (uppercase + lowercase) */
     for (int i = 0x0370; i <= 0x03FF; i++) codepoints[ncp++] = i;
     int math[] = {0x2202,0x2207,0x00D7,0x2016,0x22A5,0x2081,0x2082,0x2080,0x00B2,0x00B3,
-                  0x2212,0x00B7,0x00A0,0x00EA,0x00E2,0x221A,0x2098,0x2099,0x2083,0x2084};
-    for (int i = 0; i < 20; i++) codepoints[ncp++] = math[i];
+                  0x2212,0x00B7,0x00A0,0x00EA,0x00E2,0x221A,0x2098,0x2099,0x2083,0x2084,
+                  0x221E};
+    for (int i = 0; i < (int)(sizeof(math) / sizeof(math[0])); i++) codepoints[ncp++] = math[i];
 
     /* For CJK: use the subsetted Noto font with explicit codepoints */
     if (li->needs_cjk && li->font_ui) {

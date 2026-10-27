@@ -117,6 +117,8 @@ static const char *g_strings_en[STR__COUNT] = {
     [STR_FMT_LOST]          = "Lost in atmosphere, t = %.4g s",
     [STR_FMT_LSHELL]        = "L = %.3f",
     [STR_LSHELL_OPEN]       = "L: open field line",
+    [STR_FMT_KAPPA]         = "\xce\xba = %.3g",
+    [STR_KAPPA_INF]         = "\xce\xba = \xe2\x88\x9e",
     [STR_FMT_ENERGY_MEV]    = "E = %.3f MeV",
     [STR_FMT_ENERGY_KEV]    = "E = %.3f keV",
     [STR_FMT_PRAD]          = "P_rad = %.3e W",
@@ -173,6 +175,10 @@ static const char *g_strings_en[STR__COUNT] = {
     [STR_PLOT_MAG_MOMENT]   = "Magnetic moment",
     [STR_PLOT_PHASE_VKVT]   = "v\xce\xba vs v\xcf\x84",
     [STR_PLOT_TIME]         = "Time (s)",
+    [STR_PLOT_LSHELL]       = "L-shell",
+    [STR_PLOT_KAPPA]        = "B\xc3\xbc" "chner-Zelenyi \xce\xba",
+    [STR_PLOT_OPTIONS]      = "Plots shown",
+    [STR_EDIT]              = "Edit",
 
     /* Playback picker */
     [STR_OPEN_RECORDING]    = "Open Recording",

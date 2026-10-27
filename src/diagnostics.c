@@ -1,4 +1,5 @@
 #include "diagnostics.h"
+#include <stddef.h>
 
 void diag_init(DiagTimeSeries *d, int capacity)
 {
@@ -18,6 +19,17 @@ void diag_push(DiagTimeSeries *d, double t, double pitch, double mu, double E)
     d->head = (d->head + 1) % d->capacity;
     if (d->count < d->capacity)
         d->count++;
+}
+
+const double *diag_series(const DiagTimeSeries *d, int kind, const double **gc)
+{
+    *gc = NULL;
+    switch (kind) {
+    case DIAG_PITCH:  *gc = d->gc_pitch_angle; return d->pitch_angle;
+    case DIAG_MU:     *gc = d->gc_mu;          return d->mu;
+    case DIAG_LSHELL: return d->lshell;
+    default:          return d->kappa;
+    }
 }
 
 void diag_clear(DiagTimeSeries *d)

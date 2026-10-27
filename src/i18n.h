@@ -77,6 +77,8 @@ typedef enum {
     STR_FMT_LOST,               /* "Lost in atmosphere, t = %.4g s" */
     STR_FMT_LSHELL,             /* "L = %.3f" */
     STR_LSHELL_OPEN,            /* "L: open field line" */
+    STR_FMT_KAPPA,              /* "κ = %.3g" (Buchner-Zelenyi) */
+    STR_KAPPA_INF,              /* "κ = ∞" */
     STR_FMT_ENERGY_MEV,         /* "E = %.3f MeV" */
     STR_FMT_ENERGY_KEV,         /* "E = %.3f keV" */
     STR_FMT_PRAD,               /* "P_rad = %.3e W" */
@@ -133,6 +135,10 @@ typedef enum {
     STR_PLOT_MAG_MOMENT,        /* "Magnetic moment" */
     STR_PLOT_PHASE_VKVT,        /* "v_κ vs v_τ" */
     STR_PLOT_TIME,              /* "Time (s)" */
+    STR_PLOT_LSHELL,            /* "L-shell" */
+    STR_PLOT_KAPPA,             /* "Buchner-Zelenyi κ" */
+    STR_PLOT_OPTIONS,           /* "Plots shown" */
+    STR_EDIT,                   /* "Edit" */
 
     /* Playback file picker */
     STR_OPEN_RECORDING,         /* "Open Recording" */

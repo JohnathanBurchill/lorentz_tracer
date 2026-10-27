@@ -48,6 +48,15 @@ typedef struct {
     double custom_q, custom_m, custom_speed;
 } ParticlePlacement;
 
+/* Plots in the telemetry strip: bits of AppState.plot_mask */
+enum {
+    PLOT_PITCH  = 1 << 0,
+    PLOT_MU     = 1 << 1,
+    PLOT_LSHELL = 1 << 2,   /* models with a central body only */
+    PLOT_KAPPA  = 1 << 3,
+    PLOT_PHASE  = 1 << 4,
+};
+
 typedef struct AppState {
     /* Field models */
     FieldModel models[FIELD_NUM_MODELS];
@@ -77,6 +86,8 @@ typedef struct AppState {
     double particle_dt[MAX_PARTICLES]; /* per-particle timestep */
     double lost_time[MAX_PARTICLES];   /* sim time it entered the model's
                                           central body, -1 = not lost */
+    double lshell_now[MAX_PARTICLES];  /* L at the start of this frame, for
+                                          the samples taken during it */
 
     /* Step history for pause-step-back (ring buffer of pos/vel snapshots) */
     #define STEP_HISTORY_MAX 4096
@@ -274,6 +285,7 @@ typedef struct AppState {
     int mouse_over_panel;     /* set by ui_update each frame */
     float ui_zoom;            /* font scale for UI panel: 1.0 = default */
     int show_plots;           /* telemetry plots visible (independent of UI) */
+    int plot_mask;            /* which plots the strip shows: PLOT_* bits */
     int plots_edge;           /* 0=bottom, 1=top */
     float plot_zoom;          /* font scale for telemetry plots */
     float plots_height_frac;  /* fraction of window for plots (default 0.225) */
@@ -327,6 +339,14 @@ void app_toggle_borderless(void);      /* screen-filling borderless window */
  * setup after InitWindow, which returns 1 when embedded */
 unsigned int app_embed_flags(unsigned int flags);
 int app_embed_init(void);
+/* Particle pi's instantaneous guiding centre, and its Buchner-Zelenyi
+ * kappa at its position (see field_kappa_bz) */
+Vec3 app_particle_gc(const AppState *app, int pi);
+double app_particle_kappa(const AppState *app, int pi);
+/* The plots the strip shows for the current model (plot_mask without the
+ * L-shell where it has no meaning), and whether the strip is shown */
+int app_plot_mask(const AppState *app);
+int app_plots_visible(const AppState *app);
 
 /* Scene geometry helpers (account for ui_edge) */
 void app_scene_rect(const AppState *app, float *x, float *y, float *w, float *h);

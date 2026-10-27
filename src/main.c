@@ -197,6 +197,7 @@ int main(int argc, char **argv)
     codepoints[ncp++] = 0x00EA;  /* ê (for ê_z unit vector) */
     codepoints[ncp++] = 0x00E2;  /* â (for â hat) */
     codepoints[ncp++] = 0x221A;  /* √ */
+    codepoints[ncp++] = 0x221E;  /* ∞ */
     codepoints[ncp++] = 0x2098;  /* ₘ */
     codepoints[ncp++] = 0x2099;  /* ₙ */
     codepoints[ncp++] = 0x2083;  /* ₃ */

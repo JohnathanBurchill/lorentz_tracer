@@ -23,6 +23,32 @@ Vec3 field_gradB(const FieldModel *fm, Vec3 pos)
     };
 }
 
+Vec3 field_curvature(const FieldModel *fm, Vec3 pos, Vec3 bhat)
+{
+    double h = 1e-5;
+    Vec3 fwd = vec3_add(pos, vec3_scale(h, bhat));
+    Vec3 bwd = vec3_sub(pos, vec3_scale(h, bhat));
+    Vec3 Bf = fm->eval_B(fm->params, fwd);
+    Vec3 Bb = fm->eval_B(fm->params, bwd);
+    double Bf_mag = vec3_len(Bf);
+    double Bb_mag = vec3_len(Bb);
+    if (Bf_mag < 1e-30 || Bb_mag < 1e-30) return (Vec3){0, 0, 0};
+    Vec3 bf = vec3_scale(1.0 / Bf_mag, Bf);
+    Vec3 bb = vec3_scale(1.0 / Bb_mag, Bb);
+    return vec3_scale(0.5 / h, vec3_sub(bf, bb));
+}
+
+double field_kappa_bz(const FieldModel *fm, Vec3 pos, double p_mag, double q)
+{
+    Vec3 B = fm->eval_B(fm->params, pos);
+    double Bmag = vec3_len(B);
+    if (Bmag <= 0.0) return NAN;
+    double curv = vec3_len(field_curvature(fm, pos, vec3_scale(1.0 / Bmag, B)));
+    if (curv <= 0.0) return INFINITY;
+    double rho = p_mag / (fabs(q) * Bmag);
+    return sqrt(1.0 / (curv * rho));
+}
+
 static Vec3 unit_B(const FieldModel *fm, Vec3 pos)
 {
     Vec3 B = fm->eval_B(fm->params, pos);

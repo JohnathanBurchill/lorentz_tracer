@@ -15,6 +15,11 @@ typedef struct {
     double q, m;
 } GCParticle;
 
+/* Instantaneous guiding-centre position of a full-orbit particle, given the
+ * field direction and magnitude at the particle. */
+Vec3 gc_pos_from_particle(const Particle *p, Vec3 bhat,
+                          double Bmag, int relativistic);
+
 /* Initialise GC state from a full-orbit particle.
  * dt is the simulation timestep (used for orbit-averaging). */
 void gc_init_from_particle(GCParticle *gc, const Particle *p,
