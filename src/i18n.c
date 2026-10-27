@@ -178,6 +178,7 @@ static const char *g_strings_en[STR__COUNT] = {
     [STR_PLOT_LSHELL]       = "L-shell",
     [STR_PLOT_KAPPA]        = "B\xc3\xbc" "chner-Zelenyi \xce\xba",
     [STR_PLOT_OPTIONS]      = "Plots shown",
+    [STR_MAG_EQUATOR]       = "Magnetic equator",
     [STR_EDIT]              = "Edit",
 
     /* Playback picker */

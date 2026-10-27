@@ -629,7 +629,10 @@ static void tab_interface(AppState *app, Clay_Color hc, Clay_Color bc, Clay_Colo
 
     H("DISPLAY");
     P("Field lines: magnetic field line visualization. GC fl: instantaneous "
-      "guiding-center field line through the particle's GC. Vel/B vectors: "
+      "guiding-center field line through the particle's GC. Magnetic "
+      "equator (Earth model): a translucent surface through the point of "
+      "minimum |B| on each closed field line, about which particles bounce; "
+      "it fills in over a second or two after the field changes. Vel/B vectors: "
       "arrows at the particle. v_gradb^ / v_gradB / w~: "
       "the exact Lorentz-force driver channels and gyration remainder "
       "(see the Physics tab). G_ij: field-direction gradient tensor. "

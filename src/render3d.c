@@ -478,6 +478,111 @@ static void draw_body(double r)
     rlEnd();
 }
 
+/* ---- Magnetic equator surface ----
+ * The point of minimum |B| on each closed field line, joined into a mesh.
+ * Field lines are seeded at their northern footpoints, just above the
+ * body, on a grid of dipole latitude and longitude, with latitudes spaced
+ * evenly in log dipole L so the stretched tail is sampled finely. Each
+ * closed line is met once, neighbouring footpoints give neighbouring
+ * lines, and open lines from the polar cap leave a clean outer edge. Each
+ * seed costs a full field-line trace (about half a millisecond in the
+ * Earth model), so the grid fills in a few milliseconds' worth each frame,
+ * low latitudes first, and starts again when the field changes.
+ * Neighbours whose minima lie far apart, where the minimum jumps from one
+ * dip in |B| to another as on the dayside, are left unjoined, and the
+ * surface stops at 30 radii. */
+#define EQ_NLAT 64
+#define EQ_NPHI 48
+#define EQ_L0 1.5      /* footpoint latitudes acos(sqrt(1/L)), L log-spaced */
+#define EQ_L1 12.0   /* beyond it, lines are open or close past 30 radii */
+static Vec3 eq_pt[EQ_NLAT][EQ_NPHI];
+static unsigned char eq_ok[EQ_NLAT][EQ_NPHI];
+static int eq_done;                      /* seeds traced so far */
+static int eq_model = -1;
+static double eq_params[FIELD_MAX_PARAMS];
+static Vec3 eq_e1, eq_e2, eq_e3;         /* dipole frame: e3 to the north pole */
+
+/* Dipole frame of the model's internal field: for a centred dipole m, the
+ * sum of (B.r)r over the six points +-R x, +-R y, +-R z is along m, and
+ * at twice the body radius the internal field dominates. e3 points to the
+ * northern footpoints (against m), e1 sunward (+x) about it. */
+static void eq_dipole_frame(const FieldModel *fm)
+{
+    double R = 2.0 * fm->body_radius;
+    Vec3 m = {0, 0, 0};
+    for (int i = 0; i < 3; i++)
+        for (int s = -1; s <= 1; s += 2) {
+            Vec3 r = { i == 0 ? s * R : 0, i == 1 ? s * R : 0, i == 2 ? s * R : 0 };
+            Vec3 B = fm->eval_B(fm->params, r);
+            m = vec3_add(m, vec3_scale(vec3_dot(B, r) / (R * R), r));
+        }
+    eq_e3 = vec3_norm(vec3_scale(-1.0, m));
+    Vec3 x = {1, 0, 0};
+    eq_e1 = vec3_norm(vec3_sub(x, vec3_scale(vec3_dot(x, eq_e3), eq_e3)));
+    eq_e2 = vec3_cross(eq_e3, eq_e1);
+}
+
+static void eq_update(const struct AppState *app)
+{
+    const FieldModel *fm = &app->models[app->current_model];
+    int changed = eq_model != app->current_model;
+    for (int i = 0; i < FIELD_MAX_PARAMS && !changed; i++)
+        changed = eq_params[i] != fm->params[i];
+    if (changed) {
+        eq_model = app->current_model;
+        memcpy(eq_params, fm->params, sizeof(eq_params));
+        eq_dipole_frame(fm);
+        eq_done = 0;
+    }
+    double t0 = GetTime();
+    double rf = 1.02 * fm->body_radius;
+    while (eq_done < EQ_NLAT * EQ_NPHI && GetTime() - t0 < 0.004) {
+        int k = eq_done / EQ_NPHI, j = eq_done % EQ_NPHI;
+        double lat = acos(sqrt(1.0 / (EQ_L0 * pow(EQ_L1 / EQ_L0, (double)k / (EQ_NLAT - 1)))));
+        double lon = 2.0 * M_PI * j / EQ_NPHI;
+        Vec3 seed = vec3_scale(rf, vec3_add(vec3_scale(sin(lat), eq_e3),
+                        vec3_add(vec3_scale(cos(lat) * cos(lon), eq_e1),
+                                 vec3_scale(cos(lat) * sin(lon), eq_e2))));
+        Vec3 p;
+        eq_ok[k][j] = field_min_B_point(fm, seed, &p) &&
+                      vec3_len(p) < 30.0 * fm->body_radius;
+        eq_pt[k][j] = p;
+        eq_done++;
+    }
+}
+static void eq_draw(const struct AppState *app)
+{
+    Color c = app->dark_mode ? (Color){110, 200, 255, 50} : (Color){30, 110, 210, 55};
+    rlDrawRenderBatchActive();
+    rlDisableDepthMask();          /* translucent: hide nothing behind it */
+    rlDisableBackfaceCulling();    /* seen from either side */
+    rlCheckRenderBatchLimit(EQ_NLAT * EQ_NPHI * 6);
+    rlBegin(RL_TRIANGLES);
+    rlColor4ub(c.r, c.g, c.b, c.a);
+    for (int k = 0; k + 1 < EQ_NLAT; k++) {
+        if ((k + 2) * EQ_NPHI > eq_done) break;   /* outer ring not traced yet */
+        for (int j = 0; j < EQ_NPHI; j++) {
+            int j1 = (j + 1) % EQ_NPHI;
+            if (!eq_ok[k][j] || !eq_ok[k + 1][j] || !eq_ok[k + 1][j1] || !eq_ok[k][j1])
+                continue;
+            Vec3 q[4] = { eq_pt[k][j], eq_pt[k + 1][j], eq_pt[k + 1][j1], eq_pt[k][j1] };
+            double rmean = 0.25 * (vec3_len(q[0]) + vec3_len(q[1]) +
+                                   vec3_len(q[2]) + vec3_len(q[3]));
+            int joined = 1;
+            for (int e = 0; e < 4 && joined; e++)
+                joined = vec3_len(vec3_sub(q[e], q[(e + 1) % 4])) < 0.5 * rmean;
+            if (!joined) continue;
+            static const int tri[6] = {0, 1, 2, 0, 2, 3};
+            for (int v = 0; v < 6; v++)
+                rlVertex3f((float)q[tri[v]].x, (float)q[tri[v]].y, (float)q[tri[v]].z);
+        }
+    }
+    rlEnd();
+    rlDrawRenderBatchActive();
+    rlEnableBackfaceCulling();
+    rlEnableDepthMask();
+}
+
 void render3d_draw(const struct AppState *app)
 {
     const FieldModel *fm = &app->models[app->current_model];
@@ -979,6 +1084,12 @@ void render3d_draw(const struct AppState *app)
         draw_arrow(pos, e2tip, app->color_binormal);
         g_arrow_lw = saved_lw;
         g_arrow_head_size = saved_head;
+    }
+
+    /* Magnetic equator, translucent: drawn last so all behind it shows */
+    if (app->show_mag_equator && fm->body_radius > 0.0) {
+        eq_update(app);
+        eq_draw(app);
     }
 }
 

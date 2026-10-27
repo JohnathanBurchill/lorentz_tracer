@@ -138,6 +138,7 @@ typedef enum {
     STR_PLOT_LSHELL,            /* "L-shell" */
     STR_PLOT_KAPPA,             /* "Buchner-Zelenyi κ" */
     STR_PLOT_OPTIONS,           /* "Plots shown" */
+    STR_MAG_EQUATOR,            /* "Magnetic equator" */
     STR_EDIT,                   /* "Edit" */
 
     /* Playback file picker */

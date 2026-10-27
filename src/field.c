@@ -58,6 +58,14 @@ static Vec3 unit_B(const FieldModel *fm, Vec3 pos)
 
 int field_L_shell(const FieldModel *fm, Vec3 pos, double *L)
 {
+    Vec3 pmin;
+    if (!field_min_B_point(fm, pos, &pmin)) return 0;
+    *L = vec3_len(pmin);
+    return 1;
+}
+
+int field_min_B_point(const FieldModel *fm, Vec3 pos, Vec3 *pmin_out)
+{
     if (fm->body_radius <= 0.0 || field_inside_body(fm, pos)) return 0;
 
     double Bmin = INFINITY;
@@ -84,7 +92,7 @@ int field_L_shell(const FieldModel *fm, Vec3 pos, double *L)
         }
         if (!closed) return 0;
     }
-    *L = vec3_len(pmin);
+    *pmin_out = pmin;
     return 1;
 }
 

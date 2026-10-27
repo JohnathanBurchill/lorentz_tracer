@@ -920,6 +920,11 @@ static void section_display(AppState *app, Clay_Color text_c, Clay_Color dim_c,
         if (do_toggle(CLAY_ID("TglPFL"), TR(STR_FL_POS), app->show_pos_field_line, fill_c, track_c, hov, wcfg))
             app->show_pos_field_line = !app->show_pos_field_line;
     }
+    /* Magnetic equator surface: where field lines end on a central body */
+    if (app->models[app->current_model].body_radius > 0.0 &&
+        do_toggle(CLAY_ID("TglMagEq"), TR(STR_MAG_EQUATOR), app->show_mag_equator,
+                  fill_c, track_c, hov, wcfg))
+        app->show_mag_equator = !app->show_mag_equator;
     if (app->show_trail) {
         do_slider(CLAY_ID("TrailFadeSlider"), TR(STR_TRAIL_FADE), Sf("%.0f%%", app->trail_fade * 100),
                   &app->trail_fade, 0.0f, 1.0f, track_c, fill_c, text_c);

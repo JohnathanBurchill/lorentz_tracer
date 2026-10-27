@@ -3123,6 +3123,7 @@ static void state_format(const AppState *app, StateText *t)
     tprintf(t, "show_gc_trajectory=%d\n", app->show_gc_trajectory);
     tprintf(t, "gc_symplectic=%d\n", app->gc_symplectic);
     tprintf(t, "show_pos_field_line=%d\n", app->show_pos_field_line);
+    tprintf(t, "show_mag_equator=%d\n", app->show_mag_equator);
     tprintf(t, "gc_fl_length=%.6g\n", app->gc_fl_length);
     tprintf(t, "axis_scale=%.6g\n", app->axis_scale);
     tprintf(t, "trail_thickness=%.6g\n", app->trail_thickness);
@@ -3353,6 +3354,8 @@ void app_load_state(AppState *app)
             app->show_gc_trajectory = atoi(val);
         else if (strcmp(key, "gc_symplectic") == 0)
             app->gc_symplectic = atoi(val) ? 1 : 0;
+        else if (strcmp(key, "show_mag_equator") == 0)
+            app->show_mag_equator = atoi(val);
         else if (strcmp(key, "show_pos_field_line") == 0)
             app->show_pos_field_line = atoi(val);
         else if (strcmp(key, "gc_fl_length") == 0)

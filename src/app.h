@@ -134,6 +134,7 @@ typedef struct AppState {
     int show_field_lines;
     int show_gc_field_line;  /* draw instantaneous field line through GC */
     int show_pos_field_line; /* draw field line through particle position */
+    int show_mag_equator;    /* surface of minimum |B| on closed field lines */
     float trail_thickness;   /* OpenGL line width for orbit trails (1-5) */
     float axis_scale;        /* coordinate axis length, 0 = hidden */
     int radiation_loss;      /* apply Larmor radiation damping */

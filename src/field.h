@@ -76,6 +76,10 @@ static inline int field_inside_body(const FieldModel *fm, Vec3 p)
  * line, a point inside the body, or a model without a body. */
 int field_L_shell(const FieldModel *fm, Vec3 pos, double *L);
 
+/* The point of minimum |B| along the field line through pos, its magnetic
+ * equator, under the same conditions as field_L_shell (closed lines only) */
+int field_min_B_point(const FieldModel *fm, Vec3 pos, Vec3 *pmin);
+
 /* Per-model init functions */
 void field_init_circular(FieldModel *fm);
 void field_init_grad_b(FieldModel *fm);
