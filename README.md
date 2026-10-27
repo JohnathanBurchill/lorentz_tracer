@@ -27,6 +27,14 @@ cmake --build build
 
 On macOS this produces a `.app` bundle in `build/`. On Linux and Windows it produces a standalone executable.
 
+To install it:
+
+```sh
+cmake --install build
+```
+
+On macOS the app goes in `~/Applications`. On Linux the program goes in `/usr/local/bin` and its fonts and scenarios in `/usr/local/share/lorentz_tracer` (so this needs `sudo`). On Windows the program and its `resources` folder go together in `C:\Program Files\lorentz_tracer`. `--prefix DIR` installs under `DIR` instead.
+
 Cross-compilation (macOS host):
 
 ```sh

@@ -34,6 +34,8 @@ else()
         set(PLATFORM Web CACHE STRING "" FORCE)
     endif()
     FetchContent_MakeAvailable(raylib)
+    # Keep raylib's headers and library out of cmake --install
+    set_property(DIRECTORY ${raylib_SOURCE_DIR} PROPERTY EXCLUDE_FROM_ALL TRUE)
 endif()
 
 # ---- raygui (vendored single header) ----
@@ -170,6 +172,14 @@ elseif(APPLE)
             ${CMAKE_SOURCE_DIR}/resources/scenarios
             $<TARGET_BUNDLE_CONTENT_DIR:lorentz_tracer>/Resources/resources/scenarios
     )
+
+    # cmake --install build puts the app in ~/Applications, unless
+    # CMAKE_INSTALL_PREFIX (or --prefix) names another folder
+    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Applications" CACHE PATH
+            "Install prefix" FORCE)
+    endif()
+    install(TARGETS lorentz_tracer BUNDLE DESTINATION .)
 else()
     # ---- Copy resources for non-bundle builds (Linux, Windows) ----
     add_custom_command(TARGET lorentz_tracer POST_BUILD
@@ -177,6 +187,20 @@ else()
             ${CMAKE_SOURCE_DIR}/resources
             $<TARGET_FILE_DIR:lorentz_tracer>/resources
     )
+
+    # cmake --install build: on Windows the program and its resources go
+    # together in the prefix (C:/Program Files/lorentz_tracer by default); on
+    # Linux the program goes in <prefix>/bin (/usr/local by default) and its
+    # resources in <prefix>/share/lorentz_tracer, where it looks for them
+    if(WIN32)
+        install(TARGETS lorentz_tracer RUNTIME DESTINATION .)
+        install(DIRECTORY resources/fonts resources/scenarios
+            DESTINATION resources)
+    else()
+        install(TARGETS lorentz_tracer RUNTIME DESTINATION bin)
+        install(DIRECTORY resources/fonts resources/scenarios
+            DESTINATION share/lorentz_tracer/resources)
+    endif()
 endif()
 
 # ---- Windows-specific ----

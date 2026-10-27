@@ -60,7 +60,10 @@ static void resolve_resource_dir(char *buf, int buflen)
     if (len > 0) {
         exec_path[len] = '\0';
         char *dir = dirname(exec_path);
+        /* Next to the executable in a build; installed, in share/ */
         snprintf(buf, buflen, "%s/resources", dir);
+        if (access(buf, R_OK) == 0) return;
+        snprintf(buf, buflen, "%s/../share/lorentz_tracer/resources", dir);
         return;
     }
 #endif
