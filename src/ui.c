@@ -523,7 +523,22 @@ static void section_model(AppState *app, Clay_Color text_c, Clay_Color dim_c,
     /* Field parameters */
     if (!g_field_dd_open && !g_species_dd_open) {
         FieldModel *fm = &app->models[app->current_model];
+        /* Choices among named options first, each a row of buttons, since
+         * they decide which of the numbers below take part */
+        Clay_Color hov = {60,60,80,255};
         for (int i = 0; i < fm->n_params; i++) {
+            if (!fm->param_choices[i] || !field_param_shown(fm, i)) continue;
+            CLAY_TEXT(S(fm->param_names[i]), CLAY_TEXT_CONFIG({ .fontId = FONT_UI, .fontSize = UZ(13),
+                      .letterSpacing = 1, .textColor = dim_c }));
+            CLAY_AUTO_ID({ .layout = { .childGap = 2, .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) } } }) {
+                for (int k = 0; fm->param_choices[i][k]; k++)
+                    if (do_toggle(CLAY_IDI("PChoice", i * 16 + k), fm->param_choices[i][k],
+                                  (int)fm->params[i] == k, fill_c, track_c, hov, wcfg))
+                        fm->params[i] = k;
+            }
+        }
+        for (int i = 0; i < fm->n_params; i++) {
+            if (fm->param_choices[i] || !field_param_shown(fm, i)) continue;
             /* Stellarator config dropdown */
             if (app->current_model == 8 && i == 0) {
                 CLAY_TEXT(S(TR(STR_CONFIG)), CLAY_TEXT_CONFIG({ .fontId = FONT_UI, .fontSize = UZ(13),
@@ -1065,7 +1080,7 @@ static void section_readouts(AppState *app, Clay_Color text_c, Clay_Color dim_c)
     if (app->lost_time[si] < 0.0) {
         if (cfm->body_radius > 0.0) {
             double Lsh;
-            if (field_L_shell(cfm, app_particle_gc(app, si), &Lsh))
+            if (app_particle_L(app, si, &Lsh))
                 CLAY_TEXT(Sf(TR(STR_FMT_LSHELL), Lsh), CLAY_TEXT_CONFIG(rcfg));
             else
                 CLAY_TEXT(S(TR(STR_LSHELL_OPEN)), CLAY_TEXT_CONFIG(rcfg));

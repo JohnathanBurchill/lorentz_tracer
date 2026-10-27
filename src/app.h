@@ -344,6 +344,10 @@ int app_embed_init(void);
  * kappa at its position (see field_kappa_bz) */
 Vec3 app_particle_gc(const AppState *app, int pi);
 double app_particle_kappa(const AppState *app, int pi);
+/* L of particle pi's guiding-centre field line (field_L_shell), traced at
+ * most ten times a second per particle, since a trace takes about half a
+ * millisecond in T89 and several in T96; 0 for an open line */
+int app_particle_L(const AppState *app, int pi, double *L);
 /* The plots the strip shows for the current model (plot_mask without the
  * L-shell where it has no meaning), and whether the strip is shown */
 int app_plot_mask(const AppState *app);

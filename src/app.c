@@ -725,12 +725,19 @@ int init_overlay_build(const AppState *app, InitOverlayLine *out, int max)
 
     /* Parameters — mono with optional digit subscript and unit after value */
     for (int p = 0; p < fm_ic->n_params; p++) {
+        if (!field_param_shown(fm_ic, p)) continue;
         char base[32], sub[8], unit[16];
         parse_param_name(fm_ic->param_names[p], base, sizeof(base),
                          sub, sizeof(sub), unit, sizeof(unit));
         char pre[64], suf[64];
         snprintf(pre, sizeof(pre), "  %s", base);
-        if (unit[0])
+        if (fm_ic->param_choices[p]) {
+            /* the index may come from a scenario or state file */
+            int k = (int)fm_ic->params[p], nk = 0;
+            while (fm_ic->param_choices[p][nk]) nk++;
+            if (k < 0 || k >= nk) k = 0;
+            snprintf(suf, sizeof(suf), " = %s", fm_ic->param_choices[p][k]);
+        } else if (unit[0])
             snprintf(suf, sizeof(suf), " = %.4g %s", fm_ic->params[p], unit);
         else
             snprintf(suf, sizeof(suf), " = %.4g", fm_ic->params[p]);
@@ -924,6 +931,21 @@ Vec3 app_particle_gc(const AppState *app, int pi)
     if (Bmag <= 0.0) return p->pos;
     return gc_pos_from_particle(p, vec3_scale(1.0 / Bmag, B), Bmag,
                                 app->relativistic);
+}
+
+int app_particle_L(const AppState *app, int pi, double *L)
+{
+    static double t_last[MAX_PARTICLES], val[MAX_PARTICLES];
+    static int traced[MAX_PARTICLES], ok[MAX_PARTICLES];
+    double now = GetTime();
+    if (!traced[pi] || now - t_last[pi] >= 0.1 || now < t_last[pi]) {
+        ok[pi] = field_L_shell(&app->models[app->current_model],
+                               app_particle_gc(app, pi), &val[pi]);
+        t_last[pi] = now;
+        traced[pi] = 1;
+    }
+    if (ok[pi]) *L = val[pi];
+    return ok[pi];
 }
 
 double app_particle_kappa(const AppState *app, int pi)
@@ -2258,14 +2280,14 @@ physics:
         int trail_interval = app->steps_per_frame / 256;
         if (trail_interval < 1) trail_interval = 1;
 
-        /* L for the L-shell plot, traced once a frame at each guiding
-         * centre: a trace takes about half a millisecond, far too long for
-         * every sample, and L hardly changes within a frame */
+        /* L for the L-shell plot at each guiding centre, traced at most ten
+         * times a second (app_particle_L): a trace is far too slow for
+         * every sample, and L changes only on the drift timescale */
         int want_L = app_plots_visible(app) && (app_plot_mask(app) & PLOT_LSHELL);
         for (int pi = 0; pi < app->n_particles; pi++) {
             app->lshell_now[pi] = NAN;   /* open field line or not traced */
             if (want_L && app->lost_time[pi] < 0.0)
-                field_L_shell(fm, app_particle_gc(app, pi), &app->lshell_now[pi]);
+                app_particle_L(app, pi, &app->lshell_now[pi]);
         }
 
         for (int i = 0; i < substeps; i++) {

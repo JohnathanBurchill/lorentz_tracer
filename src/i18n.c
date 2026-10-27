@@ -236,6 +236,8 @@ static const char *g_strings_en[STR__COUNT] = {
     [STR_PARAM_IMF_BY]      = "IMF By (nT)",
     [STR_PARAM_IMF_BZ]      = "IMF Bz (nT)",
     [STR_PARAM_PDYN]        = "Pdyn (nPa)",
+    [STR_PARAM_DST]         = "Dst (nT)",
+    [STR_PARAM_EXT_FIELD]   = "External field",
     [STR_STEL_CFG_R2]       = "r2 s5.1 (QA)",
     [STR_STEL_CFG_LP22]     = "Precise QA (LP22)",
 

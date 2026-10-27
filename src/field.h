@@ -3,7 +3,7 @@
 
 #include "vec3.h"
 
-#define FIELD_MAX_PARAMS    8
+#define FIELD_MAX_PARAMS    10
 #define FIELD_MAX_NAME      64
 #define FIELD_MAX_PNAME     32
 #define FIELD_NUM_MODELS    13
@@ -17,6 +17,12 @@ typedef struct {
     double param_max[FIELD_MAX_PARAMS];
     int param_log[FIELD_MAX_PARAMS];  /* 1 = slider is logarithmic in the value */
     int param_int[FIELD_MAX_PARAMS];  /* 1 = slider takes whole-number values */
+    /* A choice among named options rather than a number: param_choices[i]
+     * lists them (NULL-terminated) and params[i] is the index chosen */
+    const char *const *param_choices[FIELD_MAX_PARAMS];
+    /* 0 when parameter i plays no part for the current values of the others,
+     * so the panel and overlay leave it out (NULL: all take part) */
+    int (*param_shown)(const double *params, int i);
     int n_params;
 
     Vec3 (*eval_B)(const double *params, Vec3 pos);
@@ -70,6 +76,11 @@ static inline double field_length_unit(const FieldModel *fm)
     return fm->length_unit > 0.0 ? fm->length_unit : 1.0;
 }
 
+static inline int field_param_shown(const FieldModel *fm, int i)
+{
+    return !fm->param_shown || fm->param_shown(fm->params, i);
+}
+
 /* True inside the model's solid central body (never when it has none). */
 static inline int field_inside_body(const FieldModel *fm, Vec3 p)
 {
@@ -84,8 +95,10 @@ static inline int field_inside_body(const FieldModel *fm, Vec3 p)
 int field_L_shell(const FieldModel *fm, Vec3 pos, double *L);
 
 /* The point of minimum |B| along the field line through pos, its magnetic
- * equator, under the same conditions as field_L_shell (closed lines only) */
-int field_min_B_point(const FieldModel *fm, Vec3 pos, Vec3 *pmin);
+ * equator, under the same conditions as field_L_shell (closed lines only).
+ * The trace steps step times the distance from the origin; field_L_shell
+ * uses 0.01. */
+int field_min_B_point(const FieldModel *fm, Vec3 pos, double step, Vec3 *pmin);
 
 /* Per-model init functions */
 void field_init_circular(FieldModel *fm);

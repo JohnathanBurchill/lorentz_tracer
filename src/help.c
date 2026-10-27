@@ -345,6 +345,8 @@ static void tab_physics(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color 
     P("- Earth image: NASA Earth Observatory, Blue Marble Next Generation (R. Stockli et al., December 2004, with topography and bathymetry).");
     P("- C. Stormer, \"Sur les trajectoires des corpuscules electrises,\" Arch. Sci. Phys. Nat. 24, 5 (1907).");
     P("- N. A. Tsyganenko, \"A magnetospheric magnetic field model with a warped tail current sheet,\" Planet. Space Sci. 37, 5 (1989).");
+    P("- N. A. Tsyganenko, \"Modeling the Earth's magnetospheric magnetic field confined within a realistic magnetopause,\" J. Geophys. Res. 100, 5599 (1995).");
+    P("- N. A. Tsyganenko and D. P. Stern, \"A new-generation global magnetosphere field model, based on spacecraft magnetometer data,\" ISTP Newsletter 6, 21 (1996).");
 }
 
 /* ================================================================
@@ -487,8 +489,9 @@ static void tab_fields(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color d
       "s, band limits k1 and k2, seed.");
     GAP(6); RULE(); GAP(4);
 
-    H("12. EARTH  (IGRF + Tsyganenko T89c magnetosphere, IMF outside)");
-    M("  B = B_IGRF(year, day) + B_T89c(Kp, \xcf\x88) inside the magnetopause,  B_IMF outside");
+    H("12. TERRESTRIAL MAGNETOSPHERE  (IGRF + Tsyganenko T89c or T96)");
+    M("  T89c:  B = B_IGRF(year, day) + B_T89c(Kp, \xcf\x88) inside the magnetopause,  B_IMF outside");
+    M("  T96:   B = B_IGRF(year, day) + B_T96(Pdyn, Dst, By, Bz, \xcf\x88)");
     P("The Earth's internal field from the International Geomagnetic "
       "Reference Field (IGRF-14, degree 13, epochs 1900-2030) plus the "
       "Tsyganenko (1989) T89c model of the magnetospheric currents: ring "
@@ -504,6 +507,17 @@ static void tab_fields(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color d
       "compression or draping, so B jumps across the boundary and "
       "particles cross it freely. Field lines that leave the "
       "magnetopause continue as straight IMF lines.");
+    GAP(4);
+    P("The External field buttons choose T96 instead (Tsyganenko 1995, "
+      "1996), the first of his models to confine its field within its own "
+      "magnetopause, with explicit magnetopause, ring, tail and "
+      "Birkeland (region 1 and 2) current fields. It is set by the "
+      "solar wind dynamic pressure Pdyn, the Dst index and IMF By and "
+      "Bz; Kp and IMF Bx then play no part and are hidden. Its "
+      "magnetopause depends on Pdyn alone (about 11 RE at the nose for "
+      "2 nPa); across a thin boundary layer the field blends into T96's "
+      "own interconnection field outside, 0.785 times IMF By and Bz, "
+      "fading tailward, in place of the uniform IMF.");
     GAP(4);
     P("Coordinates are GSM: x toward the Sun, z in the plane of x and the "
       "dipole axis. The year, day of year and UT set the IGRF epoch and "
@@ -532,7 +546,9 @@ static void tab_fields(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color d
       "so deep in the strong near-Earth field the gyration itself is not "
       "resolved, but the Boris pusher still places the mirror points "
       "correctly. "
-      "Parameters: Kp, year, day of year, UT, IMF Bx, By, Bz, Pdyn.");
+      "Parameters: external field, then for T89c Kp, year, day of year, "
+      "UT, IMF Bx, By, Bz, Pdyn, and for T96 year, day of year, UT, IMF "
+      "By, Bz, Pdyn, Dst.");
 }
 
 /* ================================================================

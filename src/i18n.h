@@ -196,6 +196,8 @@ typedef enum {
     STR_PARAM_IMF_BY,           /* "IMF By (nT)" */
     STR_PARAM_IMF_BZ,           /* "IMF Bz (nT)" */
     STR_PARAM_PDYN,             /* "Pdyn (nPa)" (solar wind dynamic pressure) */
+    STR_PARAM_DST,              /* "Dst (nT)" (T96 ring-current index) */
+    STR_PARAM_EXT_FIELD,        /* "External field" (T89c or T96) */
 
     /* Stellarator config names */
     STR_STEL_CFG_R2,            /* "r2 s5.1 (QA)" */

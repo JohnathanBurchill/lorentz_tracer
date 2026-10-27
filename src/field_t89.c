@@ -1,12 +1,16 @@
 #include "field.h"
 #include "i18n.h"
 #include "igrf14.h"
+#include "t96.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
 
-/* Earth's magnetosphere: the IGRF-14 internal field plus the Tsyganenko
- * (1989) T89c external field, in GSM coordinates.
+/* Earth's magnetosphere ("Terrestrial Magnetosphere"): the IGRF-14 internal
+ * field plus an external field, chosen between the Tsyganenko (1989) T89c
+ * model inside a Shue et al. (1998) magnetopause, described below, and the
+ * Tsyganenko (1995, 1996) T96 model with its own magnetopause (t96.c), in
+ * GSM coordinates.
  *
  * T89c models the ring current, the warped and tilt-hinged tail current
  * sheet with its closure currents, and the Chapman-Ferraro field, fitted to
@@ -33,6 +37,10 @@
 #define NT_SCENE  (1.0e-9 * RE_M)       /* nT -> scene tesla */
 #define LOSS_ALT  100.0e3               /* particles below this altitude (m)
                                            are lost to the atmosphere */
+
+/* The external field model, params[9] */
+enum { EXT_T89, EXT_T96 };
+static const char *const ext_field_names[] = {"T89c + Shue", "T96", NULL};
 
 /* T89c coefficients A(1)-A(30) for the seven Kp bins (IOPT = 1..7). */
 static const double t89_param[7][30] = {
@@ -433,6 +441,46 @@ static Vec3 t89_B(const double *params, Vec3 pos)
     return (Vec3){bx * NT_SCENE, by * NT_SCENE, bz * NT_SCENE};
 }
 
+/* IGRF plus T96 everywhere, as Geopack users add them. T96 confines its
+ * own field: inside its magnetopause it is the magnetospheric currents;
+ * across a boundary layer it blends into, and outside it is, the model's
+ * interconnection field 0.785 (0, By, Bz) exp(x/20 - (ys/10)^2) less its
+ * 1980 dipole, so adding IGRF there leaves under 1 nT of IGRF minus that
+ * dipole beyond about 10 RE. */
+static Vec3 t96_B(const double *params, Vec3 pos)
+{
+    if (params[1] != s_es.year || params[2] != s_es.doy || params[3] != s_es.ut)
+        earth_recalc(&s_es, params[1], params[2], params[3]);
+    const double (*a)[3] = s_es.a;
+    Vec3 bg = igrf_geo(&s_es,
+                       a[0][0] * pos.x + a[1][0] * pos.y + a[2][0] * pos.z,
+                       a[0][1] * pos.x + a[1][1] * pos.y + a[2][1] * pos.z,
+                       a[0][2] * pos.x + a[1][2] * pos.y + a[2][2] * pos.z);
+    /* Pdyn, Dst, IMF By, IMF Bz */
+    const double parmod[4] = {params[7], params[8], params[5], params[6]};
+    double bx, by, bz;
+    t96_field(parmod, s_es.psi, pos.x, pos.y, pos.z, &bx, &by, &bz);
+    bx += a[0][0] * bg.x + a[0][1] * bg.y + a[0][2] * bg.z;
+    by += a[1][0] * bg.x + a[1][1] * bg.y + a[1][2] * bg.z;
+    bz += a[2][0] * bg.x + a[2][1] * bg.y + a[2][2] * bg.z;
+    return (Vec3){bx * NT_SCENE, by * NT_SCENE, bz * NT_SCENE};
+}
+
+static Vec3 earth_B(const double *params, Vec3 pos)
+{
+    return params[9] == EXT_T96 ? t96_B(params, pos) : t89_B(params, pos);
+}
+
+/* T89c takes Kp and, outside the Shue magnetopause, the whole IMF; T96
+ * takes Dst and only IMF By and Bz */
+static int earth_param_shown(const double *params, int i)
+{
+    int t96 = params[9] == EXT_T96;
+    if (i == 0 || i == 4) return !t96;   /* Kp, IMF Bx */
+    if (i == 8) return t96;              /* Dst */
+    return 1;
+}
+
 /* Dipole tilt angle (rad, positive with the north pole toward the Sun) for
  * the year, day and UT in params. */
 double t89_dipole_tilt(const double *params)
@@ -456,7 +504,7 @@ void field_init_t89(FieldModel *fm)
     memset(fm, 0, sizeof(*fm));
     snprintf(fm->code, sizeof(fm->code), "EARTH");
     snprintf(fm->name, FIELD_MAX_NAME, "%s", TR(STR_MODEL_T89));
-    fm->n_params = 8;
+    fm->n_params = 10;
     snprintf(fm->param_names[0], FIELD_MAX_PNAME, "%s", TR(STR_PARAM_KP));
     fm->params[0] = 2.0;    fm->param_min[0] = 0.0;    fm->param_max[0] = 6.0;
     fm->param_int[0] = 1;
@@ -476,7 +524,17 @@ void field_init_t89(FieldModel *fm)
     fm->params[6] = -5.0;   fm->param_min[6] = -20.0;  fm->param_max[6] = 20.0;
     snprintf(fm->param_names[7], FIELD_MAX_PNAME, "%s", TR(STR_PARAM_PDYN));
     fm->params[7] = 2.0;    fm->param_min[7] = 0.5;    fm->param_max[7] = 10.0;
-    fm->eval_B = t89_B;
+    /* Dst and the external model come last so saved settings keep their
+     * slots */
+    snprintf(fm->param_names[8], FIELD_MAX_PNAME, "%s", TR(STR_PARAM_DST));
+    fm->params[8] = -10.0;  fm->param_min[8] = -300.0; fm->param_max[8] = 50.0;
+    fm->param_int[8] = 1;
+    snprintf(fm->param_names[9], FIELD_MAX_PNAME, "%s", TR(STR_PARAM_EXT_FIELD));
+    fm->params[9] = EXT_T89;
+    fm->param_max[9] = EXT_T96;
+    fm->param_choices[9] = ext_field_names;
+    fm->param_shown = earth_param_shown;
+    fm->eval_B = earth_B;
     fm->eval_E = NULL;
     fm->length_unit = RE_M;
     snprintf(fm->length_name, sizeof(fm->length_name), "RE");

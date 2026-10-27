@@ -510,12 +510,11 @@ static void draw_body(const struct AppState *app, const FieldModel *fm)
  * evenly in log dipole L so the stretched tail is sampled finely. Each
  * closed line is met once, neighbouring footpoints give neighbouring
  * lines, and open lines from the polar cap leave a clean outer edge. Each
- * seed costs a full field-line trace (about half a millisecond in the
- * Earth model), so the grid fills in a few milliseconds' worth each frame,
- * low latitudes first, and starts again when the field changes.
- * Neighbours whose minima lie far apart, where the minimum jumps from one
- * dip in |B| to another as on the dayside, are left unjoined, and the
- * surface stops at 30 radii. */
+ * seed costs a full field-line trace, in steps of 4% of the distance, so
+ * the grid fills in 6 ms worth of traces each frame, low latitudes first,
+ * and starts again when the field changes. Neighbours whose minima lie far
+ * apart, where the minimum jumps from one dip in |B| to another as on the
+ * dayside, are left unjoined, and the surface stops at 30 radii. */
 #define EQ_NLAT 64
 #define EQ_NPHI 48
 #define EQ_L0 1.5      /* footpoint latitudes acos(sqrt(1/L)), L log-spaced */
@@ -561,7 +560,7 @@ static void eq_update(const struct AppState *app)
     }
     double t0 = GetTime();
     double rf = 1.02 * fm->body_radius;
-    while (eq_done < EQ_NLAT * EQ_NPHI && GetTime() - t0 < 0.004) {
+    while (eq_done < EQ_NLAT * EQ_NPHI && GetTime() - t0 < 0.006) {
         int k = eq_done / EQ_NPHI, j = eq_done % EQ_NPHI;
         double lat = acos(sqrt(1.0 / (EQ_L0 * pow(EQ_L1 / EQ_L0, (double)k / (EQ_NLAT - 1)))));
         double lon = 2.0 * M_PI * j / EQ_NPHI;
@@ -569,7 +568,7 @@ static void eq_update(const struct AppState *app)
                         vec3_add(vec3_scale(cos(lat) * cos(lon), eq_e1),
                                  vec3_scale(cos(lat) * sin(lon), eq_e2))));
         Vec3 p;
-        eq_ok[k][j] = field_min_B_point(fm, seed, &p) &&
+        eq_ok[k][j] = field_min_B_point(fm, seed, 0.04, &p) &&
                       vec3_len(p) < 30.0 * fm->body_radius;
         eq_pt[k][j] = p;
         eq_done++;
