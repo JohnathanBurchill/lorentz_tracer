@@ -146,6 +146,10 @@ if(EMSCRIPTEN)
     # WASM build: raylib detects PLATFORM_WEB automatically
     set(EM_FLAGS "-s USE_GLFW=3 -s ASYNCIFY -s TOTAL_MEMORY=738197504")
     set(EM_FLAGS "${EM_FLAGS} -s ALLOW_MEMORY_GROWTH=1")
+    # main()'s frame stays on the stack under the browser's main loop, and
+    # stb_image needs ~35 KB more to decode a texture: Emscripten's default
+    # 64 KB stack overflows on the Earth model
+    set(EM_FLAGS "${EM_FLAGS} -s STACK_SIZE=1048576")
     set(EM_FLAGS "${EM_FLAGS} --preload-file ${CMAKE_SOURCE_DIR}/resources@/resources")
     set(EM_FLAGS "${EM_FLAGS} --shell-file ${CMAKE_SOURCE_DIR}/resources/shell.html")
     set_target_properties(lorentz_tracer PROPERTIES
