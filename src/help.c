@@ -80,8 +80,9 @@ static void tab_keys(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color dc)
        "Esc             Close this help");
     GAP(8);
     H("MOUSE");
-    ML("Right-drag            Orbit camera around target\n"
-       "Shift + right-drag    Orbit entire scene around origin\n"
+    ML("Right-drag            Orbit entire scene around origin\n"
+       "                      (trackpad: two-finger click and drag)\n"
+       "Shift + right-drag    Orbit camera around target\n"
        "RShift + left-drag    Pan camera in view plane\n"
        "Scroll wheel          Zoom in / out\n"
        "LShift + hover        Preview particle placement point\n"

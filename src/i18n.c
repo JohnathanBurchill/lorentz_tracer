@@ -249,10 +249,11 @@ static const char *g_strings_en[STR__COUNT] = {
         "the current playback speed.",
     [STR_TUT_S1_BRIEF]  = "Right-click and drag to orbit the camera. Scroll to zoom. "
         "The colored axes show x (red), y (green), z (blue).",
-    [STR_TUT_S1_DETAIL] = "Right-click and drag to orbit the camera around the target "
-        "point. Scroll to zoom in and out. The colored axes at the "
-        "origin show x (red), y (green), z (blue). Shift+right-drag "
-        "orbits around the origin. Press 0 to re-center the view. "
+    [STR_TUT_S1_DETAIL] = "Right-click and drag to orbit the camera around the origin "
+        "(on a trackpad, click and drag with two fingers). Scroll to "
+        "zoom in and out. The colored axes at the origin show x (red), "
+        "y (green), z (blue). Shift+right-drag orbits around the target "
+        "point instead. Press 0 to re-center the view. "
         "The vector arrows are hidden for now so you can see the "
         "orbit and field geometry clearly.",
     [STR_TUT_S2_BRIEF]  = "The curves in the scene are magnetic field lines. They show "

@@ -1139,6 +1139,66 @@ void app_toggle_borderless(void)
 #endif
 }
 
+/* Orbit the camera position and target together around the origin by a
+ * mouse delta (pixels): horizontally about the z axis, vertically about the
+ * camera's right vector. */
+static void orbit_about_origin(AppState *app, Vector2 delta)
+{
+    float angle_h = -delta.x * 0.005f;
+    float angle_v = -delta.y * 0.005f;
+
+    Vector3 p = app->camera.position;
+    Vector3 t = app->camera.target;
+
+    /* Horizontal rotation about z-axis */
+    float ch = cosf(angle_h), sh = sinf(angle_h);
+    float px = p.x * ch - p.y * sh;
+    float py = p.x * sh + p.y * ch;
+    p.x = px; p.y = py;
+    float tx = t.x * ch - t.y * sh;
+    float ty = t.x * sh + t.y * ch;
+    t.x = tx; t.y = ty;
+
+    /* Vertical rotation about the camera's right vector */
+    Vector3 fwd = {-p.x, -p.y, -p.z};
+    float fwd_len = sqrtf(fwd.x*fwd.x + fwd.y*fwd.y + fwd.z*fwd.z);
+    if (fwd_len > 1e-6f) {
+        fwd.x /= fwd_len; fwd.y /= fwd_len; fwd.z /= fwd_len;
+    }
+    Vector3 up = app->camera.up;
+    Vector3 right = {
+        fwd.y*up.z - fwd.z*up.y,
+        fwd.z*up.x - fwd.x*up.z,
+        fwd.x*up.y - fwd.y*up.x,
+    };
+    float cv = cosf(angle_v), sv = sinf(angle_v);
+
+    /* Rotate position */
+    float dot_p = right.x*p.x + right.y*p.y + right.z*p.z;
+    Vector3 cross_p = {
+        right.y*p.z - right.z*p.y,
+        right.z*p.x - right.x*p.z,
+        right.x*p.y - right.y*p.x,
+    };
+    p.x = p.x*cv + cross_p.x*sv + right.x*dot_p*(1-cv);
+    p.y = p.y*cv + cross_p.y*sv + right.y*dot_p*(1-cv);
+    p.z = p.z*cv + cross_p.z*sv + right.z*dot_p*(1-cv);
+
+    /* Rotate target with the same rotation */
+    float dot_t = right.x*t.x + right.y*t.y + right.z*t.z;
+    Vector3 cross_t = {
+        right.y*t.z - right.z*t.y,
+        right.z*t.x - right.x*t.z,
+        right.x*t.y - right.y*t.x,
+    };
+    t.x = t.x*cv + cross_t.x*sv + right.x*dot_t*(1-cv);
+    t.y = t.y*cv + cross_t.y*sv + right.y*dot_t*(1-cv);
+    t.z = t.z*cv + cross_t.z*sv + right.z*dot_t*(1-cv);
+
+    app->camera.position = p;
+    app->camera.target = t;
+}
+
 static void recompute_dt(AppState *app);
 #ifndef __EMSCRIPTEN__
 static void state_file_path(char *buf, int buflen);
@@ -1382,14 +1442,17 @@ void app_update(AppState *app)
         /* Tab: cycle selected particle */
         if (IsKeyPressed(KEY_TAB) && app->n_particles > 1)
             app->selected_particle = (app->selected_particle + 1) % app->n_particles;
-        /* Camera orbit (right-drag) */
+        /* Camera orbit: right-drag about the origin, Shift about the target */
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
             Vector2 delta = GetMouseDelta();
             if (delta.x * delta.x + delta.y * delta.y > 1.0f)
                 app->tutorial.camera_moved = 1;
             app->cam_trans.active = 0;
-            UpdateCameraPro(&app->camera,
-                (Vector3){0,0,0}, (Vector3){delta.x*0.3f, delta.y*0.3f, 0}, 0);
+            if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT))
+                UpdateCameraPro(&app->camera,
+                    (Vector3){0,0,0}, (Vector3){delta.x*0.3f, delta.y*0.3f, 0}, 0);
+            else
+                orbit_about_origin(app, delta);
         }
         /* Scroll zoom */
         float tw = GetMouseWheelMove();
@@ -1632,72 +1695,20 @@ void app_update(AppState *app)
         }
     }
 
-    /* Right-drag: orbit camera view direction (around target) */
+    /* Right-drag (two-finger click-drag on a trackpad): orbit the camera
+     * position and target around the origin */
     if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && !IsKeyDown(KEY_LEFT_SHIFT) && !IsKeyDown(KEY_RIGHT_SHIFT)) {
+        app->cam_trans.active = 0;
+        orbit_about_origin(app, GetMouseDelta());
+    }
+    /* Shift + right-drag: orbit camera view direction (around target) */
+    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT))) {
         app->cam_trans.active = 0;
         Vector2 delta = GetMouseDelta();
         UpdateCameraPro(&app->camera,
             (Vector3){0.0f, 0.0f, 0.0f},
             (Vector3){delta.x * 0.3f, delta.y * 0.3f, 0.0f},
             0.0f);
-    }
-    /* Shift + right-drag: orbit camera position and target around the origin */
-    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT))) {
-        app->cam_trans.active = 0;
-        Vector2 delta = GetMouseDelta();
-        float angle_h = -delta.x * 0.005f;
-        float angle_v = -delta.y * 0.005f;
-
-        Vector3 p = app->camera.position;
-        Vector3 t = app->camera.target;
-
-        /* Horizontal rotation about z-axis */
-        float ch = cosf(angle_h), sh = sinf(angle_h);
-        float px = p.x * ch - p.y * sh;
-        float py = p.x * sh + p.y * ch;
-        p.x = px; p.y = py;
-        float tx = t.x * ch - t.y * sh;
-        float ty = t.x * sh + t.y * ch;
-        t.x = tx; t.y = ty;
-
-        /* Vertical rotation about the camera's right vector */
-        Vector3 fwd = {-p.x, -p.y, -p.z};
-        float fwd_len = sqrtf(fwd.x*fwd.x + fwd.y*fwd.y + fwd.z*fwd.z);
-        if (fwd_len > 1e-6f) {
-            fwd.x /= fwd_len; fwd.y /= fwd_len; fwd.z /= fwd_len;
-        }
-        Vector3 up = app->camera.up;
-        Vector3 right = {
-            fwd.y*up.z - fwd.z*up.y,
-            fwd.z*up.x - fwd.x*up.z,
-            fwd.x*up.y - fwd.y*up.x,
-        };
-        float cv = cosf(angle_v), sv = sinf(angle_v);
-
-        /* Rotate position */
-        float dot_p = right.x*p.x + right.y*p.y + right.z*p.z;
-        Vector3 cross_p = {
-            right.y*p.z - right.z*p.y,
-            right.z*p.x - right.x*p.z,
-            right.x*p.y - right.y*p.x,
-        };
-        p.x = p.x*cv + cross_p.x*sv + right.x*dot_p*(1-cv);
-        p.y = p.y*cv + cross_p.y*sv + right.y*dot_p*(1-cv);
-        p.z = p.z*cv + cross_p.z*sv + right.z*dot_p*(1-cv);
-
-        /* Rotate target with the same rotation */
-        float dot_t = right.x*t.x + right.y*t.y + right.z*t.z;
-        Vector3 cross_t = {
-            right.y*t.z - right.z*t.y,
-            right.z*t.x - right.x*t.z,
-            right.x*t.y - right.y*t.x,
-        };
-        t.x = t.x*cv + cross_t.x*sv + right.x*dot_t*(1-cv);
-        t.y = t.y*cv + cross_t.y*sv + right.y*dot_t*(1-cv);
-        t.z = t.z*cv + cross_t.z*sv + right.z*dot_t*(1-cv);
-
-        app->camera.position = p;
-        app->camera.target = t;
     }
     /* Right-shift + left-drag: pan camera in the view plane.
      * Not while a slider is captured: there Shift snaps the value instead. */
