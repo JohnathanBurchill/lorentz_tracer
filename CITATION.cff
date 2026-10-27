@@ -6,6 +6,8 @@ abstract: >-
   Interactive charged-particle orbit simulation. Solves the full Lorentz
   force equation in real time across thirteen magnetic field models, with 3D
   visualization, live diagnostics, and guiding-centre trajectory comparison.
+  Licensed MIT, except the T89c and T96 field models (src/t89.*, src/t96.*),
+  which are ports of IRBEM-LIB code and licensed LGPL-3.0-or-later.
 authors:
   - family-names: Burchill
     given-names: Johnathan K.
