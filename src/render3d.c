@@ -576,8 +576,10 @@ void render3d_draw(const struct AppState *app)
             220
         };
 
-        /* Draw a sphere at the placement point */
-        DrawSphere(v3(app->place_preview_pos), 0.015f, prev_col);
+        /* Draw a sphere at the placement point, a constant size on screen
+         * whatever the model's length unit */
+        float mark_r = 0.006f * cam_dist(app);
+        DrawSphere(v3(app->place_preview_pos), mark_r, prev_col);
 
         int n_fwd = trace_field_line_len(fm, app->place_preview_pos,  ds, half_len, prev_pts, FL_MAX_PTS);
         for (int i = 1; i < n_fwd; i++)
@@ -586,33 +588,44 @@ void render3d_draw(const struct AppState *app)
         for (int i = 1; i < n_bwd; i++)
             DrawLine3D(v3(bwd_pts[i - 1]), v3(bwd_pts[i]), prev_col);
 
-        /* Drop mode: three origin coordinate planes spanning from
-         * origin to the drop point, with field line projections. */
+        /* Drop mode: the box from the origin to the drop point. Its three
+         * faces through the origin are shaded, with the field line
+         * projected on each, and its edges are outlined. */
         if (app->drop_mode) {
             Vec3 pp = app->place_preview_pos;
             float px = (float)pp.x, py = (float)pp.y, pz = (float)pp.z;
 
-            /* Plane colors: YZ=red, XZ=green, XY=blue */
-            Color plane_base[3] = {
-                { 180,  60,  60, 18 },  /* YZ (x=const) */
-                {  60, 180,  60, 18 },  /* XZ (y=const) */
-                {  60,  80, 200, 18 },  /* XY (z=const) */
+            /* Face colors by normal: YZ=red, XZ=green, XY=blue; brighter
+             * and more opaque on the dark background */
+            static const Color plane_light[3] = {
+                { 180,  60,  60, 18 },  /* YZ (x=0) */
+                {  60, 180,  60, 18 },  /* XZ (y=0) */
+                {  60,  80, 200, 18 },  /* XY (z=0) */
             };
+            static const Color plane_dark[3] = {
+                { 255, 110, 110, 50 },
+                { 110, 255, 110, 50 },
+                { 120, 150, 255, 60 },
+            };
+            const Color *plane_base = app->dark_mode ? plane_dark : plane_light;
+            unsigned char proj_alpha = app->dark_mode ? 170 : 80;
+            unsigned char edge_alpha = app->dark_mode ? 220 : 160;
 
-            /* Three rectangles from origin to the drop point:
-             * XY plane: (0,0,0)-(px,0,0)-(px,py,0)-(0,py,0)
-             * XZ plane: (0,0,0)-(px,0,0)-(px,0,pz)-(0,0,pz)
-             * YZ plane: (0,0,0)-(0,py,0)-(0,py,pz)-(0,0,pz) */
+            /* The three faces through the origin, in the colors' order */
             Vector3 quads[3][4] = {
-                { {0,0,0}, {px,0,0}, {px,py,0}, {0,py,0} },   /* XY */
-                { {0,0,0}, {px,0,0}, {px,0,pz}, {0,0,pz} },   /* XZ */
                 { {0,0,0}, {0,py,0}, {0,py,pz}, {0,0,pz} },   /* YZ */
+                { {0,0,0}, {px,0,0}, {px,0,pz}, {0,0,pz} },   /* XZ */
+                { {0,0,0}, {px,0,0}, {px,py,0}, {0,py,0} },   /* XY */
             };
 
             for (int ax = 0; ax < 3; ax++) {
                 Color pc = plane_base[ax];
-                unsigned char proj_alpha = 80;
                 Color lc = { pc.r, pc.g, pc.b, proj_alpha };
+                Color ec = { pc.r, pc.g, pc.b, edge_alpha };
+
+                /* Outline of the face */
+                for (int v = 0; v < 4; v++)
+                    DrawLine3D(quads[ax][v], quads[ax][(v + 1) % 4], ec);
 
                 /* Double-sided quad */
                 rlBegin(RL_QUADS);
@@ -637,11 +650,13 @@ void render3d_draw(const struct AppState *app)
                 }
             }
 
-            /* Drop-line from preview point to the XY origin plane */
-            Vec3 proj_xy = { pp.x, pp.y, 0 };
-            Color dl = { prev_col.r, prev_col.g, prev_col.b, 100 };
-            DrawLine3D(v3(pp), v3(proj_xy), dl);
-            DrawSphere(v3(proj_xy), 0.008f, dl);
+            /* The box's three edges from the drop point to the faces, so the
+             * point reads as the box's far corner, and its foot on z = 0 */
+            Vector3 corner = v3(pp);
+            Vector3 feet[3] = { {0, py, pz}, {px, 0, pz}, {px, py, 0} };
+            for (int ax = 0; ax < 3; ax++)
+                DrawLine3D(corner, feet[ax], prev_col);
+            DrawSphere(feet[2], 0.6f * mark_r, prev_col);
         }
     }
 

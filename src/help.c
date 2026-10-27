@@ -65,19 +65,27 @@ static void tab_keys(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color dc)
        "N               Step forward one timestep (when paused)\n"
        "P               Step back one timestep (when paused)\n"
        "R               Reset particle (start/stop recording if armed)\n"
+       "D               Drop a new particle: click on a z = const plane\n"
+       "                (+ / - move the plane, Esc cancels)\n"
+       "Tab / Shift+Tab Select next / previous particle\n"
+       "Cmd+Z           Undo particle placement (Cmd+Shift+Z redoes)\n"
        "F               Toggle follow-camera mode\n"
        "V               Cycle field-aligned camera: free > +b > -b\n"
        "Shift+V         Reverse cycle: free > -b > +b\n"
+       "Arrow keys      In the +b / -b views, set the curvature direction\n"
        "Shift+P         Open recording file picker\n"
        "G               Toggle G_ij tensor display\n"
        "U               Toggle UI panel visibility\n"
        "3               Toggle side-by-side stereoscopic 3D\n"
        "[ / ]           Adjust stereo image separation\n"
        "+ / -           Double / halve playback speed\n"
+       "Cmd + / - / 0   Zoom the panel, plots or overlay under the mouse\n"
        "0               Reset camera to origin\n"
-       "Cmd+F           Toggle fullscreen (Ctrl+F on Linux/Windows)\n"
+       "Cmd+E           Export the view as a PDF\n"
+       "Cmd+F           Toggle fullscreen\n"
        "F1              Open / close this help\n"
        "Esc             Close this help");
+    P("On Linux and Windows, Ctrl takes the place of Cmd.");
     GAP(8);
     H("MOUSE");
     ML("Right-drag            Orbit entire scene around origin\n"
@@ -99,6 +107,7 @@ static void tab_keys(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color dc)
     ML("Left / Right          Previous / next tab\n"
        "Tab / Shift+Tab       Cycle tabs\n"
        "Scroll wheel          Scroll content\n"
+       "Cmd + / - / 0         Zoom the help text\n"
        "Esc or F1             Close help");
 }
 
