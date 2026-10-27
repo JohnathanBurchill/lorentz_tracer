@@ -58,6 +58,13 @@ static inline int field_inside_body(const FieldModel *fm, Vec3 p)
     return vec3_len(p) < fm->body_radius;
 }
 
+/* L-shell of the field line through pos, in scene length units: the distance
+ * from the origin to the point of minimum |B| along it (its magnetic
+ * equator). Returns 1 and sets *L when the field line is closed, meaning it
+ * reaches the model's central body at both ends; returns 0 for an open field
+ * line, a point inside the body, or a model without a body. */
+int field_L_shell(const FieldModel *fm, Vec3 pos, double *L);
+
 /* Per-model init functions */
 void field_init_circular(FieldModel *fm);
 void field_init_grad_b(FieldModel *fm);

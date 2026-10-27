@@ -1,4 +1,5 @@
 #include "field.h"
+#include <math.h>
 
 double field_Bmag(const FieldModel *fm, Vec3 pos)
 {
@@ -20,6 +21,45 @@ Vec3 field_gradB(const FieldModel *fm, Vec3 pos)
         (Byp - Bym) / (2*h),
         (Bzp - Bzm) / (2*h)
     };
+}
+
+static Vec3 unit_B(const FieldModel *fm, Vec3 pos)
+{
+    Vec3 B = fm->eval_B(fm->params, pos);
+    double Bmag = vec3_len(B);
+    return Bmag > 0.0 ? vec3_scale(1.0 / Bmag, B) : vec3_zero();
+}
+
+int field_L_shell(const FieldModel *fm, Vec3 pos, double *L)
+{
+    if (fm->body_radius <= 0.0 || field_inside_body(fm, pos)) return 0;
+
+    double Bmin = INFINITY;
+    Vec3 pmin = pos;
+    for (int dir = -1; dir <= 1; dir += 2) {
+        Vec3 p = pos;
+        int closed = 0;
+        /* RK4 along b, step 1% of the geocentric distance */
+        for (int i = 0; i < 20000; i++) {
+            Vec3 B = fm->eval_B(fm->params, p);
+            double Bmag = vec3_len(B);
+            if (Bmag <= 0.0) break;
+            if (Bmag < Bmin) { Bmin = Bmag; pmin = p; }
+            if (field_inside_body(fm, p)) { closed = 1; break; }
+            double r = vec3_len(p);
+            if (r > 100.0) break;
+            double h = dir * 0.01 * r;
+            Vec3 k1 = vec3_scale(1.0 / Bmag, B);
+            Vec3 k2 = unit_B(fm, vec3_add(p, vec3_scale(0.5 * h, k1)));
+            Vec3 k3 = unit_B(fm, vec3_add(p, vec3_scale(0.5 * h, k2)));
+            Vec3 k4 = unit_B(fm, vec3_add(p, vec3_scale(h, k3)));
+            Vec3 k = vec3_add(vec3_add(k1, k4), vec3_scale(2.0, vec3_add(k2, k3)));
+            p = vec3_add(p, vec3_scale(h / 6.0, k));
+        }
+        if (!closed) return 0;
+    }
+    *L = vec3_len(pmin);
+    return 1;
 }
 
 void field_init_all(FieldModel models[FIELD_NUM_MODELS])

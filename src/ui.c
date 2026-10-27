@@ -1073,6 +1073,26 @@ static void section_readouts(AppState *app, Clay_Color text_c, Clay_Color dim_c)
     else
         CLAY_TEXT(Sf(TR(STR_FMT_BMAG), field_Bmag(cfm, sp->pos)), CLAY_TEXT_CONFIG(rcfg));
 
+    /* L-shell of the field line through the guiding centre, for models with
+     * a central body */
+    if (cfm->body_radius > 0.0 && app->lost_time[si] < 0.0) {
+        Vec3 B = cfm->eval_B(cfm->params, sp->pos);
+        double B2 = vec3_dot(B, B);
+        Vec3 gc = sp->pos;
+        if (B2 > 0.0) {
+            double v2 = vec3_dot(sp->vel, sp->vel);
+            double gamma = app->relativistic
+                ? 1.0 / sqrt(1.0 - v2 / (SPEED_OF_LIGHT * SPEED_OF_LIGHT)) : 1.0;
+            gc = vec3_add(sp->pos, vec3_scale(gamma * sp->m / (sp->q * B2),
+                                              vec3_cross(sp->vel, B)));
+        }
+        double Lsh;
+        if (field_L_shell(cfm, gc, &Lsh))
+            CLAY_TEXT(Sf(TR(STR_FMT_LSHELL), Lsh), CLAY_TEXT_CONFIG(rcfg));
+        else
+            CLAY_TEXT(S(TR(STR_LSHELL_OPEN)), CLAY_TEXT_CONFIG(rcfg));
+    }
+
     if (app->radiation_loss) {
         double E_J = E_now * KEV_TO_J;
         double P = app->rad_power;

@@ -115,6 +115,8 @@ static const char *g_strings_en[STR__COUNT] = {
     [STR_FMT_BMAG]          = "|B| = %.3e T",
     [STR_FMT_BMAG_NT]       = "|B| = %.4g nT",
     [STR_FMT_LOST]          = "Lost in atmosphere, t = %.4g s",
+    [STR_FMT_LSHELL]        = "L = %.3f",
+    [STR_LSHELL_OPEN]       = "L: open field line",
     [STR_FMT_ENERGY_MEV]    = "E = %.3f MeV",
     [STR_FMT_ENERGY_KEV]    = "E = %.3f keV",
     [STR_FMT_PRAD]          = "P_rad = %.3e W",

@@ -636,8 +636,11 @@ static void tab_interface(AppState *app, Clay_Color hc, Clay_Color bc, Clay_Colo
     H("READOUTS");
     P("t: simulation time. |dE|/E: fractional energy error. pitch: "
       "instantaneous pitch angle. mu: magnetic moment. |B|: field "
-      "magnitude at particle position. Position (x,y,z) and distances "
-      "(r, rho). When radiation is enabled: kinetic energy, radiated "
+      "magnitude at particle position. L (Earth model): distance from "
+      "the Earth's centre, in RE, of the point of minimum |B| along the "
+      "field line through the guiding centre, or \"open field line\" when "
+      "that line does not reach the Earth at both ends. Position (x,y,z) "
+      "and distances (r, rho). When radiation is enabled: kinetic energy, radiated "
       "power, effective energy loss rate.");
     GAP(6); RULE(); GAP(4);
 
