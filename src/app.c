@@ -12,6 +12,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <sys/stat.h>
 #ifdef _WIN32
 #include <direct.h>  /* _mkdir */
@@ -3006,88 +3007,97 @@ static void state_file_path(char *buf, int buflen)
 #endif
 }
 
-void app_save_state(const AppState *app)
-{
-    char path[600];
-    state_file_path(path, sizeof(path));
-    FILE *f = fopen(path, "w");
-    if (!f) return;
+/* state.ini's text, built in memory so it can be compared with what was last
+ * written */
+typedef struct { char *s; size_t len, cap; } StateText;
 
-    fprintf(f, "current_model=%d\n", app->current_model);
-    fprintf(f, "species=%d\n", app->species);
-    fprintf(f, "E_keV=%.15g\n", app->E_keV);
-    fprintf(f, "energy_range=%d\n", app->energy_range);
-    fprintf(f, "pitch_deg=%.15g\n", app->pitch_deg);
-    fprintf(f, "init_pos=%.15g %.15g %.15g\n",
+static void tprintf(StateText *t, const char *fmt, ...)
+{
+    size_t room = t->cap - t->len;
+    va_list ap;
+    va_start(ap, fmt);
+    int n = vsnprintf(t->s + t->len, room, fmt, ap);
+    va_end(ap);
+    if (n > 0) t->len += (size_t)n < room ? (size_t)n : room - 1;
+}
+
+static void state_format(const AppState *app, StateText *t)
+{
+    tprintf(t, "current_model=%d\n", app->current_model);
+    tprintf(t, "species=%d\n", app->species);
+    tprintf(t, "E_keV=%.15g\n", app->E_keV);
+    tprintf(t, "energy_range=%d\n", app->energy_range);
+    tprintf(t, "pitch_deg=%.15g\n", app->pitch_deg);
+    tprintf(t, "init_pos=%.15g %.15g %.15g\n",
             app->init_pos.x, app->init_pos.y, app->init_pos.z);
-    fprintf(f, "custom_q=%.15g\n", app->custom_q);
-    fprintf(f, "custom_m=%.15g\n", app->custom_m);
-    fprintf(f, "custom_speed=%.15g\n", app->custom_speed);
-    fprintf(f, "playback_speed=%.15g\n", app->playback_speed);
-    fprintf(f, "speed_range=%d\n", app->speed_range);
-    fprintf(f, "dark_mode=%d\n", app->dark_mode);
-    fprintf(f, "show_trail=%d\n", app->show_trail);
-    fprintf(f, "show_gc_trajectory=%d\n", app->show_gc_trajectory);
-    fprintf(f, "gc_symplectic=%d\n", app->gc_symplectic);
-    fprintf(f, "trail_fade=%.6g\n", app->trail_fade);
-    fprintf(f, "show_field_lines=%d\n", app->show_field_lines);
-    fprintf(f, "show_velocity_vec=%d\n", app->show_velocity_vec);
-    fprintf(f, "show_B_vec=%d\n", app->show_B_vec);
-    fprintf(f, "show_F_vec=%d\n", app->show_F_vec);
-    fprintf(f, "show_vgradbhat_vec=%d\n", app->show_vgradbhat_vec);
-    fprintf(f, "show_vgradB_vec=%d\n", app->show_vgradB_vec);
-    fprintf(f, "show_wtilde_vec=%d\n", app->show_wtilde_vec);
-    fprintf(f, "show_scale_bar=%d\n", app->show_scale_bar);
-    fprintf(f, "vec_scaled=%d\n", app->vec_scaled);
-    fprintf(f, "vec_scale_v=%.6g\n", app->vec_scale_v);
-    fprintf(f, "vec_scale_B=%.6g\n", app->vec_scale_B);
-    fprintf(f, "vec_scale_F=%.6g\n", app->vec_scale_F);
-    fprintf(f, "arrow_head_size=%.6g\n", app->arrow_head_size);
-    fprintf(f, "lw_field_lines=%d\n", app->lw_field_lines);
-    fprintf(f, "lw_gc_fl=%d\n", app->lw_gc_fl);
-    fprintf(f, "lw_pos_fl=%d\n", app->lw_pos_fl);
-    fprintf(f, "lw_arrows=%d\n", app->lw_arrows);
-    fprintf(f, "lw_axes=%d\n", app->lw_axes);
-    fprintf(f, "lw_triad=%d\n", app->lw_triad);
-    fprintf(f, "plot_range=%d\n", app->plot_range);
-    fprintf(f, "pitch_autoscale=%d\n", app->pitch_autoscale);
-    fprintf(f, "follow_particle=%d\n", app->follow_particle);
-    fprintf(f, "ui_visible=%d\n", app->ui_visible);
-    fprintf(f, "ui_edge=%d\n", app->ui_edge);
-    fprintf(f, "ui_zoom=%.6g\n", app->ui_zoom);
-    fprintf(f, "show_plots=%d\n", app->show_plots);
-    fprintf(f, "plots_edge=%d\n", app->plots_edge);
-    fprintf(f, "plot_zoom=%.6g\n", app->plot_zoom);
-    fprintf(f, "show_Gij=%d\n", app->show_Gij);
-    fprintf(f, "show_init_conditions=%d\n", app->show_init_conditions);
-    fprintf(f, "init_zoom=%.6g\n", app->init_zoom);
-    fprintf(f, "phase_swap_axes=%d\n", app->phase_swap_axes);
-    fprintf(f, "phase_flip_x=%d\n", app->phase_flip_x);
-    fprintf(f, "phase_flip_y=%d\n", app->phase_flip_y);
-    fprintf(f, "gij_zoom=%.6g\n", app->gij_zoom);
-    fprintf(f, "show_gc_field_line=%d\n", app->show_gc_field_line);
-    fprintf(f, "show_gc_trajectory=%d\n", app->show_gc_trajectory);
-    fprintf(f, "gc_symplectic=%d\n", app->gc_symplectic);
-    fprintf(f, "show_pos_field_line=%d\n", app->show_pos_field_line);
-    fprintf(f, "gc_fl_length=%.6g\n", app->gc_fl_length);
-    fprintf(f, "axis_scale=%.6g\n", app->axis_scale);
-    fprintf(f, "trail_thickness=%.6g\n", app->trail_thickness);
-    fprintf(f, "help_zoom=%.6g\n", app->help_zoom);
-    fprintf(f, "radiation_loss=%d\n", app->radiation_loss);
-    fprintf(f, "radiation_mult=%.6g\n", app->radiation_mult);
-    fprintf(f, "relativistic=%d\n", app->relativistic);
-    fprintf(f, "camera_pos=%.9g %.9g %.9g\n",
+    tprintf(t, "custom_q=%.15g\n", app->custom_q);
+    tprintf(t, "custom_m=%.15g\n", app->custom_m);
+    tprintf(t, "custom_speed=%.15g\n", app->custom_speed);
+    tprintf(t, "playback_speed=%.15g\n", app->playback_speed);
+    tprintf(t, "speed_range=%d\n", app->speed_range);
+    tprintf(t, "dark_mode=%d\n", app->dark_mode);
+    tprintf(t, "show_trail=%d\n", app->show_trail);
+    tprintf(t, "show_gc_trajectory=%d\n", app->show_gc_trajectory);
+    tprintf(t, "gc_symplectic=%d\n", app->gc_symplectic);
+    tprintf(t, "trail_fade=%.6g\n", app->trail_fade);
+    tprintf(t, "show_field_lines=%d\n", app->show_field_lines);
+    tprintf(t, "show_velocity_vec=%d\n", app->show_velocity_vec);
+    tprintf(t, "show_B_vec=%d\n", app->show_B_vec);
+    tprintf(t, "show_F_vec=%d\n", app->show_F_vec);
+    tprintf(t, "show_vgradbhat_vec=%d\n", app->show_vgradbhat_vec);
+    tprintf(t, "show_vgradB_vec=%d\n", app->show_vgradB_vec);
+    tprintf(t, "show_wtilde_vec=%d\n", app->show_wtilde_vec);
+    tprintf(t, "show_scale_bar=%d\n", app->show_scale_bar);
+    tprintf(t, "vec_scaled=%d\n", app->vec_scaled);
+    tprintf(t, "vec_scale_v=%.6g\n", app->vec_scale_v);
+    tprintf(t, "vec_scale_B=%.6g\n", app->vec_scale_B);
+    tprintf(t, "vec_scale_F=%.6g\n", app->vec_scale_F);
+    tprintf(t, "arrow_head_size=%.6g\n", app->arrow_head_size);
+    tprintf(t, "lw_field_lines=%d\n", app->lw_field_lines);
+    tprintf(t, "lw_gc_fl=%d\n", app->lw_gc_fl);
+    tprintf(t, "lw_pos_fl=%d\n", app->lw_pos_fl);
+    tprintf(t, "lw_arrows=%d\n", app->lw_arrows);
+    tprintf(t, "lw_axes=%d\n", app->lw_axes);
+    tprintf(t, "lw_triad=%d\n", app->lw_triad);
+    tprintf(t, "plot_range=%d\n", app->plot_range);
+    tprintf(t, "pitch_autoscale=%d\n", app->pitch_autoscale);
+    tprintf(t, "follow_particle=%d\n", app->follow_particle);
+    tprintf(t, "ui_visible=%d\n", app->ui_visible);
+    tprintf(t, "ui_edge=%d\n", app->ui_edge);
+    tprintf(t, "ui_zoom=%.6g\n", app->ui_zoom);
+    tprintf(t, "show_plots=%d\n", app->show_plots);
+    tprintf(t, "plots_edge=%d\n", app->plots_edge);
+    tprintf(t, "plot_zoom=%.6g\n", app->plot_zoom);
+    tprintf(t, "show_Gij=%d\n", app->show_Gij);
+    tprintf(t, "show_init_conditions=%d\n", app->show_init_conditions);
+    tprintf(t, "init_zoom=%.6g\n", app->init_zoom);
+    tprintf(t, "phase_swap_axes=%d\n", app->phase_swap_axes);
+    tprintf(t, "phase_flip_x=%d\n", app->phase_flip_x);
+    tprintf(t, "phase_flip_y=%d\n", app->phase_flip_y);
+    tprintf(t, "gij_zoom=%.6g\n", app->gij_zoom);
+    tprintf(t, "show_gc_field_line=%d\n", app->show_gc_field_line);
+    tprintf(t, "show_gc_trajectory=%d\n", app->show_gc_trajectory);
+    tprintf(t, "gc_symplectic=%d\n", app->gc_symplectic);
+    tprintf(t, "show_pos_field_line=%d\n", app->show_pos_field_line);
+    tprintf(t, "gc_fl_length=%.6g\n", app->gc_fl_length);
+    tprintf(t, "axis_scale=%.6g\n", app->axis_scale);
+    tprintf(t, "trail_thickness=%.6g\n", app->trail_thickness);
+    tprintf(t, "help_zoom=%.6g\n", app->help_zoom);
+    tprintf(t, "radiation_loss=%d\n", app->radiation_loss);
+    tprintf(t, "radiation_mult=%.6g\n", app->radiation_mult);
+    tprintf(t, "relativistic=%d\n", app->relativistic);
+    tprintf(t, "camera_pos=%.9g %.9g %.9g\n",
             app->camera.position.x, app->camera.position.y, app->camera.position.z);
-    fprintf(f, "camera_target=%.9g %.9g %.9g\n",
+    tprintf(t, "camera_target=%.9g %.9g %.9g\n",
             app->camera.target.x, app->camera.target.y, app->camera.target.z);
-    fprintf(f, "camera_fovy=%.9g\n", app->camera.fovy);
-    fprintf(f, "camera_projection=%d\n", app->camera.projection);
-    fprintf(f, "cam_field_aligned=%d\n", app->cam_field_aligned);
-    fprintf(f, "kappa_screen_dir=%d\n", app->kappa_screen_dir);
-    fprintf(f, "tutorial_seen=%d\n", app->tutorial_seen);
-    fprintf(f, "language=%s\n", i18n_lang_code());
+    tprintf(t, "camera_fovy=%.9g\n", app->camera.fovy);
+    tprintf(t, "camera_projection=%d\n", app->camera.projection);
+    tprintf(t, "cam_field_aligned=%d\n", app->cam_field_aligned);
+    tprintf(t, "kappa_screen_dir=%d\n", app->kappa_screen_dir);
+    tprintf(t, "tutorial_seen=%d\n", app->tutorial_seen);
+    tprintf(t, "language=%s\n", i18n_lang_code());
     for (int i = 0; i < 5; i++)
-        fprintf(f, "ui_section_%d=%d\n", i, app->ui_section_open[i]);
+        tprintf(t, "ui_section_%d=%d\n", i, app->ui_section_open[i]);
 
     /* User colors — save both dark and light sets.
      * Active colors are the current theme; the other theme is in storage. */
@@ -3107,16 +3117,16 @@ void app_save_state(const AppState *app)
         const Color *lt_s  = app->dark_mode ? app->light_species : app->species_colors;
 
         for (int i = 0; i < NUM_USER_COLORS; i++)
-            fprintf(f, "dark_%s=%d %d %d %d\n", cnames[i],
+            tprintf(t, "dark_%s=%d %d %d %d\n", cnames[i],
                     dk_c[i].r, dk_c[i].g, dk_c[i].b, dk_c[i].a);
         for (int i = 0; i < NUM_SPECIES; i++)
-            fprintf(f, "dark_species_color_%d=%d %d %d %d\n", i,
+            tprintf(t, "dark_species_color_%d=%d %d %d %d\n", i,
                     dk_s[i].r, dk_s[i].g, dk_s[i].b, dk_s[i].a);
         for (int i = 0; i < NUM_USER_COLORS; i++)
-            fprintf(f, "light_%s=%d %d %d %d\n", cnames[i],
+            tprintf(t, "light_%s=%d %d %d %d\n", cnames[i],
                     lt_c[i].r, lt_c[i].g, lt_c[i].b, lt_c[i].a);
         for (int i = 0; i < NUM_SPECIES; i++)
-            fprintf(f, "light_species_color_%d=%d %d %d %d\n", i,
+            tprintf(t, "light_species_color_%d=%d %d %d %d\n", i,
                     lt_s[i].r, lt_s[i].g, lt_s[i].b, lt_s[i].a);
     }
 
@@ -3124,10 +3134,51 @@ void app_save_state(const AppState *app)
     for (int m = 0; m < FIELD_NUM_MODELS; m++) {
         const FieldModel *fm = &app->models[m];
         for (int p = 0; p < fm->n_params; p++)
-            fprintf(f, "model_%d_param_%d=%.15g\n", m, p, fm->params[p]);
+            tprintf(t, "model_%d_param_%d=%.15g\n", m, p, fm->params[p]);
     }
+}
 
-    fclose(f);
+static char g_state_saved[32768];   /* the text last written */
+static size_t g_state_saved_len;
+
+/* Written to a temporary file and renamed over state.ini, so a program
+ * stopped mid-write leaves the old file whole */
+static void state_write(const char *text, size_t len)
+{
+    char path[600], tmp[620];
+    state_file_path(path, sizeof(path));
+    snprintf(tmp, sizeof(tmp), "%s.tmp", path);
+    FILE *f = fopen(tmp, "w");
+    if (!f) return;
+    fwrite(text, 1, len, f);
+    if (fclose(f) != 0) return;
+#ifdef _WIN32
+    remove(path);  /* rename does not replace a file on Windows */
+#endif
+    if (rename(tmp, path) != 0) return;
+    memcpy(g_state_saved, text, len);
+    g_state_saved_len = len;
+}
+
+void app_save_state(const AppState *app)
+{
+    static char text[sizeof(g_state_saved)];
+    StateText t = { text, 0, sizeof(text) };
+    state_format(app, &t);
+    state_write(text, t.len);
+}
+
+void app_save_state_if_changed(const AppState *app)
+{
+    static double last_check;
+    double now = GetTime();
+    if (now - last_check < 0.25) return;
+    last_check = now;
+    static char text[sizeof(g_state_saved)];
+    StateText t = { text, 0, sizeof(text) };
+    state_format(app, &t);
+    if (t.len != g_state_saved_len || memcmp(text, g_state_saved, t.len) != 0)
+        state_write(text, t.len);
 }
 
 void app_load_state(AppState *app)
@@ -3401,6 +3452,7 @@ void app_load_state(AppState *app)
 #else
 /* WASM: no persistent state */
 void app_save_state(const AppState *app) { (void)app; }
+void app_save_state_if_changed(const AppState *app) { (void)app; }
 void app_load_state(AppState *app) { (void)app; }
 #endif
 

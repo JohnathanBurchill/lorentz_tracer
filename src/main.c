@@ -87,6 +87,7 @@ static void main_loop_step(void)
     g_app->win_h = GetScreenHeight();
     app_update(g_app);
     app_render(g_app);
+    app_save_state_if_changed(g_app);
     g_frame_counter++;
     if (g_auto_shot_path) {
         int shot_frame = (g_auto_export_frame >= 0) ? g_auto_export_frame : 120;

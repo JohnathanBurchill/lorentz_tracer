@@ -659,7 +659,7 @@ static void tab_interface(AppState *app, Clay_Color hc, Clay_Color bc, Clay_Colo
     GAP(6); RULE(); GAP(4);
 
     H("STATE PERSISTENCE");
-    P("All settings are saved on exit and restored on launch.");
+    P("All settings are saved as they change and restored on launch.");
     ML("\xc2\xa0\xc2\xa0macOS:\xc2\xa0\xc2\xa0\xc2\xa0~/Library/Application\xc2\xa0Support/Lorentz_Tracer/state.ini");
     ML("\xc2\xa0\xc2\xa0Linux:\xc2\xa0\xc2\xa0\xc2\xa0~/.local/state/lorentz_tracer/state.ini");
     ML("\xc2\xa0\xc2\xa0Windows:\xc2\xa0%LOCALAPPDATA%\\Lorentz_Tracer\\state.ini");

@@ -75,7 +75,7 @@ The slide links a script, and the script starts the program:
 cd ~/src/lorentz_tracer && exec build/lorentz_tracer.app/Contents/MacOS/lorentz_tracer
 ```
 
-On the slide the window is hidden and sized to the box, there is no splash, and Cmd+F does nothing. It shows the settings the app was last closed with, and leaves them as they were. Run outside beameup, the same build behaves as usual.
+On the slide the window is hidden and sized to the box, there is no splash, and Cmd+F does nothing. It starts from the saved settings, or from a scenario if the script adds `--scenario`, and changes made on the slide are saved as they are made, so leaving the slide or quitting beameup keeps them. Run outside beameup, the same build behaves as usual.
 
 The option is off by default because it compiles in `third_party/beameup_embed.h`, beameup's header, which is GPL-3.0-or-later: a binary built with it carries GPL code. The copy must match the version of beameup that runs it. It needs POSIX shared memory, so it does nothing on Windows or the web.
 

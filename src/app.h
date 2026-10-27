@@ -317,6 +317,9 @@ void app_shutdown(AppState *app);
 void app_apply_theme(AppState *app);
 void app_switch_colors(AppState *app, int old_dark_mode);
 void app_save_state(const AppState *app);
+/* Written as they change, a few times a second at most, so a program stopped
+ * without quitting (beameup stops a slide's with SIGTERM) keeps them */
+void app_save_state_if_changed(const AppState *app);
 void app_load_state(AppState *app);
 void app_reload_fonts(AppState *app);  /* reload fonts for current language */
 void app_toggle_borderless(void);      /* screen-filling borderless window */
