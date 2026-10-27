@@ -76,6 +76,7 @@ set(SOURCES
     src/field_harris.c
     src/field_turbulence.c
     src/field_t89.c
+    src/t89.c
     src/t96.c
     src/nax_axis.c
     src/nax.c

@@ -24,7 +24,7 @@ build_windows() {
     mkdir -p dist/Lorentz_Tracer_Windows
     cp build-win64/lorentz_tracer.exe dist/Lorentz_Tracer_Windows/
     cp -r resources dist/Lorentz_Tracer_Windows/
-    cp LICENSE dist/Lorentz_Tracer_Windows/ 2>/dev/null || true
+    cp -R LICENSE LICENSES dist/Lorentz_Tracer_Windows/
     (cd dist && zip -qr Lorentz_Tracer_Windows.zip Lorentz_Tracer_Windows/)
     echo "  -> dist/Lorentz_Tracer_Windows.zip"
 }
@@ -41,7 +41,7 @@ build_linux() {
     docker cp "$CONTAINER:/lorentz_tracer" dist/Lorentz_Tracer_Linux/lorentz_tracer
     docker cp "$CONTAINER:/resources" dist/Lorentz_Tracer_Linux/resources
     docker rm "$CONTAINER" >/dev/null
-    cp LICENSE dist/Lorentz_Tracer_Linux/ 2>/dev/null || true
+    cp -R LICENSE LICENSES dist/Lorentz_Tracer_Linux/
     chmod +x dist/Lorentz_Tracer_Linux/lorentz_tracer
     (cd dist && tar czf Lorentz_Tracer_Linux.tar.gz Lorentz_Tracer_Linux/)
     echo "  -> dist/Lorentz_Tracer_Linux.tar.gz"
@@ -64,7 +64,7 @@ build_macos() {
     rm -rf dist/Lorentz_Tracer_macOS
     mkdir -p dist/Lorentz_Tracer_macOS
     cp -R build-release/lorentz_tracer.app dist/Lorentz_Tracer_macOS/
-    cp LICENSE dist/Lorentz_Tracer_macOS/ 2>/dev/null || true
+    cp -R LICENSE LICENSES dist/Lorentz_Tracer_macOS/
     (cd dist && zip -qr Lorentz_Tracer_macOS.zip Lorentz_Tracer_macOS/)
     echo "  -> dist/Lorentz_Tracer_macOS.zip"
 }

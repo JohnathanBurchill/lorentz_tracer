@@ -803,6 +803,14 @@ static void tab_about(AppState *app, Clay_Color hc, Clay_Color bc, Clay_Color mc
       "CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, "
       "TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE "
       "SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.");
+    GAP(8);
+    P("The T89c and T96 field models are C ports of Tsyganenko89.f and "
+      "Tsyganenko96.f from IRBEM-LIB, Copyright 1989, 1992, 1995, 1996 "
+      "N. A. Tsyganenko, and are licensed under the GNU Lesser General "
+      "Public License, version 3 or later. The LGPL and GPL texts are in the "
+      "LICENSES folder that comes with the app and its source, and at "
+      "https://www.gnu.org/licenses/. The source code is at "
+      "https://github.com/JohnathanBurchill/lorentz_tracer.");
     GAP(12); RULE(); GAP(8);
 
     /* Factory reset button */

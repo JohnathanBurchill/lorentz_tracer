@@ -1,3 +1,7 @@
+/* SPDX-License-Identifier: LGPL-3.0-or-later
+ * Copyright 1995, 1996 N. A. Tsyganenko; C port copyright 2026 Johnathan K.
+ * Burchill. See t96.c for the licence notice. */
+
 #ifndef T96_H
 #define T96_H
 

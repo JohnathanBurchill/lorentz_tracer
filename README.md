@@ -93,3 +93,7 @@ The Earth in the terrestrial magnetosphere model is NASA Earth Observatory's [Bl
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+The exceptions are `src/t89.c`, `src/t89.h`, `src/t96.c` and `src/t96.h`, the T89c and T96 field models. They are C ports of Tsyganenko's Fortran as released in [IRBEM-LIB](https://github.com/PRBEM/IRBEM) under the GNU Lesser General Public License, so they are LGPL-3.0-or-later; [LICENSES](LICENSES) has the LGPL and GPL texts. The LGPL lets them be combined with the MIT code, and every build includes them.
+
+The optional beameup embedding (`-DBEAMEUP_EMBED=ON`) compiles in `third_party/beameup_embed.h`, which is GPL-3.0.
