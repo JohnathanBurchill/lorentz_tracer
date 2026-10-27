@@ -73,6 +73,8 @@ typedef enum {
     STR_FMT_PITCH,              /* "pitch = %.1f deg" */
     STR_FMT_MU,                 /* "mu = %.3e J/T" */
     STR_FMT_BMAG,               /* "|B| = %.3e T" */
+    STR_FMT_BMAG_NT,            /* "|B| = %.4g nT" */
+    STR_FMT_LOST,               /* "Lost in atmosphere, t = %.4g s" */
     STR_FMT_ENERGY_MEV,         /* "E = %.3f MeV" */
     STR_FMT_ENERGY_KEV,         /* "E = %.3f keV" */
     STR_FMT_PRAD,               /* "P_rad = %.3e W" */
@@ -149,6 +151,7 @@ typedef enum {
     STR_MODEL_TORUS,            /* "Torus" */
     STR_MODEL_HARRIS,           /* "Harris sheet" */
     STR_MODEL_TURBULENCE,       /* "Turbulence (B0 + dB)" */
+    STR_MODEL_T89,              /* "Earth (T89c + IGRF)" */
 
     /* Field parameter names */
     STR_PARAM_B0,               /* "B0 (T)" */
@@ -176,6 +179,14 @@ typedef enum {
     STR_PARAM_K1,               /* "k1 (1/m)" */
     STR_PARAM_K2,               /* "k2 (1/m)" */
     STR_PARAM_SEED,             /* "Seed" */
+    STR_PARAM_KP,               /* "Kp" (T89c activity bin) */
+    STR_PARAM_YEAR,             /* "Year" */
+    STR_PARAM_DOY,              /* "Day of year" */
+    STR_PARAM_UT,               /* "UT (h)" */
+    STR_PARAM_IMF_BX,           /* "IMF Bx (nT)" */
+    STR_PARAM_IMF_BY,           /* "IMF By (nT)" */
+    STR_PARAM_IMF_BZ,           /* "IMF Bz (nT)" */
+    STR_PARAM_PDYN,             /* "Pdyn (nPa)" (solar wind dynamic pressure) */
 
     /* Stellarator config names */
     STR_STEL_CFG_R2,            /* "r2 s5.1 (QA)" */

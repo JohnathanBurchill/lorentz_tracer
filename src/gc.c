@@ -226,7 +226,8 @@ void gc_step_batch(GCParticle *gc, int n, const FieldModel *fm,
                    double dt, int relativistic, int symplectic)
 {
     for (int i = 0; i < n; i++)
-        gc_step(&gc[i], fm, dt, relativistic, symplectic);
+        if (!field_inside_body(fm, gc[i].pos))   /* lost in the central body */
+            gc_step(&gc[i], fm, dt, relativistic, symplectic);
 }
 
 /* ---------- diagnostics ------------------------------------------------ */

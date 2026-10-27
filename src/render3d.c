@@ -7,6 +7,8 @@
 
 /* Defined in field_stellarator.c */
 extern const NAXConfig *stellarator_get_nax(void);
+/* Defined in field_t89.c */
+extern double t89_dipole_tilt(const double *params);
 
 static Vector3 v3(Vec3 v) { return (Vector3){(float)v.x, (float)v.y, (float)v.z}; }
 
@@ -136,6 +138,7 @@ static int trace_field_line(const FieldModel *fm, Vec3 seed, double ds,
         Vec3 bhat = vec3_scale(1.0 / Bmag, B);
         pos = vec3_add(pos, vec3_scale(ds, bhat));
         pts[n++] = pos;
+        if (field_inside_body(fm, pos)) break;
         if (vec3_len(pos) > 100.0) break;
     }
     return n;
@@ -159,6 +162,7 @@ static int trace_field_line_len(const FieldModel *fm, Vec3 seed, double ds,
         pos = vec3_add(pos, vec3_scale(ds, bhat));
         pts[n++] = pos;
         arc += abs_ds;
+        if (field_inside_body(fm, pos)) break;
         if (vec3_len(pos) > 100.0) break;
     }
     return n;
@@ -409,7 +413,69 @@ static void build_field_lines(const struct AppState *app)
             for (int iv = -1; iv <= 1; iv++)
                 seeds[ns++] = vec3_add(vec3_scale(iu * 3.0, u), vec3_scale(iv * 3.0, v));
         build_field_lines_generic(fm, seeds, ns, 0.05, 400);
+    } else if (model == 12) {
+        /* Magnetosphere: lines from footpoints on the Earth at magnetic
+         * latitude lat and SM longitude lon (0 = noon), traced outward until
+         * they come back down or leave the domain. Northern footpoints cover
+         * the closed field; southern high-latitude ones add lobe lines that
+         * do not return. SM -> GSM is a rotation by the dipole tilt. */
+        static const double foot[][2] = {
+            {60, 180}, {64, 180}, {67, 180}, {69, 180}, {71, 180}, {73, 180}, {76, 180},
+            {60, 0}, {66, 0}, {72, 0}, {78, 0},
+            {60, 90}, {66, 90}, {72, 90}, {60, -90}, {66, -90}, {72, -90},
+            {-71, 180}, {-73, 180}, {-76, 180}, {-72, 0}, {-78, 0}
+        };
+        double psi = t89_dipole_tilt(fm->params);
+        double sps = sin(psi), cps = cos(psi);
+        static Vec3 pts[FL_MAX_PTS];
+        for (int i = 0; i < (int)(sizeof foot / sizeof foot[0]); i++) {
+            double lat = foot[i][0] * (M_PI / 180.0), lon = foot[i][1] * (M_PI / 180.0);
+            Vec3 sm = {cos(lat) * cos(lon), cos(lat) * sin(lon), sin(lat)};
+            Vec3 seed = vec3_scale(fm->body_radius,
+                (Vec3){sm.x * cps + sm.z * sps, sm.y, sm.z * cps - sm.x * sps});
+            Vec3 B = fm->eval_B(fm->params, seed);
+            double ds = (vec3_dot(B, seed) > 0.0) ? 0.05 : -0.05;
+            int n = trace_field_line(fm, seed, ds, FL_MAX_PTS - 1, pts, FL_MAX_PTS);
+            fl_cache_add_line(pts, n);
+        }
     }
+}
+
+/* Central body (the Earth in the magnetosphere model), shaded by the cosine
+ * of the solar zenith angle with the Sun along +x, as in GSM. */
+static void draw_body(double r)
+{
+    enum { RINGS = 24, SLICES = 48 };
+    const Color day = {70, 130, 200, 255}, night = {20, 32, 58, 255};
+    rlCheckRenderBatchLimit(RINGS * SLICES * 6);
+    rlBegin(RL_TRIANGLES);
+    for (int i = 0; i < RINGS; i++) {
+        double t0 = M_PI * i / RINGS, t1 = M_PI * (i + 1) / RINGS;
+        for (int j = 0; j < SLICES; j++) {
+            double p0 = 2.0 * M_PI * j / SLICES, p1 = 2.0 * M_PI * (j + 1) / SLICES;
+            /* Quad corners ordered so both triangles wind CCW from outside */
+            Vec3 q[4] = {
+                {sin(t0) * cos(p0), sin(t0) * sin(p0), cos(t0)},
+                {sin(t1) * cos(p0), sin(t1) * sin(p0), cos(t1)},
+                {sin(t1) * cos(p1), sin(t1) * sin(p1), cos(t1)},
+                {sin(t0) * cos(p1), sin(t0) * sin(p1), cos(t0)}
+            };
+            static const int tri[6] = {0, 1, 2, 0, 2, 3};
+            for (int k = 0; k < 6; k++) {
+                Vec3 u = q[tri[k]];
+                /* Soft terminator about 30 deg wide, dimming toward it */
+                double w = 0.5 + 2.0 * u.x;
+                if (w < 0.0) w = 0.0;
+                if (w > 1.0) w = 1.0;
+                double lum = w * (0.75 + 0.25 * (u.x > 0.0 ? u.x : 0.0));
+                rlColor4ub((unsigned char)(night.r + (day.r - night.r) * lum),
+                           (unsigned char)(night.g + (day.g - night.g) * lum),
+                           (unsigned char)(night.b + (day.b - night.b) * lum), 255);
+                rlVertex3f((float)(r * u.x), (float)(r * u.y), (float)(r * u.z));
+            }
+        }
+    }
+    rlEnd();
 }
 
 void render3d_draw(const struct AppState *app)
@@ -433,6 +499,9 @@ void render3d_draw(const struct AppState *app)
         draw_thick_line(o, (Vec3){0,s,0}, app->lw_axes, ay);
         draw_thick_line(o, (Vec3){0,0,s}, app->lw_axes, az);
     }
+
+    if (fm->body_radius > 0.0)
+        draw_body(fm->body_radius);
 
     /* Field lines: rebuild only when needed */
     if (app->show_field_lines) {

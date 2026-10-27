@@ -734,8 +734,9 @@ int init_overlay_build(const AppState *app, InitOverlayLine *out, int max)
     ADD(2, abuf, "", "");
 
     char pbuf[80];
-    snprintf(pbuf, sizeof(pbuf), "  pos = (%.3g, %.3g, %.3g) m",
-             ic->pos.x, ic->pos.y, ic->pos.z);
+    snprintf(pbuf, sizeof(pbuf), "  pos = (%.3g, %.3g, %.3g) %s",
+             ic->pos.x, ic->pos.y, ic->pos.z,
+             fm_ic->length_name[0] ? fm_ic->length_name : "m");
     ADD(2, pbuf, "", "");
 
     #undef ADD
@@ -860,6 +861,19 @@ static void start_recording(AppState *app)
     }
 }
 
+/* Note when each particle entered the model's central body (the Earth's
+ * atmosphere), where the pushers leave it frozen. The state follows the
+ * position, so stepping back out of the body revives the particle. */
+static void update_lost(AppState *app, const FieldModel *fm)
+{
+    for (int pi = 0; pi < app->n_particles; pi++) {
+        if (!field_inside_body(fm, app->particles[pi].pos))
+            app->lost_time[pi] = -1.0;
+        else if (app->lost_time[pi] < 0.0)
+            app->lost_time[pi] = app->sim_time;
+    }
+}
+
 void app_reset_particle(AppState *app)
 {
     app->n_particles = 1;
@@ -976,6 +990,8 @@ void app_reset_particle(AppState *app)
     app->step_hist_head = 0;
     app->step_hist_count = 0;
     app->E0_keVs[0] = boris_energy_keV(&app->particles[0], app->relativistic);
+    app->lost_time[0] = -1.0;
+    update_lost(app, fm);
 
     /* Only reset camera and follow distance on model change (reset_type == 2) */
     if (reset_type == 2) {
@@ -1074,6 +1090,8 @@ void app_add_particle(AppState *app, Vec3 pos)
     trail_init(&app->gc_trails[idx], TRAIL_MAX_POINTS);
     trail_clear(&app->gc_trails[idx]);
     app->E0_keVs[idx] = boris_energy_keV(&app->particles[idx], app->relativistic);
+    app->lost_time[idx] = -1.0;
+    update_lost(app, fm);
 
     /* Record for undo */
     app->undo_stack[app->undo_count++] = (ParticlePlacement){
@@ -1378,12 +1396,17 @@ void app_update(AppState *app)
                              app->dt, app->relativistic);
             gc_step_batch(app->gc_particles, app->n_particles, fm,
                           app->dt, app->relativistic, app->gc_symplectic);
+            /* Trails grow only for particles that moved, i.e. were not lost
+             * before the step; stepping back pops by the same test */
             for (int pi = 0; pi < app->n_particles; pi++) {
-                trail_push(&app->trails[pi], app->particles[pi].pos);
-                trail_push(&app->gc_trails[pi], app->gc_particles[pi].pos);
+                if (!field_inside_body(fm, app->step_hist_pos[hi][pi]))
+                    trail_push(&app->trails[pi], app->particles[pi].pos);
+                if (!field_inside_body(fm, app->step_hist_gc_pos[hi][pi]))
+                    trail_push(&app->gc_trails[pi], app->gc_particles[pi].pos);
             }
             app->sim_time += app->dt;
             app->step_counter++;
+            update_lost(app, fm);
         }
         for (int s = 0; s < steps && p_down && app->step_hist_count > 0; s++) {
             app->step_hist_head = (app->step_hist_head - 1 + STEP_HISTORY_MAX) % STEP_HISTORY_MAX;
@@ -1394,11 +1417,14 @@ void app_update(AppState *app)
                 app->particles[pi].vel = app->step_hist_vel[hi][pi];
                 app->gc_particles[pi].pos = app->step_hist_gc_pos[hi][pi];
                 app->gc_particles[pi].p_par = app->step_hist_gc_ppar[hi][pi];
-                trail_pop(&app->trails[pi]);
-                trail_pop(&app->gc_trails[pi]);
+                if (!field_inside_body(fm, app->particles[pi].pos))
+                    trail_pop(&app->trails[pi]);
+                if (!field_inside_body(fm, app->gc_particles[pi].pos))
+                    trail_pop(&app->gc_trails[pi]);
             }
             app->sim_time = app->step_hist_time[hi];
             if (app->step_counter > 0) app->step_counter--;
+            update_lost(app, fm);
         }
     }
 
@@ -2084,7 +2110,7 @@ physics:
             gc_step_batch(app->gc_particles, app->n_particles, fm,
                           app->dt, app->relativistic, app->gc_symplectic);
             for (int pi = 0; pi < app->n_particles; pi++) {
-                if (app->radiation_loss) {
+                if (app->radiation_loss && !field_inside_body(fm, app->particles[pi].pos)) {
                     double rad_dt = app->dt * pow(10.0, (double)app->radiation_mult);
                     double P = boris_radiation_step(&app->particles[pi], fm,
                                         rad_dt, app->relativistic);
@@ -2092,9 +2118,14 @@ physics:
                 }
             }
             if (i % trail_interval == 0) {
+                /* As for single steps: only particles that were not lost
+                 * at the history point grow their trails */
+                int hi = (app->step_hist_head - 1 + STEP_HISTORY_MAX) % STEP_HISTORY_MAX;
                 for (int pi = 0; pi < app->n_particles; pi++) {
-                    trail_push(&app->trails[pi], app->particles[pi].pos);
-                    trail_push(&app->gc_trails[pi], app->gc_particles[pi].pos);
+                    if (!field_inside_body(fm, app->step_hist_pos[hi][pi]))
+                        trail_push(&app->trails[pi], app->particles[pi].pos);
+                    if (!field_inside_body(fm, app->step_hist_gc_pos[hi][pi]))
+                        trail_push(&app->gc_trails[pi], app->gc_particles[pi].pos);
                 }
                 /* Trailing gyroperiod |B| window for the driver channels
                  * (Burchill 2026 reference B0), selected particle only */
@@ -2114,20 +2145,24 @@ physics:
                 }
             }
             app->sim_time += app->dt;
+            update_lost(app, fm);
 
             app->step_counter++;
             if (app->step_counter % app->diag_sample_interval == 0) {
+                /* The plots show physical time and mu for scaled models */
+                double L = field_length_unit(fm);
                 for (int pi = 0; pi < app->n_particles; pi++) {
+                    if (app->lost_time[pi] >= 0.0) continue;  /* plots end at loss */
                     double pitch = boris_pitch_angle(&app->particles[pi], fm);
                     double mu = boris_mu(&app->particles[pi], fm);
                     double E = boris_energy_keV(&app->particles[pi], app->relativistic);
-                    diag_push(&app->diags[pi], app->sim_time, pitch, mu, E);
+                    diag_push(&app->diags[pi], app->sim_time * L, pitch, mu * L, E);
                     /* GC diagnostics at same ring-buffer index */
                     int di = (app->diags[pi].head - 1 + app->diags[pi].capacity)
                              % app->diags[pi].capacity;
                     app->diags[pi].gc_pitch_angle[di] =
                         gc_pitch_angle(&app->gc_particles[pi], fm, app->relativistic);
-                    app->diags[pi].gc_mu[di] = app->gc_particles[pi].mu;
+                    app->diags[pi].gc_mu[di] = app->gc_particles[pi].mu * L;
 
                     /* v_kappa, v_tau in field-aligned frame at this position */
                     Vec3 ppos = app->particles[pi].pos;
@@ -2223,7 +2258,7 @@ physics:
         if (e2_len > 1e-10) e2 = vec3_scale(1.0/e2_len, e2);
         app->frame_e2 = e2;
 
-        /* Compute G_ij = e_i . (e_j . nabla) bhat */
+        /* Compute G_ij = e_i . (e_j . nabla) bhat, per physical metre */
         if (app->show_Gij && Bmag > 1e-30) {
             Vec3 e[3] = {e1, e2, bhat};
             for (int j = 0; j < 3; j++) {
@@ -2236,7 +2271,7 @@ physics:
                 Vec3 bm = (Bm_mag > 1e-30) ? vec3_scale(1.0/Bm_mag, Bm) : bhat;
                 Vec3 db = vec3_scale(0.5/h, vec3_sub(bp, bm));
                 for (int i = 0; i < 3; i++)
-                    app->Gij[i][j] = vec3_dot(e[i], db);
+                    app->Gij[i][j] = vec3_dot(e[i], db) / field_length_unit(fm);
             }
             app->Gij_valid = 1;
         }
@@ -2525,11 +2560,18 @@ void app_render_inner(AppState *app)
             if (bar_m < scales[i] * 1000.0) { pi = i; break; }
         }
         double display_val = bar_m / scales[pi];
+        const char *unit = prefixes[pi];
+        /* Scaled models count in their own length unit, e.g. Earth radii */
+        const FieldModel *sfm = &app->models[app->current_model];
+        if (sfm->length_name[0]) {
+            display_val = bar_m;
+            unit = sfm->length_name;
+        }
         char label[32];
-        if (display_val >= 100.0) snprintf(label, sizeof(label), "%.0f %s", display_val, prefixes[pi]);
-        else if (display_val >= 10.0) snprintf(label, sizeof(label), "%.0f %s", display_val, prefixes[pi]);
-        else if (display_val >= 1.0) snprintf(label, sizeof(label), "%.1g %s", display_val, prefixes[pi]);
-        else snprintf(label, sizeof(label), "%.2g %s", display_val, prefixes[pi]);
+        if (display_val >= 100.0) snprintf(label, sizeof(label), "%.0f %s", display_val, unit);
+        else if (display_val >= 10.0) snprintf(label, sizeof(label), "%.0f %s", display_val, unit);
+        else if (display_val >= 1.0) snprintf(label, sizeof(label), "%.1g %s", display_val, unit);
+        else snprintf(label, sizeof(label), "%.2g %s", display_val, unit);
 
         /* Draw at bottom-right of 3D scene */
         float margin = 16;

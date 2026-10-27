@@ -250,7 +250,9 @@ double boris_radiation_step(Particle *p, const FieldModel *fm, double dt,
 
 /* Batch Boris step: SoA layout with separate loops for auto-vectorization.
  * The compiler can use SSE2/AVX/NEON on each simple loop since iterations
- * are independent. Field evaluation stays scalar (function pointer). */
+ * are independent. Field evaluation stays scalar (function pointer).
+ * A particle inside the model's central body has been lost there (into the
+ * Earth's atmosphere) and stays where it hit. */
 void boris_step_batch(Particle *particles, int n,
                       const FieldModel *fm, double dt, int relativistic)
 {
@@ -260,7 +262,8 @@ void boris_step_batch(Particle *particles, int n,
     /* Relativistic: fall back to per-particle (transcendentals block SIMD) */
     if (relativistic) {
         for (int i = 0; i < n; i++)
-            boris_step(&particles[i], fm, dt, relativistic);
+            if (!field_inside_body(fm, particles[i].pos))
+                boris_step(&particles[i], fm, dt, relativistic);
         return;
     }
 
@@ -357,8 +360,9 @@ void boris_step_batch(Particle *particles, int n,
         pz[i] += dt * vz[i];
     }
 
-    /* Write back SoA → AoS */
+    /* Write back SoA → AoS, leaving lost particles where they are */
     for (int i = 0; i < n; i++) {
+        if (field_inside_body(fm, particles[i].pos)) continue;
         particles[i].pos = (Vec3){px[i], py[i], pz[i]};
         particles[i].vel = (Vec3){vx[i], vy[i], vz[i]};
     }

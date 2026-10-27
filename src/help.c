@@ -325,11 +325,14 @@ static void tab_physics(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color 
     P("- J. Buchner and L. M. Zelenyi, \"Regular and chaotic charged particle motion in magnetotaillike field reversals,\" J. Geophys. Res. 94, 11821 (1989).");
     P("- C. M. Cully and E. F. Donovan, \"A derivation of the gradient drift based on energy conservation,\" Am. J. Phys. 67, 909 (1999).");
     P("- J. Giacalone and J. R. Jokipii, \"The transport of cosmic rays across a turbulent magnetic field,\" Astrophys. J. 520, 204 (1999).");
+    P("- IAGA Working Group V-MOD, International Geomagnetic Reference Field, 14th generation (2024), doi:10.5281/zenodo.14012302.");
     P("- M. Kruskal, \"Elementary orbit and drift theory,\" Plasma Physics (IAEA, 1965).");
     P("- R. M. Kulsrud, Plasma Physics for Astrophysics (Princeton, 2005).");
     P("- R. G. Littlejohn, \"Variational principles of guiding centre motion,\" J. Plasma Phys. 29, 111 (1983).");
     P("- T. G. Northrop, The Adiabatic Motion of Charged Particles (Interscience, 1963).");
+    P("- J.-H. Shue et al., \"Magnetopause location under extreme solar wind conditions,\" J. Geophys. Res. 103, 17691 (1998).");
     P("- C. Stormer, \"Sur les trajectoires des corpuscules electrises,\" Arch. Sci. Phys. Nat. 24, 5 (1907).");
+    P("- N. A. Tsyganenko, \"A magnetospheric magnetic field model with a warped tail current sheet,\" Planet. Space Sci. 37, 5 (1989).");
 }
 
 /* ================================================================
@@ -470,6 +473,54 @@ static void tab_fields(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color d
       "same spectrum. "
       "Parameters: B0, orientation theta and phi, dB/B0, spectral slope "
       "s, band limits k1 and k2, seed.");
+    GAP(6); RULE(); GAP(4);
+
+    H("12. EARTH  (IGRF + Tsyganenko T89c magnetosphere, IMF outside)");
+    M("  B = B_IGRF(year, day) + B_T89c(Kp, \xcf\x88) inside the magnetopause,  B_IMF outside");
+    P("The Earth's internal field from the International Geomagnetic "
+      "Reference Field (IGRF-14, degree 13, epochs 1900-2030) plus the "
+      "Tsyganenko (1989) T89c model of the magnetospheric currents: ring "
+      "current, a warped tail current sheet hinged by the dipole tilt, "
+      "its closure currents, and the Chapman-Ferraro field. T89c was "
+      "fitted to spacecraft data in seven Kp bins; the Kp slider picks "
+      "the bin (6 means Kp 6- and above).");
+    GAP(4);
+    P("These apply inside the Shue et al. (1998) magnetopause, whose "
+      "subsolar distance and flaring follow the solar wind dynamic "
+      "pressure Pdyn and IMF Bz. Outside it the field is the uniform "
+      "interplanetary field (IMF Bx, By, Bz in GSM), with no magnetosheath "
+      "compression or draping, so B jumps across the boundary and "
+      "particles cross it freely. Field lines that leave the "
+      "magnetopause continue as straight IMF lines.");
+    GAP(4);
+    P("Coordinates are GSM: x toward the Sun, z in the plane of x and the "
+      "dipole axis. The year, day of year and UT set the IGRF epoch and "
+      "the orientation of the Earth in GSM, hence the dipole tilt \xcf\x88 "
+      "(up to about 35 deg at the solstices). The defaults, day 80 at "
+      "10.8 UT, give \xcf\x88 near 0, so the plasma sheet lies in z = 0. "
+      "The Earth is drawn with its dayside toward +x, and field lines "
+      "start from footpoints in the noon-midnight and dawn-dusk "
+      "meridians.");
+    GAP(4);
+    P("Lengths are in Earth radii: one scene unit is 1 RE. The orbit is "
+      "exact for the physical energy because the Lorentz force equation "
+      "is unchanged when lengths and times shrink by the same factor and "
+      "B grows by it; the readouts and plots convert back, so |B| is in "
+      "nT, time in seconds and mu in J/T.");
+    GAP(4);
+    P("Near x = -10 RE the tail field reverses across a thin current "
+      "sheet. Ions whose gyroradius approaches the field-line curvature "
+      "radius there (Buchner and Zelenyi parameter kappa below about 3) "
+      "move non-adiabatically: mu jumps at each sheet crossing and the "
+      "pitch angle scatters, filling the loss cone. Closer in, particles "
+      "bounce and drift around the Earth, ions westward toward dusk. "
+      "A particle that descends below 100 km altitude is lost to the "
+      "atmosphere: it stops there, its plots end, and the readouts give "
+      "the time of loss. The timestep is set by the launch gyroperiod, "
+      "so deep in the strong near-Earth field the gyration itself is not "
+      "resolved, but the Boris pusher still places the mirror points "
+      "correctly. "
+      "Parameters: Kp, year, day of year, UT, IMF Bx, By, Bz, Pdyn.");
 }
 
 /* ================================================================
@@ -528,7 +579,7 @@ static void tab_interface(AppState *app, Clay_Color hc, Clay_Color bc, Clay_Colo
     GAP(6); RULE(); GAP(4);
 
     H("MODEL / PARTICLE");
-    P("Field Model dropdown: choose from 12 magnetic field geometries. "
+    P("Field Model dropdown: choose from 13 magnetic field geometries. "
       "Each model has adjustable parameters via sliders. Species: "
       "Electron, Proton, Alpha, O+, or Custom (set charge, mass, speed "
       "directly). Energy: kinetic energy in keV with range selector "

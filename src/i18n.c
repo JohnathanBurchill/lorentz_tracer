@@ -113,6 +113,8 @@ static const char *g_strings_en[STR__COUNT] = {
     [STR_FMT_PITCH]         = "pitch = %.1f deg",
     [STR_FMT_MU]            = "mu = %.3e J/T",
     [STR_FMT_BMAG]          = "|B| = %.3e T",
+    [STR_FMT_BMAG_NT]       = "|B| = %.4g nT",
+    [STR_FMT_LOST]          = "Lost in atmosphere, t = %.4g s",
     [STR_FMT_ENERGY_MEV]    = "E = %.3f MeV",
     [STR_FMT_ENERGY_KEV]    = "E = %.3f keV",
     [STR_FMT_PRAD]          = "P_rad = %.3e W",
@@ -189,6 +191,7 @@ static const char *g_strings_en[STR__COUNT] = {
     [STR_MODEL_TORUS]       = "Torus",
     [STR_MODEL_HARRIS]      = "Harris sheet",
     [STR_MODEL_TURBULENCE]  = "Turbulence (B0 + dB)",
+    [STR_MODEL_T89]         = "Earth (T89c + IGRF)",
 
     /* Field parameter names */
     [STR_PARAM_B0]          = "B0 (T)",
@@ -216,6 +219,14 @@ static const char *g_strings_en[STR__COUNT] = {
     [STR_PARAM_K1]          = "k1 (1/m)",
     [STR_PARAM_K2]          = "k2 (1/m)",
     [STR_PARAM_SEED]        = "Seed",
+    [STR_PARAM_KP]          = "Kp",
+    [STR_PARAM_YEAR]        = "Year",
+    [STR_PARAM_DOY]         = "Day of year",
+    [STR_PARAM_UT]          = "UT (h)",
+    [STR_PARAM_IMF_BX]      = "IMF Bx (nT)",
+    [STR_PARAM_IMF_BY]      = "IMF By (nT)",
+    [STR_PARAM_IMF_BZ]      = "IMF Bz (nT)",
+    [STR_PARAM_PDYN]        = "Pdyn (nPa)",
     [STR_STEL_CFG_R2]       = "r2 s5.1 (QA)",
     [STR_STEL_CFG_LP22]     = "Precise QA (LP22)",
 
@@ -300,7 +311,7 @@ static const char *g_strings_en[STR__COUNT] = {
         "parameters.",
     [STR_TUT_S9_BRIEF]  = "Try selecting the Dipole field model from the dropdown. "
         "The view resets automatically when switching models.",
-    [STR_TUT_S9_DETAIL] = "The Field Model dropdown lists 12 magnetic field geometries: "
+    [STR_TUT_S9_DETAIL] = "The Field Model dropdown lists 13 magnetic field geometries: "
         "circular, grad-B, dipole, magnetic bottle, tokamak, and more. "
         "Each model has adjustable parameters. Selecting a new model "
         "resets the particle and camera to defaults. Try selecting "

@@ -75,6 +75,8 @@ typedef struct AppState {
     double E0_keVs[MAX_PARTICLES]; /* initial kinetic energy per particle */
     int step_interval[MAX_PARTICLES]; /* subcycling: step every Nth master substep */
     double particle_dt[MAX_PARTICLES]; /* per-particle timestep */
+    double lost_time[MAX_PARTICLES];   /* sim time it entered the model's
+                                          central body, -1 = not lost */
 
     /* Step history for pause-step-back (ring buffer of pos/vel snapshots) */
     #define STEP_HISTORY_MAX 4096

@@ -65,6 +65,7 @@ set(SOURCES
     src/field_torus.c
     src/field_harris.c
     src/field_turbulence.c
+    src/field_t89.c
     src/nax_axis.c
     src/nax.c
     src/boris.c

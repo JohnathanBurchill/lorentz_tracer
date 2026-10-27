@@ -1578,6 +1578,24 @@ static void emit_3d_scene(PdfWriter *w, const struct AppState *app)
         item_polyline(&il, &pr, lz, 2, az, (float)app->lw_axes);
     }
 
+    /* Central body (the Earth): a disk sized by an offset across the line of
+     * sight, so the radius is right from any viewing direction */
+    if (fm->body_radius > 0.0) {
+        Vec3 right = {pr.view.m0, pr.view.m4, pr.view.m8};
+        float cx, cy, cz, ex, ey, ez;
+        if (project(&pr, (Vec3){0, 0, 0}, &cx, &cy, &cz) &&
+            project(&pr, vec3_scale(fm->body_radius, right), &ex, &ey, &ez) &&
+            items_reserve(&il, 1, 0)) {
+            PdfItem *it = &il.items[il.n_items++];
+            memset(it, 0, sizeof(*it));
+            it->kind = PI_CIRCLE;
+            it->depth = cz;
+            it->color = (Color){70, 130, 200, 255};
+            it->cx = cx; it->cy = cy;
+            it->r = sqrtf((ex - cx) * (ex - cx) + (ey - cy) * (ey - cy));
+        }
+    }
+
     /* Field lines (if cache is current — rebuilt by render3d when shown) */
     if (app->show_field_lines) {
         int nl = render3d_field_line_count();
@@ -1627,7 +1645,7 @@ static void emit_3d_scene(PdfWriter *w, const struct AppState *app)
                     Vec3 bh = vec3_scale(1.0/mm, BB);
                     p = vec3_add(p, vec3_scale(ds, bh));
                     fwd[nf++] = p; arc += ds;
-                    if (vec3_len(p) > 100.0) break;
+                    if (vec3_len(p) > 100.0 || field_inside_body(fm, p)) break;
                 }
                 p = gc;
                 bwd[nb++] = p; arc = 0.0;
@@ -1638,7 +1656,7 @@ static void emit_3d_scene(PdfWriter *w, const struct AppState *app)
                     Vec3 bh = vec3_scale(1.0/mm, BB);
                     p = vec3_sub(p, vec3_scale(ds, bh));
                     bwd[nb++] = p; arc += ds;
-                    if (vec3_len(p) > 100.0) break;
+                    if (vec3_len(p) > 100.0 || field_inside_body(fm, p)) break;
                 }
                 Color gcc = app->color_gc_fl;
                 item_polyline(&il, &pr, fwd, nf, gcc, (float)app->lw_gc_fl);
@@ -1669,7 +1687,7 @@ static void emit_3d_scene(PdfWriter *w, const struct AppState *app)
                 Vec3 bh = vec3_scale(1.0/mm, BB);
                 p = vec3_add(p, vec3_scale(ds, bh));
                 fwd[nf++] = p; arc += ds;
-                if (vec3_len(p) > 100.0) break;
+                if (vec3_len(p) > 100.0 || field_inside_body(fm, p)) break;
             }
             p = pos; bwd[nb++] = p; arc = 0.0;
             while (arc < half && nb < max_pts) {
@@ -1679,7 +1697,7 @@ static void emit_3d_scene(PdfWriter *w, const struct AppState *app)
                 Vec3 bh = vec3_scale(1.0/mm, BB);
                 p = vec3_sub(p, vec3_scale(ds, bh));
                 bwd[nb++] = p; arc += ds;
-                if (vec3_len(p) > 100.0) break;
+                if (vec3_len(p) > 100.0 || field_inside_body(fm, p)) break;
             }
             Color pc = app->color_pos_fl;
             item_polyline(&il, &pr, fwd, nf, pc, (float)app->lw_pos_fl);

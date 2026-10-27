@@ -560,9 +560,10 @@ static void section_model(AppState *app, Clay_Color text_c, Clay_Color dim_c,
                 continue;
             }
             float val = (float)fm->params[i];
-            do_slider(CLAY_IDI("PSlider", i), fm->param_names[i], Sf("%.3g", fm->params[i]),
+            do_slider(CLAY_IDI("PSlider", i), fm->param_names[i],
+                      Sf(fm->param_int[i] ? "%.0f" : "%.3g", fm->params[i]),
                       &val, (float)fm->param_min[i], (float)fm->param_max[i], track_c, fill_c, text_c);
-            fm->params[i] = (double)val;
+            fm->params[i] = fm->param_int[i] ? floor((double)val + 0.5) : (double)val;
         }
 
         /* Particle */
@@ -1059,11 +1060,18 @@ static void section_readouts(AppState *app, Clay_Color text_c, Clay_Color dim_c)
 
     if (app->n_particles > 1)
         CLAY_TEXT(Sf(TR(STR_FMT_PARTICLE_N), si + 1, app->n_particles), CLAY_TEXT_CONFIG(rcfg));
-    CLAY_TEXT(Sf(TR(STR_FMT_TIME), app->sim_time), CLAY_TEXT_CONFIG(rcfg));
+    /* Physical values for similarity-scaled models (L = 1 for plain SI) */
+    double L = field_length_unit(cfm);
+    CLAY_TEXT(Sf(TR(STR_FMT_TIME), app->sim_time * L), CLAY_TEXT_CONFIG(rcfg));
+    if (app->lost_time[si] >= 0.0)
+        CLAY_TEXT(Sf(TR(STR_FMT_LOST), app->lost_time[si] * L), CLAY_TEXT_CONFIG(rcfg));
     CLAY_TEXT(Sf(TR(STR_FMT_ENERGY_ERR), dE), CLAY_TEXT_CONFIG(rcfg));
     CLAY_TEXT(Sf(TR(STR_FMT_PITCH), boris_pitch_angle(sp, cfm)), CLAY_TEXT_CONFIG(rcfg));
-    CLAY_TEXT(Sf(TR(STR_FMT_MU), boris_mu(sp, cfm)), CLAY_TEXT_CONFIG(rcfg));
-    CLAY_TEXT(Sf(TR(STR_FMT_BMAG), field_Bmag(cfm, sp->pos)), CLAY_TEXT_CONFIG(rcfg));
+    CLAY_TEXT(Sf(TR(STR_FMT_MU), boris_mu(sp, cfm) * L), CLAY_TEXT_CONFIG(rcfg));
+    if (cfm->length_unit > 0.0)
+        CLAY_TEXT(Sf(TR(STR_FMT_BMAG_NT), field_Bmag(cfm, sp->pos) / L * 1e9), CLAY_TEXT_CONFIG(rcfg));
+    else
+        CLAY_TEXT(Sf(TR(STR_FMT_BMAG), field_Bmag(cfm, sp->pos)), CLAY_TEXT_CONFIG(rcfg));
 
     if (app->radiation_loss) {
         double E_J = E_now * KEV_TO_J;
