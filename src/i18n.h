@@ -160,7 +160,7 @@ typedef enum {
     STR_MODEL_TORUS,            /* "Torus" */
     STR_MODEL_HARRIS,           /* "Harris sheet" */
     STR_MODEL_TURBULENCE,       /* "Turbulence (B0 + dB)" */
-    STR_MODEL_T89,              /* "Earth (T89c + IGRF)" */
+    STR_MODEL_T89,              /* "Terrestrial Magnetosphere" */
 
     /* Field parameter names */
     STR_PARAM_B0,               /* "B0 (T)" */

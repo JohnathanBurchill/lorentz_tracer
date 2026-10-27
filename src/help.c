@@ -342,6 +342,7 @@ static void tab_physics(Clay_Color hc, Clay_Color bc, Clay_Color mc, Clay_Color 
     P("- R. G. Littlejohn, \"Variational principles of guiding centre motion,\" J. Plasma Phys. 29, 111 (1983).");
     P("- T. G. Northrop, The Adiabatic Motion of Charged Particles (Interscience, 1963).");
     P("- J.-H. Shue et al., \"Magnetopause location under extreme solar wind conditions,\" J. Geophys. Res. 103, 17691 (1998).");
+    P("- Earth image: NASA Earth Observatory, Blue Marble Next Generation (R. Stockli et al., December 2004, with topography and bathymetry).");
     P("- C. Stormer, \"Sur les trajectoires des corpuscules electrises,\" Arch. Sci. Phys. Nat. 24, 5 (1907).");
     P("- N. A. Tsyganenko, \"A magnetospheric magnetic field model with a warped tail current sheet,\" Planet. Space Sci. 37, 5 (1989).");
 }

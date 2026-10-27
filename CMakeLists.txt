@@ -42,6 +42,8 @@ else()
     FetchContent_MakeAvailable(raylib)
     # Keep raylib's headers and library out of cmake --install
     set_property(DIRECTORY ${raylib_SOURCE_DIR} PROPERTY EXCLUDE_FROM_ALL TRUE)
+    # JPEG, off by default in raylib 6.2, for the Earth's texture
+    target_compile_definitions(raylib PRIVATE SUPPORT_FILEFORMAT_JPG=1)
 endif()
 
 # ---- raygui (vendored single header) ----
@@ -169,7 +171,7 @@ elseif(APPLE)
         MACOSX_PACKAGE_LOCATION "Resources")
     target_sources(lorentz_tracer PRIVATE ${ICON_FILE})
 
-    # Copy resources (fonts, scenarios) into the bundle
+    # Copy resources (fonts, scenarios, textures) into the bundle
     add_custom_command(TARGET lorentz_tracer POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/resources/fonts
@@ -177,6 +179,9 @@ elseif(APPLE)
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/resources/scenarios
             $<TARGET_BUNDLE_CONTENT_DIR:lorentz_tracer>/Resources/resources/scenarios
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/resources/textures
+            $<TARGET_BUNDLE_CONTENT_DIR:lorentz_tracer>/Resources/resources/textures
     )
 
     # cmake --install build puts the app in ~/Applications, unless
@@ -200,11 +205,11 @@ else()
     # resources in <prefix>/share/lorentz_tracer, where it looks for them
     if(WIN32)
         install(TARGETS lorentz_tracer RUNTIME DESTINATION .)
-        install(DIRECTORY resources/fonts resources/scenarios
+        install(DIRECTORY resources/fonts resources/scenarios resources/textures
             DESTINATION resources)
     else()
         install(TARGETS lorentz_tracer RUNTIME DESTINATION bin)
-        install(DIRECTORY resources/fonts resources/scenarios
+        install(DIRECTORY resources/fonts resources/scenarios resources/textures
             DESTINATION share/lorentz_tracer/resources)
     endif()
 endif()

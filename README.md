@@ -7,7 +7,7 @@ Interactive charged-particle orbit simulation. Solves the full Lorentz force equ
 ## Features
 
 - Boris integrator (energy-conserving to machine precision)
-- Thirteen magnetic field models: circular (constant |B|), linear/quadratic/sinusoidal grad-B, nonphysical (div B != 0), magnetic dipole, magnetic bottle, tokamak, stellarator (near-axis), torus, Harris current sheet, isotropic turbulence (power-law spectrum), Earth's magnetosphere (IGRF-14 + Tsyganenko T89c inside a Shue magnetopause, uniform IMF outside, in Earth radii)
+- Thirteen magnetic field models: circular (constant |B|), linear/quadratic/sinusoidal grad-B, nonphysical (div B != 0), magnetic dipole, magnetic bottle, tokamak, stellarator (near-axis), torus, Harris current sheet, isotropic turbulence (power-law spectrum), terrestrial magnetosphere (IGRF-14 + Tsyganenko T89c inside a Shue magnetopause, uniform IMF outside, in Earth radii, with NASA's Blue Marble Earth)
 - Multiple particles with independent species (charge, mass)
 - 3D orbit visualization with field lines and particle trails
 - Live diagnostic plots: pitch angle, magnetic moment, energy, position
@@ -87,6 +87,8 @@ The near-axis stellarator field uses configurations and the expansion method fro
 - M. Landreman and E. J. Paul, "Magnetic fields with precise quasisymmetry for plasma confinement," Phys. Rev. Lett. **128**, 035001 (2022).
 
 The implementation follows [pyQSC](https://github.com/landreman/pyQSC).
+
+The Earth in the terrestrial magnetosphere model is NASA Earth Observatory's [Blue Marble Next Generation](https://visibleearth.nasa.gov/collection/1484/blue-marble) image (R. Stöckli et al., December 2004, with topography and bathymetry), which is in the public domain.
 
 ## License
 

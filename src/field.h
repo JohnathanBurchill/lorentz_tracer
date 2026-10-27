@@ -35,6 +35,13 @@ typedef struct {
     double body_radius;        /* solid central body (0 = none): drawn as a
                                   sphere, field lines stop at it, and a
                                   particle that enters it is lost there */
+    const char *body_texture;  /* image of the body, equirectangular in its
+                                  own longitude and latitude, under the
+                                  resources directory (NULL = plain) */
+    void (*body_frame)(const double *params, double rot[3][3]);
+                               /* rotation from the body's frame to the
+                                  scene's: rows are the scene axes in body
+                                  coordinates (NULL = the same frame) */
 } FieldModel;
 
 /* Initialize all field models */

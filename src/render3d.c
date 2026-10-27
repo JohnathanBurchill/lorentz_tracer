@@ -442,40 +442,65 @@ static void build_field_lines(const struct AppState *app)
 }
 
 /* Central body (the Earth in the magnetosphere model), shaded by the cosine
- * of the solar zenith angle with the Sun along +x, as in GSM. */
-static void draw_body(double r)
+ * of the solar zenith angle with the Sun along +x, as in GSM. A model can
+ * wrap it in an image in the body's own longitude and latitude, turned into
+ * the scene's frame by its body_frame rotation (GEO to GSM for the Earth);
+ * without one, or if the image fails to load, the sphere is plain. */
+static Texture2D g_body_tex;
+static const char *g_body_tex_name;      /* image g_body_tex was loaded from */
+
+static void draw_body(const struct AppState *app, const FieldModel *fm)
 {
-    enum { RINGS = 24, SLICES = 48 };
-    const Color day = {70, 130, 200, 255}, night = {20, 32, 58, 255};
-    rlCheckRenderBatchLimit(RINGS * SLICES * 6);
-    rlBegin(RL_TRIANGLES);
+    enum { RINGS = 48, SLICES = 96 };
+    if (fm->body_texture && fm->body_texture != g_body_tex_name) {
+        if (g_body_tex.id) UnloadTexture(g_body_tex);
+        char path[1200];
+        snprintf(path, sizeof(path), "%s/%s", app->res_dir, fm->body_texture);
+        g_body_tex = LoadTexture(path);
+        if (g_body_tex.id) {
+            GenTextureMipmaps(&g_body_tex);
+            SetTextureFilter(g_body_tex, TEXTURE_FILTER_TRILINEAR);
+        }
+        g_body_tex_name = fm->body_texture;     /* tried, loaded or not */
+    }
+    int textured = fm->body_texture && g_body_tex.id;
+    /* With an image, light modulates it: full by day, dim at night */
+    const Color day = textured ? (Color){255, 255, 255, 255} : (Color){70, 130, 200, 255};
+    const Color night = textured ? (Color){40, 44, 56, 255} : (Color){20, 32, 58, 255};
+    double rot[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+    if (fm->body_frame) fm->body_frame(fm->params, rot);
+    double r = fm->body_radius;
+
+    rlCheckRenderBatchLimit(RINGS * SLICES * 4);
+    if (textured) rlSetTexture(g_body_tex.id);
+    rlBegin(RL_QUADS);
     for (int i = 0; i < RINGS; i++) {
-        double t0 = M_PI * i / RINGS, t1 = M_PI * (i + 1) / RINGS;
         for (int j = 0; j < SLICES; j++) {
-            double p0 = 2.0 * M_PI * j / SLICES, p1 = 2.0 * M_PI * (j + 1) / SLICES;
-            /* Quad corners ordered so both triangles wind CCW from outside */
-            Vec3 q[4] = {
-                {sin(t0) * cos(p0), sin(t0) * sin(p0), cos(t0)},
-                {sin(t1) * cos(p0), sin(t1) * sin(p0), cos(t1)},
-                {sin(t1) * cos(p1), sin(t1) * sin(p1), cos(t1)},
-                {sin(t0) * cos(p1), sin(t0) * sin(p1), cos(t0)}
-            };
-            static const int tri[6] = {0, 1, 2, 0, 2, 3};
-            for (int k = 0; k < 6; k++) {
-                Vec3 u = q[tri[k]];
+            /* Corners from north to south and west to east, so the quad
+             * winds CCW seen from outside */
+            static const int di[4] = {0, 1, 1, 0}, dj[4] = {0, 0, 1, 1};
+            for (int k = 0; k < 4; k++) {
+                double v = (double)(i + di[k]) / RINGS, u = (double)(j + dj[k]) / SLICES;
+                double lat = M_PI * (0.5 - v), lon = M_PI * (2.0 * u - 1.0);
+                Vec3 g = {cos(lat) * cos(lon), cos(lat) * sin(lon), sin(lat)};
+                Vec3 s = {rot[0][0] * g.x + rot[0][1] * g.y + rot[0][2] * g.z,
+                          rot[1][0] * g.x + rot[1][1] * g.y + rot[1][2] * g.z,
+                          rot[2][0] * g.x + rot[2][1] * g.y + rot[2][2] * g.z};
                 /* Soft terminator about 30 deg wide, dimming toward it */
-                double w = 0.5 + 2.0 * u.x;
+                double w = 0.5 + 2.0 * s.x;
                 if (w < 0.0) w = 0.0;
                 if (w > 1.0) w = 1.0;
-                double lum = w * (0.75 + 0.25 * (u.x > 0.0 ? u.x : 0.0));
+                double lum = w * (0.75 + 0.25 * (s.x > 0.0 ? s.x : 0.0));
                 rlColor4ub((unsigned char)(night.r + (day.r - night.r) * lum),
                            (unsigned char)(night.g + (day.g - night.g) * lum),
                            (unsigned char)(night.b + (day.b - night.b) * lum), 255);
-                rlVertex3f((float)(r * u.x), (float)(r * u.y), (float)(r * u.z));
+                rlTexCoord2f((float)u, (float)v);
+                rlVertex3f((float)(r * s.x), (float)(r * s.y), (float)(r * s.z));
             }
         }
     }
     rlEnd();
+    rlSetTexture(0);
 }
 
 /* ---- Magnetic equator surface ----
@@ -606,7 +631,7 @@ void render3d_draw(const struct AppState *app)
     }
 
     if (fm->body_radius > 0.0)
-        draw_body(fm->body_radius);
+        draw_body(app, fm);
 
     /* Field lines: rebuild only when needed */
     if (app->show_field_lines) {

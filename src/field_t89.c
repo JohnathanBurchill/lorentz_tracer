@@ -442,10 +442,19 @@ double t89_dipole_tilt(const double *params)
     return s_es.psi;
 }
 
+/* GEO -> GSM rotation for the year, day and UT in params, for drawing the
+ * Earth's surface in place */
+static void earth_frame(const double *params, double rot[3][3])
+{
+    if (params[1] != s_es.year || params[2] != s_es.doy || params[3] != s_es.ut)
+        earth_recalc(&s_es, params[1], params[2], params[3]);
+    memcpy(rot, s_es.a, sizeof(s_es.a));
+}
+
 void field_init_t89(FieldModel *fm)
 {
     memset(fm, 0, sizeof(*fm));
-    snprintf(fm->code, sizeof(fm->code), "T89");
+    snprintf(fm->code, sizeof(fm->code), "EARTH");
     snprintf(fm->name, FIELD_MAX_NAME, "%s", TR(STR_MODEL_T89));
     fm->n_params = 8;
     snprintf(fm->param_names[0], FIELD_MAX_PNAME, "%s", TR(STR_PARAM_KP));
@@ -474,6 +483,8 @@ void field_init_t89(FieldModel *fm)
     /* The Earth is drawn at the top of the atmosphere, where particles are
      * lost and field-line footpoints sit, as in Geopack tracing */
     fm->body_radius = 1.0 + LOSS_ALT / RE_M;
+    fm->body_texture = "textures/earth.jpg";   /* NASA Blue Marble */
+    fm->body_frame = earth_frame;
     fm->default_pos = (Vec3){-10.0, 0.0, 0.0};
     fm->default_vel_dir = (Vec3){0.0, 0.0, 1.0};
     fm->default_camera_dist = 25.0;
