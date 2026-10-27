@@ -22,11 +22,17 @@ else()
     # and prints nothing while it does.
     message(STATUS "Downloading raylib 6.2 (~50 MB)...")
     include(FetchContent)
+    # DOWNLOAD_EXTRACT_TIMESTAMP is CMake 3.24+; older ones (3.22 in the
+    # Ubuntu 22.04 release image) read it as part of URL_HASH
+    set(RAYLIB_TIMESTAMP_OPT)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.24)
+        set(RAYLIB_TIMESTAMP_OPT DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+    endif()
     FetchContent_Declare(
         raylib
         URL      https://github.com/raysan5/raylib/archive/refs/tags/6.2.tar.gz
         URL_HASH SHA256=df7a13129b1bec9e73a6962efff170beba310ee6eab8f94cd000b7316b4db5ee
-        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+        ${RAYLIB_TIMESTAMP_OPT}
     )
     set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
     set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
