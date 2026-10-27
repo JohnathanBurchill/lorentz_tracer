@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /src
 COPY . .
 
-RUN cmake -B build-linux -DCMAKE_BUILD_TYPE=Release && \
+RUN cmake -B build-linux -DCMAKE_BUILD_TYPE=Release -DNATIVE_ARCH=OFF && \
     cmake --build build-linux -j$(nproc)
 
 FROM scratch

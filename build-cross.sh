@@ -49,7 +49,15 @@ build_linux() {
 
 build_macos() {
     echo "=== Building macOS (native) ==="
-    cmake -B build-release -DCMAKE_BUILD_TYPE=Release
+    # A clean build for any Apple-silicon Mac on macOS 12 or later: no
+    # -march=native, raylib fetched and built for that target rather than
+    # the system's, and no libav, which would tie the app to the build
+    # machine's Homebrew ffmpeg
+    rm -rf build-release
+    cmake -B build-release -DCMAKE_BUILD_TYPE=Release \
+        -DNATIVE_ARCH=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
+        -DCMAKE_DISABLE_FIND_PACKAGE_raylib=TRUE \
+        -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=TRUE
     cmake --build build-release -j$(sysctl -n hw.ncpu)
 
     # Package the .app bundle into a zip (preserves structure, no DMG needed)

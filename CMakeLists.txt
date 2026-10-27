@@ -218,7 +218,10 @@ endif()
 # ---- SIMD: enable native instruction set for auto-vectorization ----
 # -march=native lets the compiler use SSE2/AVX (x86) or NEON (ARM) for the
 # batch Boris loops. Only for native builds; cross-compiles and WASM excluded.
-if(NOT EMSCRIPTEN AND NOT CMAKE_CROSSCOMPILING)
+# Release builds turn it off (-DNATIVE_ARCH=OFF) so the binary runs on any
+# CPU of its architecture, not just ones like the build machine's.
+option(NATIVE_ARCH "Tune for this machine's CPU (-march=native)" ON)
+if(NATIVE_ARCH AND NOT EMSCRIPTEN AND NOT CMAKE_CROSSCOMPILING)
     if(NOT MSVC)
         target_compile_options(lorentz_tracer PRIVATE -march=native)
     endif()

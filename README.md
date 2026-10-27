@@ -25,7 +25,7 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-On macOS this produces a `.app` bundle in `build/`. On Linux and Windows it produces a standalone executable.
+On macOS this produces a `.app` bundle in `build/`. On Linux and Windows it produces a standalone executable. The build is tuned to this machine's CPU (`-march=native`); add `-DNATIVE_ARCH=OFF` for a binary to run on other machines.
 
 To install it:
 
