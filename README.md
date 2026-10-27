@@ -40,6 +40,29 @@ emcmake cmake -B build-wasm -DCMAKE_BUILD_TYPE=Release
 cmake --build build-wasm
 ```
 
+## On a beamer slide
+
+The beameup presenter console can run Lorentz Tracer live in a box on a slide, where it takes the mouse and keys while the pointer is over the box. Build it with the option:
+
+```sh
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DBEAMEUP_EMBED=ON
+cmake --build build
+```
+
+The slide links a script, and the script starts the program:
+
+```latex
+\href{run:lorentz_tracer.sh?app}{\includegraphics[width=\textwidth]{lorentz-poster}}
+```
+
+```sh
+cd ~/src/lorentz_tracer && exec build/lorentz_tracer.app/Contents/MacOS/lorentz_tracer
+```
+
+On the slide the window is hidden and sized to the box, there is no splash, and Cmd+F does nothing. It shows the settings the app was last closed with, and leaves them as they were. Run outside beameup, the same build behaves as usual.
+
+The option is off by default because it compiles in `third_party/beameup_embed.h`, beameup's header, which is GPL-3.0-or-later: a binary built with it carries GPL code. The copy must match the version of beameup that runs it. It needs POSIX shared memory, so it does nothing on Windows or the web.
+
 ## Acknowledgments
 
 The near-axis stellarator field uses configurations and the expansion method from:

@@ -320,6 +320,10 @@ void app_save_state(const AppState *app);
 void app_load_state(AppState *app);
 void app_reload_fonts(AppState *app);  /* reload fonts for current language */
 void app_toggle_borderless(void);      /* screen-filling borderless window */
+/* Running on a beamer slide in beameup: the window flags to use, and the
+ * setup after InitWindow, which returns 1 when embedded */
+unsigned int app_embed_flags(unsigned int flags);
+int app_embed_init(void);
 
 /* Scene geometry helpers (account for ui_edge) */
 void app_scene_rect(const AppState *app, float *x, float *y, float *w, float *h);

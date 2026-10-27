@@ -125,13 +125,17 @@ int main(int argc, char **argv)
     SetConfigFlags(FLAG_MSAA_4X_HINT);
     InitWindow(1280, 720, "Lorentz Tracer");  /* Emscripten resizes to canvas */
 #else
-    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI);
+    SetConfigFlags(app_embed_flags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_HIGHDPI));
     InitWindow(app.win_w, app.win_h, "Lorentz Tracer");
 #endif
     SetExitKey(0);  /* Esc closes help overlay, not the window */
     SetTargetFPS(60);
+    /* On a beamer slide the window is hidden and sized to the slide's box,
+     * and the slide shows the program at once: no splash */
+    int embedded = app_embed_init();
+    if (embedded) skip_splash = 1;
 #ifndef __EMSCRIPTEN__
-    app_toggle_borderless();  /* start fullscreen */
+    if (!embedded) app_toggle_borderless();  /* start fullscreen */
 #endif
 
     app.dpi_scale = (float)GetRenderWidth() / (float)GetScreenWidth();

@@ -17,6 +17,31 @@
 #include <direct.h>  /* _mkdir */
 #endif
 
+/* Shown in a box on a beamer slide by beameup, which runs the program from a
+ * script; outside beameup these calls do nothing. The header is
+ * GPL-3.0-or-later, so it is built in only with -DBEAMEUP_EMBED=ON. */
+#ifdef BEAMEUP_EMBED
+#define BEAMEUP_EMBED_IMPLEMENTATION
+#include "beameup_embed.h"
+#else
+static inline int beameup_embedded(void) { return 0; }
+static inline unsigned int beameup_embed_flags(unsigned int flags) { return flags; }
+static inline void beameup_embed_init(void) {}
+static inline void beameup_embed_input(void) {}
+static inline void beameup_embed_frame(void) {}
+#endif
+
+unsigned int app_embed_flags(unsigned int flags)
+{
+    return beameup_embed_flags(flags);
+}
+
+int app_embed_init(void)
+{
+    beameup_embed_init();
+    return beameup_embedded();
+}
+
 const Theme THEME_DARK = {
     .bg         = {0, 0, 0, 255},
     .panel_bg   = {25, 25, 30, 240},
@@ -1331,6 +1356,8 @@ static void app_redo_particle(AppState *app)
 
 void app_update(AppState *app)
 {
+    beameup_embed_input();
+
     /* Factory reset: delete state file, reinit to defaults */
     if (app->factory_reset) {
         app->factory_reset = 0;
@@ -1359,9 +1386,9 @@ void app_update(AppState *app)
 
     /* System shortcuts: always active (Cmd+F fullscreen, Cmd+Q handled by raylib) */
 #ifdef __APPLE__
-    if (IsKeyPressed(KEY_F) && IsKeyDown(KEY_LEFT_SUPER))
+    if (IsKeyPressed(KEY_F) && IsKeyDown(KEY_LEFT_SUPER) && !beameup_embedded())
 #else
-    if (IsKeyPressed(KEY_F) && IsKeyDown(KEY_LEFT_CONTROL))
+    if (IsKeyPressed(KEY_F) && IsKeyDown(KEY_LEFT_CONTROL) && !beameup_embedded())
 #endif
         app_toggle_borderless();
 
@@ -2919,6 +2946,7 @@ void app_render(AppState *app)
 
     BeginDrawing();
     app_render_inner(app);
+    beameup_embed_frame();
     EndDrawing();
 
     if (app->recorder.active) {

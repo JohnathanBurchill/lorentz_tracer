@@ -116,6 +116,19 @@ else()
     message(STATUS "libav not found: video recording disabled (stub)")
 endif()
 
+# ---- beameup: run on a beamer slide ----
+# third_party/beameup_embed.h is GPL-3.0-or-later, so it is opt-in; it needs
+# POSIX shared memory (macOS, Linux).
+option(BEAMEUP_EMBED "Run in a box on a beamer slide in beameup (GPL-3.0 code)" OFF)
+if(BEAMEUP_EMBED AND NOT EMSCRIPTEN AND NOT WIN32)
+    target_compile_definitions(lorentz_tracer PRIVATE BEAMEUP_EMBED)
+    if(NOT APPLE)
+        find_package(OpenGL REQUIRED)
+        target_link_libraries(lorentz_tracer PRIVATE OpenGL::GL)
+    endif()
+    message(STATUS "beameup embedding enabled")
+endif()
+
 # ---- Platform-specific ----
 if(EMSCRIPTEN)
     # WASM build: raylib detects PLATFORM_WEB automatically
